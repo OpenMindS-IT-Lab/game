@@ -1,198 +1,177 @@
 import * as THREE from 'three'
 
-// Тип для контейнера
-const gameContainer: HTMLElement | null = document.getElementById('game-container')
+// Setup Game Container
+const gameContainer = document.getElementById('game-container')
 if (!gameContainer) throw new Error('Game container not found')
 
-// Сцена, камера, рендерер
-const scene: THREE.Scene = new THREE.Scene()
+// Scene, Camera, Renderer
+const scene = new THREE.Scene()
+const camera = new THREE.PerspectiveCamera(85, window.innerWidth / window.innerHeight, 0.1, 1000)
+camera.position.set(0, 15, 0)
+camera.lookAt(0, 0, 0)
 
-// Перспективна камера
-const camera: THREE.PerspectiveCamera = new THREE.PerspectiveCamera(
-  85, // Кут огляду (Field of View)
-  window.innerWidth / window.innerHeight, // Співвідношення сторін
-  0.1, // Ближня межа видимості
-  1000 // Дальня межа видимості
-)
-
-// Камера (згори)
-camera.position.set(0, 15, 0) // Камера трохи піднята
-camera.lookAt(0, 0, 0) // Дивиться на центр сцени
-
-const renderer: THREE.WebGLRenderer = new THREE.WebGLRenderer({ antialias: true })
+const renderer = new THREE.WebGLRenderer({ antialias: true })
 renderer.setSize(window.innerWidth, window.innerHeight)
 gameContainer.appendChild(renderer.domElement)
 
-// Освітлення
-const light: THREE.DirectionalLight = new THREE.DirectionalLight(0xffffff, 1)
-light.position.set(0, 200, -50)
-scene.add(light)
+// Lighting
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1)
+directionalLight.position.set(0, 200, -50)
+scene.add(directionalLight)
 
-// Colors
-const tileColor = { color: 0xff4444, transparent: true, opacity: 0 }
-const cubeColor = { color: 0x2194ce }
-const selectedCubeColor = { color: 0x00ff28 }
-
-// Граунд
-const gridHelper = new THREE.GridHelper(30, 15, 0x444444, 0x111111)
-gridHelper.position.set(0, 0, 0)
-scene.add(gridHelper)
-
-const planeGeometry = new THREE.PlaneGeometry(14, 30)
-const planeMaterial = new THREE.MeshStandardMaterial({ color: 0x202020 })
-const plane = new THREE.Mesh(planeGeometry, planeMaterial)
-plane.rotation.x = -Math.PI / 2
-plane.position.y = -0.01
-scene.add(plane)
-
-// Ігрові плитки
-const tiles: THREE.Mesh[] = []
-const tileSize = 2
-
-for (let x = -3; x <= 3; x++) {
-  for (let z = -7; z <= 7; z++) {
-    const tileGeometry = new THREE.BoxGeometry(tileSize, 0, tileSize)
-    const tileMaterial = new THREE.MeshStandardMaterial(tileColor)
-    const tile = new THREE.Mesh(tileGeometry, tileMaterial)
-
-    tile.position.set(x * tileSize, 0, z * tileSize)
-    tile.userData.active = false
-    tiles.push(tile)
-    scene.add(tile)
-  }
+// Color Definitions
+const Colors = {
+  TILE: { color: 0xff4444, transparent: true, opacity: 0 },
+  CUBE: { color: 0x2194ce },
+  SELECTED_CUBE: { color: 0x00ff28 },
+  PLANE: 0x202020,
 }
 
-// Прості геометричні об'єкти
-const geometry: THREE.BoxGeometry = new THREE.BoxGeometry(2, 2, 2)
-const material: THREE.MeshStandardMaterial = new THREE.MeshStandardMaterial(cubeColor)
-const cube: THREE.Mesh = new THREE.Mesh(geometry, material)
+// Ground and Grid
+const createGround = () => {
+  const gridHelper = new THREE.GridHelper(30, 15, 0x444444, 0x111111)
+  scene.add(gridHelper)
+
+  const planeGeometry = new THREE.PlaneGeometry(14, 30)
+  const planeMaterial = new THREE.MeshStandardMaterial({ color: Colors.PLANE })
+  const plane = new THREE.Mesh(planeGeometry, planeMaterial)
+  plane.rotation.x = -Math.PI / 2
+  plane.position.y = -0.01
+  scene.add(plane)
+}
+createGround()
+
+// Tiles
+const tiles: THREE.Mesh[] = []
+const createTiles = () => {
+  const tileSize = 2
+
+  for (let x = -3; x <= 3; x++) {
+    for (let z = -7; z <= 7; z++) {
+      const tileGeometry = new THREE.BoxGeometry(tileSize, 0, tileSize)
+      const tileMaterial = new THREE.MeshStandardMaterial(Colors.TILE)
+      const tile = new THREE.Mesh(tileGeometry, tileMaterial)
+
+      tile.position.set(x * tileSize, 0, z * tileSize)
+      tile.userData = { active: false }
+      tiles.push(tile)
+      scene.add(tile)
+    }
+  }
+}
+createTiles()
+
+// Cube
+const cube = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), new THREE.MeshStandardMaterial(Colors.CUBE))
 cube.position.set(0, 0, 0)
-cube.userData.isSelected = false
+cube.userData = { isSelected: false }
 scene.add(cube)
 
-// Raycaster для кліків
+// Raycaster
 const raycaster = new THREE.Raycaster()
 const mouse = new THREE.Vector2()
 
-// Анімація
-// 1. Ініціалізація змінних
-let isAnimating = false // Щоб уникнути повторної анімації
+// Animation Handler
+let isAnimating = false
 
 // Animation
 // 2. Функція для запуску анімації
-function startAnimation(object: THREE.Mesh, position?: THREE.Vector3): void {
+function startAnimation(object: THREE.Mesh, targetPosition: THREE.Vector3) {
   isAnimating = true // Блокування повторного запуску
 
-  const initialX = object.position.x // Початкова висота
-  const initialY = object.position.y // Початкова висота
-  const initialZ = object.position.z // Початкова висота
-  const initialRotationX = object.rotation.x
-  const initialRotationZ = object.rotation.z
+  const initialPosition = object.position.clone()
+  const initialRotation = object.rotation.clone()
   let elapsed = 0 // Час, який минув
 
-  // Анімація за допомогою requestAnimationFrame
-  function animate(): void {
-    const frameTime = 0.0128
-    elapsed += frameTime // Змінюємо час для обчислення нової позиції
+  function animate() {
+    const frameTime = 0.0128 // Фіксована частка часу для кожного кадру
+    elapsed += frameTime
 
-    // Стрибок: синусоїдальний рух
-    object.position.y = initialY + Math.sin(elapsed * Math.PI) * 3
+    // Стрибок: синусоїдальний рух по осі Y
+    object.position.y = initialPosition.y + Math.sin(elapsed * Math.PI) * 3
 
-    // Обертання
+    // Обертання об'єкта
     object.rotation.x += 0.04
     object.rotation.z -= 0.04
 
-    if (position) {
-      object.position.x += (position.x - initialX) * frameTime
-      object.position.z += (position.z - initialZ) * frameTime
+    // Лінійне наближення до цільової позиції (якщо вказано)
+    if (targetPosition) {
+      object.position.x += (targetPosition.x - initialPosition.x) * frameTime
+      object.position.z += (targetPosition.z - initialPosition.z) * frameTime
     }
 
-    // Якщо анімація завершена (стрибок повернувся вниз)
+    // Завершення анімації, коли elapsed досягає 1
     if (elapsed >= 1) {
-      console.log(object.position.x, position?.x)
+      object.position.y = initialPosition.y // Повернення на початкову висоту
+      object.position.x = targetPosition?.x ?? initialPosition.x
+      object.position.z = targetPosition?.z ?? initialPosition.z
 
-      object.position.y = initialY // Вирівнюємо висоту
-      object.position.round()
-      object.rotation.x = initialRotationX
-      object.rotation.z = initialRotationZ
+      object.rotation.copy(initialRotation) // Скидання обертання
       isAnimating = false // Розблокування
       return
     }
 
-    // Продовження анімації
+    // Запускаємо наступний кадр
     requestAnimationFrame(animate)
   }
 
-  animate() // Запускаємо анімацію
+  animate()
 }
 
-function animateDemo(): void {
-  requestAnimationFrame(animateDemo)
-  cube.rotation.x += 0.01
-  cube.rotation.y += 0.01
+// Utility: Switch Cube State
+const switchObjectSelectionState = (object: THREE.Mesh, selected: boolean) => {
+  object.material = new THREE.MeshStandardMaterial(selected ? Colors.SELECTED_CUBE : Colors.CUBE)
+  object.userData.isSelected = selected
 }
-//* animateDemo()
 
-function render() {
-  requestAnimationFrame(render)
+// Event Listeners
+const handleResize = () => {
+  camera.aspect = window.innerWidth / window.innerHeight
+  camera.updateProjectionMatrix()
+  renderer.setSize(window.innerWidth, window.innerHeight)
+}
+
+const handleMouseClick = (event: MouseEvent) => {
+  if (isAnimating) return
+
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+
+  raycaster.setFromCamera(mouse, camera)
+
+  const cubeIntersects = raycaster.intersectObject(cube)
+  if (cubeIntersects.length > 0) {
+    switchObjectSelectionState(cube, !cube.userData.isSelected)
+    return
+  }
+
+  const tileIntersects = raycaster.intersectObjects(tiles)
+  if (tileIntersects.length > 0 && cube.userData.isSelected) {
+    const tile = tileIntersects[0].object
+    startAnimation(cube, tile.position.clone())
+    switchObjectSelectionState(cube, false)
+  }
+}
+
+const handleMouseMove = (event: MouseEvent) => {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+
+  raycaster.setFromCamera(mouse, camera)
+
+  const intersects = raycaster.intersectObjects(tiles)
+  document.body.style.cursor = intersects.length > 0 ? 'pointer' : 'default'
+}
+
+// Rendering Loop
+const render = () => {
   renderer.render(scene, camera)
+  requestAnimationFrame(render)
 }
+
+// Initialize
+window.addEventListener('resize', handleResize)
+window.addEventListener('click', handleMouseClick)
+window.addEventListener('mousemove', handleMouseMove)
 
 render()
-
-// Адаптація розміру
-window.addEventListener('resize', (): void => {
-  camera.aspect = window.innerWidth / window.innerHeight // Оновлення співвідношення
-  camera.updateProjectionMatrix() // Перерахунок матриці
-  renderer.setSize(window.innerWidth, window.innerHeight)
-})
-
-window.addEventListener('click', (event: MouseEvent): void => {
-  if (isAnimating) return // Пропускаємо, якщо анімація вже йде
-
-  // Визначення позиції миші
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
-
-  // Визначення перетинів
-  raycaster.setFromCamera(mouse, camera)
-  let intersects = raycaster.intersectObject(cube) // Задаємо, по якому об'єкту перевіряємо
-
-  const switchObjectSelectionState = (object: THREE.Mesh) => {
-    object.material = object.userData.isSelected
-      ? new THREE.MeshStandardMaterial(cubeColor)
-      : new THREE.MeshStandardMaterial(selectedCubeColor)
-    object.userData.isSelected = !object.userData.isSelected
-  }
-
-  if (intersects.length > 0) switchObjectSelectionState(intersects[0].object as THREE.Mesh)
-  else {
-    intersects = raycaster.intersectObjects(tiles)
-
-    if (intersects.length > 0) {
-      const tile = intersects[0].object as THREE.Mesh
-
-      if (cube.userData.isSelected) {
-        startAnimation(cube, tile.position)
-        switchObjectSelectionState(cube)
-      }
-    }
-  }
-})
-
-window.addEventListener('mousemove', (event: MouseEvent): void => {
-  // Обчислення позиції миші в нормалізованих координатах
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
-
-  // Визначення об'єктів, над якими знаходиться курсор
-  raycaster.setFromCamera(mouse, camera)
-  const intersects = raycaster.intersectObjects(tiles)
-
-  // Якщо є перетин із плиткою, курсор стає pointer
-  if (intersects.length > 0) {
-    document.body.style.cursor = 'pointer'
-  } else {
-    document.body.style.cursor = 'default'
-  }
-})
