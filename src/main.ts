@@ -12,7 +12,7 @@ if (!gameContainer) throw new Error('Game container not found')
 // Scene, Camera, Renderer
 const scene = new THREE.Scene()
 const camera = new THREE.PerspectiveCamera(85, window.innerWidth / window.innerHeight, 0.1, 1000)
-camera.position.set(0, 18, 1)
+camera.position.set(0, 20, 1)
 camera.lookAt(0, 0, 0)
 
 const renderer = new THREE.WebGLRenderer({ antialias: true })

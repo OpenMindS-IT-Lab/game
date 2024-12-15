@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { Colors } from './constants';
+import { Colors } from './constants'
 
 const createGround = (scene: THREE.Scene) => {
   const gridHelper = new THREE.GridHelper(30, 15, 0x444444, 0x111111)
