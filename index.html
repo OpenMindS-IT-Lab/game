@@ -10,6 +10,44 @@
 
 <body>
   <div id="game-container"></div>
+
+  <!-- Інтерфейс -->
+  <div id="ui-container">
+    <!-- Нижні кнопки -->
+    <div id="bottom-buttons">
+      <button class="ui-button">B1</button>
+      <button class="ui-button">B2</button>
+      <button class="ui-button">B3</button>
+      <button class="ui-button">B4</button>
+    </div>
+
+    <!-- Бічні кнопки -->
+    <div id="side-buttons">
+      <button class="ui-button">Button A</button>
+      <button class="ui-button">Button B</button>
+      <button class="ui-button">Button C</button>
+      <button class="ui-button">Button D</button>
+    </div>
+
+    <!-- Кнопка-бургер -->
+    <button id="burger-button" type="button" aria-label="Toggle Menu">
+      ☰
+    </button>
+
+    <!-- Випадаюче меню -->
+    <div id="side-menu" class="hidden">
+      <button id="close-button" type="button" aria-label="Toggle Menu">
+        X
+      </button>
+      <ul>
+        <li><button class="menu-item">Menu Option 1</button></li>
+        <li><button class="menu-item">Menu Option 2</button></li>
+        <li><button class="menu-item">Menu Option 3</button></li>
+        <li><button class="menu-item">Menu Option 4</button></li>
+      </ul>
+    </div>
+  </div>
+
   <script type="module" src="/src/main.ts"></script>
 </body>
 

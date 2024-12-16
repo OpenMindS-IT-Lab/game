@@ -64,6 +64,20 @@ const handleResize = () => {
   renderer.setSize(window.innerWidth, window.innerHeight)
 }
 
+// Додаємо логіку для меню
+const menuToggle = document.getElementById('burger-button') as Element
+const sideMenu = document.getElementById('side-menu') as Element
+const closeButton = document.getElementById('close-button') as Element
+
+function toggleMenu() {
+  sideMenu.classList.toggle('hidden') // Відкриваємо/закриваємо меню
+  console.log('here')
+}
+
+closeButton.addEventListener('click', toggleMenu)
+
+menuToggle.addEventListener('click', toggleMenu)
+
 const handleMouseClick = (event: MouseEvent) => {
   if (isAnimating) return
 
@@ -75,14 +89,19 @@ const handleMouseClick = (event: MouseEvent) => {
   const cubeIntersects = raycaster.intersectObject(cube)
   if (cubeIntersects.length > 0) {
     switchObjectSelectionState(cube, !cube.userData.isSelected)
+    if (!sideMenu.classList.contains('hidden')) toggleMenu()
     return
   }
 
   const tileIntersects = raycaster.intersectObjects(tiles)
-  if (tileIntersects.length > 0 && cube.userData.isSelected) {
-    const tile = tileIntersects[0].object
-    moveAndFlip(cube, tile.position.clone(), isAnimating)
-    switchObjectSelectionState(cube, false)
+  if (tileIntersects.length > 0) {
+    if (!sideMenu.classList.contains('hidden')) toggleMenu()
+
+    if (cube.userData.isSelected) {
+      const tile = tileIntersects[0].object
+      moveAndFlip(cube, tile.position.clone(), isAnimating)
+      switchObjectSelectionState(cube, false)
+    }
   }
 }
 
@@ -92,7 +111,7 @@ const handleMouseMove = (event: MouseEvent) => {
 
   raycaster.setFromCamera(mouse, camera)
 
-  const intersects = raycaster.intersectObjects(tiles)
+  const intersects = raycaster.intersectObjects([...tiles, cube])
   document.body.style.cursor = intersects.length > 0 ? 'pointer' : 'default'
 
   hoverTile(tiles, intersects)

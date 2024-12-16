@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { Colors } from './constants'
 
 const createGround = (scene: THREE.Scene) => {
-  const gridHelper = new THREE.GridHelper(30, 15, 0x444444, 0x111111)
+  const gridHelper = new THREE.GridHelper(34, 17, 0x444444, 0x111111)
   scene.add(gridHelper)
 
   const planeGeometry = new THREE.PlaneGeometry(14, 30)
