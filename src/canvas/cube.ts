@@ -4,7 +4,7 @@ import { Colors } from './constants'
 const createCube = (scene: THREE.Scene, size: number = 2) => {
   const cube = new THREE.Mesh(new THREE.BoxGeometry(size, size, size), new THREE.MeshStandardMaterial(Colors.CUBE))
 
-  cube.position.set(0, 0, 0)
+  cube.position.set(0, 0, 12)
   cube.userData = { isSelected: false }
 
   scene.add(cube)
@@ -16,6 +16,16 @@ const createCube = (scene: THREE.Scene, size: number = 2) => {
 export const switchObjectSelectionState = (object: THREE.Mesh, selected: boolean) => {
   object.material = new THREE.MeshStandardMaterial(selected ? Colors.SELECTED_CUBE : Colors.CUBE)
   object.userData.isSelected = selected
+}
+
+export const hoverCube = (cube: THREE.Mesh, intersection: THREE.Intersection[]) => {
+  ;(cube.material as THREE.MeshStandardMaterial).opacity = 1
+
+  if (intersection.length > 0) {
+    const hoveredCube = intersection[0].object as THREE.Mesh
+
+    ;(hoveredCube.material as THREE.MeshStandardMaterial).opacity = 0.7
+  }
 }
 
 export default createCube

@@ -1,9 +1,11 @@
 import * as THREE from 'three'
-import { moveAndFlip } from './animations'
-import createCube, { switchObjectSelectionState } from './cube'
-import createGround from './ground'
-import { createAmbienLight, createDirectionalLight, createPointLight, createSpotLight } from './light'
-import createTiles, { hoverTile } from './tiles'
+import { AnimationHandler, flickerLight } from './canvas/animations'
+import createCube from './canvas/cube'
+import createGround from './canvas/ground'
+import { createAmbienLight, createDirectionalLight, createPointLight, createSpotLight } from './canvas/light'
+import createTiles from './canvas/tiles'
+import './ui'
+import { handleMouseClick, handleMouseMove, handleResize } from './ui/event-listeners'
 
 // Setup Game Container
 const gameContainer = document.getElementById('game-container')
@@ -37,17 +39,10 @@ const ambientLight = createAmbienLight(scene)
 const directionalLight = createDirectionalLight(scene)
 const spotLight = createSpotLight(scene, cube)
 const { lightSphere, pointLight } = createPointLight(scene)
+flickerLight(pointLight)
 
-// Animation Handler
-let isAnimating = false
-
-let lightIntensity = 0
-function animateLights() {
-  lightIntensity = (Math.sin(Date.now() * 0.005) + 1) / 2 // Значення між 0 і 1
-  pointLight.intensity = lightIntensity * 5 // Масштабуємо до бажаного рівня
-  requestAnimationFrame(animateLights)
-}
-animateLights()
+// Animation Handlers
+const isCubeAnimating = new AnimationHandler(false)
 
 renderer.shadowMap.enabled = true // Увімкнення тіней на рівні рендера
 renderer.shadowMap.type = THREE.PCFSoftShadowMap // М'які тіні
@@ -57,66 +52,6 @@ cube.castShadow = true
 plane.receiveShadow = true
 tiles.forEach(tile => (tile.receiveShadow = true))
 
-// Event Listeners
-const handleResize = () => {
-  camera.aspect = window.innerWidth / window.innerHeight
-  camera.updateProjectionMatrix()
-  renderer.setSize(window.innerWidth, window.innerHeight)
-}
-
-// Додаємо логіку для меню
-const menuToggle = document.getElementById('burger-button') as Element
-const sideMenu = document.getElementById('side-menu') as Element
-const closeButton = document.getElementById('close-button') as Element
-
-function toggleMenu() {
-  sideMenu.classList.toggle('hidden') // Відкриваємо/закриваємо меню
-  console.log('here')
-}
-
-closeButton.addEventListener('click', toggleMenu)
-
-menuToggle.addEventListener('click', toggleMenu)
-
-const handleMouseClick = (event: MouseEvent) => {
-  if (isAnimating) return
-
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
-
-  raycaster.setFromCamera(mouse, camera)
-
-  const cubeIntersects = raycaster.intersectObject(cube)
-  if (cubeIntersects.length > 0) {
-    switchObjectSelectionState(cube, !cube.userData.isSelected)
-    if (!sideMenu.classList.contains('hidden')) toggleMenu()
-    return
-  }
-
-  const tileIntersects = raycaster.intersectObjects(tiles)
-  if (tileIntersects.length > 0) {
-    if (!sideMenu.classList.contains('hidden')) toggleMenu()
-
-    if (cube.userData.isSelected) {
-      const tile = tileIntersects[0].object
-      moveAndFlip(cube, tile.position.clone(), isAnimating)
-      switchObjectSelectionState(cube, false)
-    }
-  }
-}
-
-const handleMouseMove = (event: MouseEvent) => {
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
-
-  raycaster.setFromCamera(mouse, camera)
-
-  const intersects = raycaster.intersectObjects([...tiles, cube])
-  document.body.style.cursor = intersects.length > 0 ? 'pointer' : 'default'
-
-  hoverTile(tiles, intersects)
-}
-
 // Rendering Loop
 const render = () => {
   renderer.render(scene, camera)
@@ -124,8 +59,8 @@ const render = () => {
 }
 
 // Initialize
-window.addEventListener('resize', handleResize)
-window.addEventListener('click', handleMouseClick)
-window.addEventListener('mousemove', handleMouseMove)
+window.addEventListener('resize', handleResize(camera, renderer))
+window.addEventListener('click', handleMouseClick(isCubeAnimating, mouse, raycaster, camera, cube, tiles))
+window.addEventListener('mousemove', handleMouseMove(mouse, raycaster, camera, cube, tiles, isCubeAnimating))
 
 render()

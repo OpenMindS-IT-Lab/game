@@ -1,9 +1,29 @@
 import * as THREE from 'three'
 
+export class AnimationHandler {
+  protected _isAnimating = false
+
+  get currentState(): boolean {
+    return this._isAnimating
+  }
+  set currentState(value: boolean) {
+    this._isAnimating = value
+  }
+
+  constructor(defaultState: boolean = false) {
+    this.currentState = defaultState
+  }
+
+  switchState(newState?: boolean) {
+    if (typeof newState === 'undefined') this.currentState = !this.currentState
+    else this.currentState = newState
+  }
+}
+
 // Animation
 // 2. Функція для запуску анімації
-export function moveAndFlip(object: THREE.Mesh, targetPosition: THREE.Vector3, handler: boolean) {
-  handler = true // Блокування повторного запуску
+export function moveAndFlip(object: THREE.Mesh, targetPosition: THREE.Vector3, handler: AnimationHandler) {
+  handler.switchState(true) // Блокування повторного запуску
 
   const initialPosition = object.position.clone()
   const initialRotation = object.rotation.clone()
@@ -33,11 +53,25 @@ export function moveAndFlip(object: THREE.Mesh, targetPosition: THREE.Vector3, h
       object.position.z = targetPosition?.z ?? initialPosition.z
 
       object.rotation.copy(initialRotation) // Скидання обертання
-      handler = false // Розблокування
+      handler.switchState(false)
       return
     }
 
     // Запускаємо наступний кадр
+    requestAnimationFrame(animate)
+  }
+
+  animate()
+}
+
+export function flickerLight(pointLight: THREE.PointLight) {
+  let lightIntensity = 0
+
+  function animate() {
+    lightIntensity = (Math.sin(Date.now() * 0.005) + 1) / 2 // Значення між 0 і 1
+
+    pointLight.intensity = lightIntensity * 5 // Масштабуємо до бажаного рівня
+
     requestAnimationFrame(animate)
   }
 
