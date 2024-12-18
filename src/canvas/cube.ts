@@ -24,7 +24,7 @@ export const hoverCube = (cube: THREE.Mesh, intersection: THREE.Intersection[]) 
   if (intersection.length > 0) {
     const hoveredCube = intersection[0].object as THREE.Mesh
 
-    ;(hoveredCube.material as THREE.MeshStandardMaterial).opacity = 0.7
+    ;(hoveredCube.material as THREE.MeshStandardMaterial).opacity = 0.6
   }
 }
 

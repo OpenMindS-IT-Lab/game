@@ -65,9 +65,13 @@ export const handleMouseMove =
     let intersects = raycaster.intersectObjects([...tiles, cube])
     document.body.style.cursor = intersects.length > 0 ? 'pointer' : 'default'
 
-    intersects = raycaster.intersectObject(cube)
-    if (!animationHandler.currentState) hoverCube(cube, intersects)
-
     intersects = raycaster.intersectObjects(tiles)
     hoverTile(tiles, intersects)
+    hoverCube(cube, [])
+
+    intersects = raycaster.intersectObject(cube)
+    if (!animationHandler.currentState && intersects.length > 0) {
+      hoverCube(cube, intersects)
+      hoverTile(tiles, [])
+    }
   }
