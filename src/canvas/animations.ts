@@ -22,7 +22,12 @@ export class AnimationHandler {
 
 // Animation
 // 2. Функція для запуску анімації
-export function moveAndFlip(object: THREE.Mesh, targetPosition: THREE.Vector3, handler: AnimationHandler) {
+export function moveAndFlip(
+  object: THREE.Mesh,
+  tiles: THREE.Mesh[],
+  targetPosition: THREE.Vector3,
+  handler: AnimationHandler
+) {
   handler.switchState(true) // Блокування повторного запуску
 
   const initialPosition = object.position.clone()
@@ -53,7 +58,17 @@ export function moveAndFlip(object: THREE.Mesh, targetPosition: THREE.Vector3, h
       object.position.z = targetPosition?.z ?? initialPosition.z
 
       object.rotation.copy(initialRotation) // Скидання обертання
+      object.position.round()
       handler.switchState(false)
+
+      tiles.find(
+        tile => tile.position.x === object.position.x && tile.position.z === object.position.z
+      )!.userData.isOccupied = true
+
+      tiles.find(
+        tile => tile.position.x === initialPosition.x && tile.position.z === initialPosition.z
+      )!.userData.isOccupied = false
+
       return
     }
 

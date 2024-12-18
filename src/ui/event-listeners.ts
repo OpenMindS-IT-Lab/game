@@ -41,8 +41,13 @@ export const handleMouseClick =
 
       if (cube.userData.isSelected) {
         const tile = tileIntersects[0].object
-        moveAndFlip(cube, tile.position.clone(), animationHandler)
-        switchObjectSelectionState(cube, false)
+        if (!tile.userData.isOccupied) {
+          moveAndFlip(cube, tiles, tile.position.clone(), animationHandler)
+          switchObjectSelectionState(cube, false)
+        } else {
+          switchObjectSelectionState(cube, false)
+          throw new Error("Can't move there! Tile is occupied")
+        }
       }
     }
   }

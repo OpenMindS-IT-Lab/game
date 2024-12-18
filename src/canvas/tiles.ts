@@ -12,7 +12,11 @@ const createTiles = (scene: THREE.Scene, size: number = 2) => {
       const tile = new THREE.Mesh(tileGeometry, tileMaterial)
 
       tile.position.set(x * tileSize, 0, z * tileSize)
-      tile.userData = { active: false }
+      tile.userData = {
+        isPersistant: true,
+        active: false,
+        isOccupied: tile.position.x === 0 && tile.position.z === 12,
+      }
       tiles.push(tile)
       scene.add(tile)
     }

@@ -5,7 +5,7 @@ const createCube = (scene: THREE.Scene, size: number = 2) => {
   const cube = new THREE.Mesh(new THREE.BoxGeometry(size, size, size), new THREE.MeshStandardMaterial(Colors.CUBE))
 
   cube.position.set(0, 0, 12)
-  cube.userData = { isSelected: false }
+  cube.userData = { isSelected: false, isPersistant: true }
 
   scene.add(cube)
 
