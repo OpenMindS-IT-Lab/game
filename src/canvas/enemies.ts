@@ -97,3 +97,22 @@ export function spawnIcosahedron(scene: THREE.Scene, tiles: THREE.Mesh[]) {
   const geometry = new THREE.IcosahedronGeometry(0.5, 0)
   return () => spawnEnemy(geometry, scene, tiles)
 }
+
+export function deleteAllObjects(scene: THREE.Scene) {
+  const objectsToRemove: THREE.Object3D<THREE.Object3DEventMap>[] = []
+
+  scene.traverse(object => {
+    if (!object.userData.isPersistant) {
+      objectsToRemove.push(object)
+    }
+  })
+
+  scene.remove(...objectsToRemove)
+}
+
+export const resetScene = (scene: THREE.Scene, tiles: THREE.Mesh[]) => () => {
+  deleteAllObjects(scene) // Видаляємо всі об'єкти
+  tiles.forEach(tile => (tile.userData.isOccupied = false))
+  // createGround(scene) // Переставляємо землю
+  // scene.background = new THREE.Color(0x000000) // Скидаємо фон
+}

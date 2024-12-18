@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { AnimationHandler, flickerLight } from './canvas/animations'
 import createCube from './canvas/cube'
-import { spawnCube, spawnIcosahedron, spawnPyramid, spawnSphere } from './canvas/enemies'
+import { resetScene, spawnCube, spawnIcosahedron, spawnPyramid, spawnSphere } from './canvas/enemies'
 import createGround from './canvas/ground'
 import { createAmbienLight, createDirectionalLight, createPointLight, createSpotLight } from './canvas/light'
 import createTiles from './canvas/tiles'
@@ -72,25 +72,6 @@ spawnSphereButton.addEventListener('click', spawnSphere(scene, tiles))
 spawnPyramidButton.addEventListener('click', spawnPyramid(scene, tiles))
 spawnIcosahedronButton.addEventListener('click', spawnIcosahedron(scene, tiles))
 
-const deleteAllObjects = () => {
-  const objectsToRemove: THREE.Object3D<THREE.Object3DEventMap>[] = []
-
-  scene.traverse(object => {
-    if (!object.userData.isPersistant) {
-      objectsToRemove.push(object)
-    }
-  })
-
-  scene.remove(...objectsToRemove)
-}
-
-function resetScene() {
-  deleteAllObjects() // Видаляємо всі об'єкти
-  tiles.forEach(tile => (tile.userData.isOccupied = false))
-  // createGround(scene) // Переставляємо землю
-  // scene.background = new THREE.Color(0x000000) // Скидаємо фон
-}
-
-resetSceneButton.addEventListener('click', resetScene)
+resetSceneButton.addEventListener('click', resetScene(scene, tiles))
 
 render()
