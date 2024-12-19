@@ -33,43 +33,36 @@ function getRandomPosition(tiles: THREE.Mesh[]) {
     y: 0,
     z: targetTile.position.z,
   }
-
-  // let position = generateRandomVector2()
-  // let tile = tiles.find(tile => tile.position.x === position.x && tile.position.z === position.z)
-
-  // while (tile?.userData.isOccupied && freeTiles.length > 0) {
-  //   position = generateRandomVector2()
-  //   tile = tiles.find(tile => tile.position.x === position.x && tile.position.z === position.z)
-  //   freeTiles.indexOf(tile!)
-  // }
-
-  // tile!.userData.isOccupied = true
-
-  // return {
-  //   ...position,
-  //   y: 0, // Від 0 до 5
-  // }
 }
 
 // Функція для створення геометрії
 function spawnEnemy(
-  geometry: THREE.BoxGeometry | THREE.SphereGeometry | THREE.ConeGeometry | THREE.IcosahedronGeometry,
   scene: THREE.Scene,
-  tiles: THREE.Mesh[]
+  tiles: THREE.Mesh[],
+  geometry: THREE.BoxGeometry | THREE.SphereGeometry | THREE.CylinderGeometry | THREE.IcosahedronGeometry,
+  customMaterial?: THREE.MeshStandardMaterial,
+  initialY?: number
 ) {
-  const material = new THREE.MeshStandardMaterial({ color: getRandomColor() })
+  const material =
+    customMaterial ??
+    new THREE.MeshStandardMaterial({
+      // color: getRandomColor(),
+      color: 0x2194ce,
+      metalness: 0.3,
+      roughness: 0.7,
+    })
   const mesh = new THREE.Mesh(geometry, material)
 
   try {
     const position = getRandomPosition(tiles)
-    mesh.position.set(position.x, position.y, position.z)
+    mesh.position.set(position.x, initialY ?? 0.5, position.z)
   } catch (error) {
     console.error(error)
     return
   }
 
-  const scale = Math.random() * 1.5 + 0.5 // Від 0.5 до 2
-  mesh.scale.set(scale, scale, scale)
+  // const scale = Math.random() * 1.5 + 0.5 // Від 0.5 до 2
+  // mesh.scale.set(scale, scale, scale)
 
   mesh.castShadow = true
   mesh.receiveShadow = true
@@ -79,23 +72,25 @@ function spawnEnemy(
 
 // Індивідуальні функції для кожного типу геометрії
 export function spawnCube(scene: THREE.Scene, tiles: THREE.Mesh[]) {
-  const geometry = new THREE.BoxGeometry(1, 1, 1)
-  return () => spawnEnemy(geometry, scene, tiles)
+  const geometry = new THREE.BoxGeometry(1.25, 1.25, 1.25)
+  return () => spawnEnemy(scene, tiles, geometry, undefined, 0.5)
 }
 
 export function spawnSphere(scene: THREE.Scene, tiles: THREE.Mesh[]) {
-  const geometry = new THREE.SphereGeometry(0.5, 16, 16)
-  return () => spawnEnemy(geometry, scene, tiles)
+  const geometry = new THREE.SphereGeometry(0.75, 16, 16)
+  return () => spawnEnemy(scene, tiles, geometry, undefined, 0.75)
 }
 
-export function spawnPyramid(scene: THREE.Scene, tiles: THREE.Mesh[]) {
-  const geometry = new THREE.ConeGeometry(0.5, 1, 4)
-  return () => spawnEnemy(geometry, scene, tiles)
+export function spawnOctahedron(scene: THREE.Scene, tiles: THREE.Mesh[]) {
+  const geometry = new THREE.OctahedronGeometry(0.9)
+  geometry.rotateY(Math.PI / 4)
+
+  return () => spawnEnemy(scene, tiles, geometry, undefined, 0.9)
 }
 
 export function spawnIcosahedron(scene: THREE.Scene, tiles: THREE.Mesh[]) {
-  const geometry = new THREE.IcosahedronGeometry(0.5, 0)
-  return () => spawnEnemy(geometry, scene, tiles)
+  const geometry = new THREE.IcosahedronGeometry(0.9, 0)
+  return () => spawnEnemy(scene, tiles, geometry, undefined, 0.9)
 }
 
 export function deleteAllObjects(scene: THREE.Scene) {

@@ -45,7 +45,35 @@ export function enableCameraDrag(camera: THREE.PerspectiveCamera, { domElement }
 }
 
 export function disableCameraDrag(disableHandler: ReturnType<typeof enableCameraDrag>) {
-  if (disableHandler) {
-    disableHandler() // Call the cleanup function returned by `enableCameraDrag`
+  if (disableHandler) disableHandler() // Call the cleanup function returned by `enableCameraDrag`
+}
+
+export function enableMouseWheelTilt(camera: THREE.PerspectiveCamera, { domElement }: THREE.Renderer) {
+  const maxTilt = Math.PI / 2 // Максимальний нахил (90°)
+  const minTilt = -Math.PI / 2 // Мінімальний нахил (-90°)
+  const tiltSpeed = 0.002 // Чутливість нахилу
+
+  const onWheel = (event: MouseEvent & { deltaY: number }) => {
+    // Запобігаємо небажаним прокручуванням сторінки
+    event.preventDefault()
+
+    // Обчислюємо новий кут нахилу
+    const delta = event.deltaY * tiltSpeed // Рух колеса
+    const newTilt = THREE.MathUtils.clamp(camera.rotation.x + delta, minTilt, maxTilt)
+
+    camera.position.y = 2
+    camera.rotation.x = newTilt
   }
+
+  // Додаємо слухача події
+  domElement.addEventListener('wheel', onWheel)
+
+  // Повертаємо функцію для очищення
+  return () => {
+    domElement.removeEventListener('wheel', onWheel)
+  }
+}
+
+export function disableMouseWheelTilt(disableHandler: ReturnType<typeof enableMouseWheelTilt>) {
+  if (disableHandler) disableHandler()
 }

@@ -11,7 +11,7 @@ export const createAmbienLight = (scene: THREE.Scene) => {
 }
 
 export const createDirectionalLight = (scene: THREE.Scene) => {
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 1)
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 2.5)
 
   directionalLight.position.set(0, 20, -5)
 
@@ -21,10 +21,10 @@ export const createDirectionalLight = (scene: THREE.Scene) => {
   directionalLight.shadow.mapSize.height = 1024
   directionalLight.shadow.camera.near = 1
   directionalLight.shadow.camera.far = 500
-  directionalLight.shadow.camera.left = -50
-  directionalLight.shadow.camera.right = 50
-  directionalLight.shadow.camera.top = 50
-  directionalLight.shadow.camera.bottom = -50
+  directionalLight.shadow.camera.left = -7
+  directionalLight.shadow.camera.right = 7
+  directionalLight.shadow.camera.top = 15
+  directionalLight.shadow.camera.bottom = -15
 
   directionalLight.userData = { isPersistant: true }
 
@@ -83,7 +83,7 @@ export const createPointLight = (scene: THREE.Scene) => {
 }
 
 export const createHemisphereLight = (scene: THREE.Scene) => {
-  const hemisphereLight = new THREE.HemisphereLight(0x87ceeb, 0x222222, 0.8) // Небо, земля, інтенсивність
+  const hemisphereLight = new THREE.HemisphereLight(0x87ceeb, 0x222222, 1) // Небо, земля, інтенсивність
 
   hemisphereLight.userData = { isPersistant: true }
 

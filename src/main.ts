@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { AnimationHandler, flickerLight } from './canvas/animations'
 import createCube from './canvas/cube'
-import { resetScene, spawnCube, spawnIcosahedron, spawnPyramid, spawnSphere } from './canvas/enemies'
+import { resetScene, spawnCube, spawnIcosahedron, spawnOctahedron, spawnSphere } from './canvas/enemies'
 import createGround from './canvas/ground'
 import {
   createAmbienLight,
@@ -11,9 +11,15 @@ import {
   createSpotLight,
 } from './canvas/light'
 import createTiles from './canvas/tiles'
-import { enableCameraDrag } from './canvas/utils'
+import { enableCameraDrag, enableMouseWheelTilt } from './canvas/utils'
 import './ui'
-import { resetSceneButton, spawnCubeButton, spawnIcosahedronButton, spawnPyramidButton, spawnSphereButton } from './ui'
+import {
+  resetSceneButton,
+  spawnCubeButton,
+  spawnIcosahedronButton,
+  spawnOctahedronButton,
+  spawnSphereButton,
+} from './ui'
 import { handleMouseClick, handleMouseMove, handleResize } from './ui/event-listeners'
 
 // Setup Game Container
@@ -32,6 +38,7 @@ renderer.setSize(window.innerWidth, window.innerHeight)
 gameContainer.appendChild(renderer.domElement)
 
 const cameraDragHandler = enableCameraDrag(camera, renderer)
+const wheelTiltHandler = enableMouseWheelTilt(camera, renderer)
 
 // Ground and Grid
 const { gridHelper, plane } = createGround(scene)
@@ -79,7 +86,7 @@ window.addEventListener('mousemove', handleMouseMove(mouse, raycaster, camera, c
 // Прив'язка функцій до кнопок
 spawnCubeButton.addEventListener('click', spawnCube(scene, tiles))
 spawnSphereButton.addEventListener('click', spawnSphere(scene, tiles))
-spawnPyramidButton.addEventListener('click', spawnPyramid(scene, tiles))
+spawnOctahedronButton.addEventListener('click', spawnOctahedron(scene, tiles))
 spawnIcosahedronButton.addEventListener('click', spawnIcosahedron(scene, tiles))
 
 resetSceneButton.addEventListener('click', resetScene(scene, tiles))
