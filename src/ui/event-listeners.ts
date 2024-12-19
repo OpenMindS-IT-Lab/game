@@ -18,7 +18,8 @@ export const handleMouseClick =
     raycaster: THREE.Raycaster,
     camera: THREE.PerspectiveCamera,
     cube: THREE.Mesh,
-    tiles: THREE.Mesh[]
+    tiles: THREE.Mesh[],
+    spotLight: THREE.SpotLight
   ) =>
   (event: MouseEvent) => {
     if (animationHandler.currentState) return
@@ -42,7 +43,7 @@ export const handleMouseClick =
       if (cube.userData.isSelected) {
         const tile = tileIntersects[0].object
         if (!tile.userData.isOccupied) {
-          moveAndFlip(cube, tiles, tile.position.clone(), animationHandler)
+          moveAndFlip(cube, tiles, tile.position.clone(), animationHandler, spotLight)
           switchObjectSelectionState(cube, false)
         } else {
           switchObjectSelectionState(cube, false)

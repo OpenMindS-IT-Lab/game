@@ -3,8 +3,15 @@ import { AnimationHandler, flickerLight } from './canvas/animations'
 import createCube from './canvas/cube'
 import { resetScene, spawnCube, spawnIcosahedron, spawnPyramid, spawnSphere } from './canvas/enemies'
 import createGround from './canvas/ground'
-import { createAmbienLight, createDirectionalLight, createPointLight, createSpotLight } from './canvas/light'
+import {
+  createAmbienLight,
+  createDirectionalLight,
+  createHemisphereLight,
+  createPointLight,
+  createSpotLight,
+} from './canvas/light'
 import createTiles from './canvas/tiles'
+import { enableCameraDrag } from './canvas/utils'
 import './ui'
 import { resetSceneButton, spawnCubeButton, spawnIcosahedronButton, spawnPyramidButton, spawnSphereButton } from './ui'
 import { handleMouseClick, handleMouseMove, handleResize } from './ui/event-listeners'
@@ -16,13 +23,15 @@ if (!gameContainer) throw new Error('Game container not found')
 // Scene, Camera, Renderer
 const scene = new THREE.Scene()
 const camera = new THREE.PerspectiveCamera(85, window.innerWidth / window.innerHeight, 0.1, 1000)
-camera.position.set(0, 20, 1)
+camera.position.set(0, 20, 0)
 camera.lookAt(0, 0, 0)
 camera.userData = { isPersistant: true }
 
 const renderer = new THREE.WebGLRenderer({ antialias: true })
 renderer.setSize(window.innerWidth, window.innerHeight)
 gameContainer.appendChild(renderer.domElement)
+
+const cameraDragHandler = enableCameraDrag(camera, renderer)
 
 // Ground and Grid
 const { gridHelper, plane } = createGround(scene)
@@ -42,6 +51,7 @@ const ambientLight = createAmbienLight(scene)
 const directionalLight = createDirectionalLight(scene)
 const spotLight = createSpotLight(scene, cube)
 const { lightSphere, pointLight } = createPointLight(scene)
+const hemisphereLight = createHemisphereLight(scene)
 flickerLight(pointLight)
 
 // Animation Handlers
@@ -63,7 +73,7 @@ const render = () => {
 
 // Initialize
 window.addEventListener('resize', handleResize(camera, renderer))
-window.addEventListener('click', handleMouseClick(isCubeAnimating, mouse, raycaster, camera, cube, tiles))
+window.addEventListener('click', handleMouseClick(isCubeAnimating, mouse, raycaster, camera, cube, tiles, spotLight))
 window.addEventListener('mousemove', handleMouseMove(mouse, raycaster, camera, cube, tiles, isCubeAnimating))
 
 // Прив'язка функцій до кнопок

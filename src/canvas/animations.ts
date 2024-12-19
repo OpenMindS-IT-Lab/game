@@ -26,7 +26,8 @@ export function moveAndFlip(
   object: THREE.Mesh,
   tiles: THREE.Mesh[],
   targetPosition: THREE.Vector3,
-  handler: AnimationHandler
+  handler: AnimationHandler,
+  spotLight: THREE.SpotLight
 ) {
   handler.switchState(true) // Блокування повторного запуску
 
@@ -49,6 +50,10 @@ export function moveAndFlip(
     if (targetPosition) {
       object.position.x += (targetPosition.x - initialPosition.x) * frameTime
       object.position.z += (targetPosition.z - initialPosition.z) * frameTime
+
+      spotLight.position.x = object.position.x
+      spotLight.position.z = object.position.z / 2
+      spotLight.position.y = object.position.y + 10
     }
 
     // Завершення анімації, коли elapsed досягає 1
@@ -80,12 +85,13 @@ export function moveAndFlip(
 }
 
 export function flickerLight(pointLight: THREE.PointLight) {
-  let lightIntensity = 0
+  let lightIntensity = 20
+  pointLight.intensity = lightIntensity
 
   function animate() {
-    lightIntensity = (Math.sin(Date.now() * 0.005) + 1) / 2 // Значення між 0 і 1
+    lightIntensity = (Math.sin(Date.now() * 0.0025) + 1.25) / 2 // Значення між 0 і 1
 
-    pointLight.intensity = lightIntensity * 5 // Масштабуємо до бажаного рівня
+    pointLight.intensity = lightIntensity * 20 // Масштабуємо до бажаного рівня
 
     requestAnimationFrame(animate)
   }

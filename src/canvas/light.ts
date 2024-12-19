@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 
 export const createAmbienLight = (scene: THREE.Scene) => {
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5) // М'яке біле освітлення
+  const ambientLight = new THREE.AmbientLight(0xffffff, 1) // М'яке біле освітлення
 
   ambientLight.userData = { isPersistant: true }
 
@@ -34,9 +34,10 @@ export const createDirectionalLight = (scene: THREE.Scene) => {
 }
 
 export const createSpotLight = (scene: THREE.Scene, target: THREE.Mesh) => {
-  const spotLight = new THREE.SpotLight(0xffffff, 1, 100, Math.PI / 6, 0.5, 2) // Довжина, кут, розсіювання
+  const spotLight = new THREE.SpotLight(0xffffff, 2.5, 15, Math.PI / 16, 0.25, 0.5) // Довжина, кут, розсіювання
 
-  spotLight.position.set(10, 20, 10)
+  spotLight.position.copy(target.position)
+  spotLight.position.y = 10
   spotLight.target = target // Сфокусуємо світло на кубі
 
   // Увімкнемо тіні
@@ -53,14 +54,14 @@ export const createSpotLight = (scene: THREE.Scene, target: THREE.Mesh) => {
 }
 
 export const createPointLight = (scene: THREE.Scene) => {
-  const pointLight = new THREE.PointLight(0xffaa00, 1, 20, 2) // Колір, інтенсивність, відстань, згасання
+  const pointLight = new THREE.PointLight(0xffaa00, 1, 20, 0.75) // Колір, інтенсивність, відстань, згасання
 
-  pointLight.position.set(0, 10, 10)
+  pointLight.position.set(0, 15, -5)
 
   // Увімкнемо тіні
   pointLight.castShadow = true
-  pointLight.shadow.mapSize.width = 512
-  pointLight.shadow.mapSize.height = 512
+  pointLight.shadow.mapSize.width = 1024
+  pointLight.shadow.mapSize.height = 1024
 
   pointLight.userData = { isPersistant: true }
 
@@ -68,11 +69,11 @@ export const createPointLight = (scene: THREE.Scene) => {
 
   // Додаємо невеликий шар як джерело світла для візуалізації
   const lightSphere = new THREE.Mesh(
-    new THREE.SphereGeometry(0.5, 16, 16),
-    new THREE.MeshBasicMaterial({ color: 0xffaa00 })
+    new THREE.SphereGeometry(0.75, 16, 16),
+    new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0 })
   )
 
-  lightSphere.position.copy(pointLight.position)
+  lightSphere.position.copy(pointLight.position.clone())
 
   lightSphere.userData = { isPersistant: true }
 
