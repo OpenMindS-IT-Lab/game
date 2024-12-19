@@ -55,18 +55,18 @@ export function enableMouseWheelTilt(camera: THREE.PerspectiveCamera, { domEleme
 
   const onWheel = (event: MouseEvent & { deltaY: number }) => {
     // Запобігаємо небажаним прокручуванням сторінки
-    event.preventDefault()
+    // event.preventDefault()
+    camera.position.y = 2
 
     // Обчислюємо новий кут нахилу
     const delta = event.deltaY * tiltSpeed // Рух колеса
     const newTilt = THREE.MathUtils.clamp(camera.rotation.x + delta, minTilt, maxTilt)
 
-    camera.position.y = 2
     camera.rotation.x = newTilt
   }
 
   // Додаємо слухача події
-  domElement.addEventListener('wheel', onWheel)
+  domElement.addEventListener('wheel', onWheel, { passive: true })
 
   // Повертаємо функцію для очищення
   return () => {

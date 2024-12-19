@@ -46,8 +46,8 @@ function spawnEnemy(
   const material =
     customMaterial ??
     new THREE.MeshStandardMaterial({
-      // color: getRandomColor(),
-      color: 0x2194ce,
+      color: getRandomColor(),
+      // color: 0x2194ce,
       metalness: 0.3,
       roughness: 0.7,
     })
@@ -60,9 +60,6 @@ function spawnEnemy(
     console.error(error)
     return
   }
-
-  // const scale = Math.random() * 1.5 + 0.5 // Від 0.5 до 2
-  // mesh.scale.set(scale, scale, scale)
 
   mesh.castShadow = true
   mesh.receiveShadow = true
@@ -108,6 +105,4 @@ export function deleteAllObjects(scene: THREE.Scene) {
 export const resetScene = (scene: THREE.Scene, tiles: THREE.Mesh[]) => () => {
   deleteAllObjects(scene) // Видаляємо всі об'єкти
   tiles.forEach(tile => (tile.userData.isOccupied = false))
-  // createGround(scene) // Переставляємо землю
-  // scene.background = new THREE.Color(0x000000) // Скидаємо фон
 }
