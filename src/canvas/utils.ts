@@ -52,17 +52,21 @@ export function enableMouseWheelTilt(camera: THREE.PerspectiveCamera, { domEleme
   const maxTilt = Math.PI / 2 // Максимальний нахил (90°)
   const minTilt = -Math.PI / 2 // Мінімальний нахил (-90°)
   const tiltSpeed = 0.002 // Чутливість нахилу
+  const initialHeight = camera.position.y // Початкова висота камери
 
   const onWheel = (event: MouseEvent & { deltaY: number }) => {
     // Запобігаємо небажаним прокручуванням сторінки
     // event.preventDefault()
-    camera.position.y = 2
 
     // Обчислюємо новий кут нахилу
     const delta = event.deltaY * tiltSpeed // Рух колеса
     const newTilt = THREE.MathUtils.clamp(camera.rotation.x + delta, minTilt, maxTilt)
 
     camera.rotation.x = newTilt
+
+    // Змінюємо висоту камери пропорційно зміні куту нахилу
+    const tiltRatio = (newTilt - minTilt) / (maxTilt - minTilt)
+    camera.position.y = initialHeight * (1 - 2 * tiltRatio)
   }
 
   // Додаємо слухача події
@@ -76,4 +80,22 @@ export function enableMouseWheelTilt(camera: THREE.PerspectiveCamera, { domEleme
 
 export function disableMouseWheelTilt(disableHandler: ReturnType<typeof enableMouseWheelTilt>) {
   if (disableHandler) disableHandler()
+}
+
+export function checkCollisions(object: THREE.Mesh, objects: THREE.Mesh[]) {
+  const objectBoundingBox = object.userData.boundingBox as THREE.Box3
+  objectBoundingBox.setFromObject(object)
+
+  for (const otherObject of objects) {
+    if (object === otherObject) continue
+
+    const otherBoundingBox = otherObject.userData.boundingBox as THREE.Box3
+    otherBoundingBox.setFromObject(otherObject)
+
+    if (objectBoundingBox.intersectsBox(otherBoundingBox)) {
+      return otherObject
+    }
+  }
+
+  return null
 }

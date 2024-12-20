@@ -35,6 +35,8 @@ function getRandomPosition(tiles: THREE.Mesh[]) {
   }
 }
 
+const enemies: THREE.Mesh[] = []
+
 // Функція для створення геометрії
 function spawnEnemy(
   scene: THREE.Scene,
@@ -65,6 +67,7 @@ function spawnEnemy(
   mesh.receiveShadow = true
 
   scene.add(mesh)
+  enemies.push(mesh)
 }
 
 // Індивідуальні функції для кожного типу геометрії
@@ -102,7 +105,10 @@ export function deleteAllObjects(scene: THREE.Scene) {
   scene.remove(...objectsToRemove)
 }
 
-export const resetScene = (scene: THREE.Scene, tiles: THREE.Mesh[]) => () => {
+export const resetScene = (scene: THREE.Scene, camera: THREE.PerspectiveCamera, tiles: THREE.Mesh[]) => () => {
   deleteAllObjects(scene) // Видаляємо всі об'єкти
-  tiles.forEach(tile => (tile.userData.isOccupied = false))
+  tiles?.forEach(tile => (tile.userData.isOccupied = false))
+  camera.position.y = 20 // Повертаємо камеру на висоту
 }
+
+export { enemies }

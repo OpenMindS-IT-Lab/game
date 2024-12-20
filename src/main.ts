@@ -89,6 +89,6 @@ spawnSphereButton.addEventListener('click', spawnSphere(scene, tiles))
 spawnOctahedronButton.addEventListener('click', spawnOctahedron(scene, tiles))
 spawnIcosahedronButton.addEventListener('click', spawnIcosahedron(scene, tiles))
 
-resetSceneButton.addEventListener('click', resetScene(scene, tiles))
+resetSceneButton.addEventListener('click', resetScene(scene, camera, tiles))
 
 render()
