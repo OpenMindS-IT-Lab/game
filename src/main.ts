@@ -80,16 +80,6 @@ tiles.forEach(tile => (tile.receiveShadow = true))
 
 setInterval(() => spawnRandomEnemy(scene), 2500)
 setInterval(() => shootAtNearestEnemy(tower, scene), 2000)
-// moveEnemiesTowardTower(tower, scene)
-
-// function animate() {
-//   requestAnimationFrame(animate)
-
-//   // Рух ворогів
-
-//   renderer.render(scene, camera)
-// }
-// animate()
 
 // Rendering Loop
 const render = () => {
@@ -119,11 +109,7 @@ window.addEventListener(
   'keydown',
   event => {
     if (event.code === 'Space') {
-      const enemy = findNearestEnemy(tower)
-
-      if (enemy) {
-        shootAtEnemy(tower, enemy, scene)
-      }
+      shootAtNearestEnemy(tower, scene)
     }
   },
   { passive: true }

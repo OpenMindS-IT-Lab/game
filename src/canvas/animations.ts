@@ -100,12 +100,7 @@ export function flickerLight(pointLight: THREE.PointLight) {
   animate()
 }
 
-export function moveLinear(
-  object: THREE.Mesh,
-  // tiles: THREE.Mesh[],
-  targetPosition: THREE.Vector3,
-  handler: AnimationHandler
-) {
+export function moveLinear(object: THREE.Mesh, targetPosition: THREE.Vector3, handler: AnimationHandler) {
   handler.switchState(true) // Блокування повторного запуску
 
   const initialPosition = object.position.clone()

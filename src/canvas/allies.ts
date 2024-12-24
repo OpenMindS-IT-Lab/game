@@ -40,14 +40,12 @@ const allies: THREE.Mesh[] = []
 // Функція для створення геометрії
 function spawnAlly(
   scene: THREE.Scene,
-  // tiles: THREE.Mesh[],
   geometry: THREE.BoxGeometry | THREE.SphereGeometry | THREE.CylinderGeometry | THREE.IcosahedronGeometry,
   customColor?: THREE.MeshStandardMaterialParameters,
   initialY?: number
 ) {
   const material = new THREE.MeshStandardMaterial({
     ...(customColor ?? Colors.ALLY),
-    // color: getRandomColor(),
     metalness: 0.3,
     roughness: 0.7,
   })
