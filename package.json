@@ -2,9 +2,12 @@
   "name": "game",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "dev": "vite --host",
-    "build": "tsc",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "vite build --watch && vite preview",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
