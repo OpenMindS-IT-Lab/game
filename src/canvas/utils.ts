@@ -82,6 +82,8 @@ export function enableMouseWheelTilt(camera: THREE.PerspectiveCamera, { domEleme
     // Змінюємо висоту камери пропорційно зміні куту нахилу
     const tiltRatio = (newTilt - minTilt) / (maxTilt - minTilt)
     camera.position.y = initialHeight * (1 - 2 * tiltRatio)
+
+    console.log(camera.position, camera.rotation)
   }
 
   // Додаємо слухача події
