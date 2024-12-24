@@ -1,8 +1,9 @@
 import * as THREE from 'three'
 import { Colors } from './constants'
 
+const tiles: THREE.Mesh[] = []
+
 const createTiles = (scene: THREE.Scene, size: number = 2) => {
-  const tiles: THREE.Mesh[] = []
   const tileSize = size
 
   for (let x = -3; x <= 3; x++) {
@@ -25,16 +26,16 @@ const createTiles = (scene: THREE.Scene, size: number = 2) => {
   return tiles
 }
 
-export const hoverTile = (tiles: THREE.Mesh[], intersection: THREE.Intersection[]) => {
+export function hoverTile(intersects: THREE.Intersection[]) {
   tiles.forEach(tile => {
-    ;(tile.material as THREE.MeshStandardMaterial).opacity = Colors.TILE.opacity
-  }) // Скидаємо колір
+    const hoveredTile = intersects[0]?.object as THREE.Mesh
+    const isHovered = hoveredTile === tile && hoveredTile.userData.isOccupied === false
 
-  if (intersection.length > 0) {
-    const hoveredTile = intersection[0].object as THREE.Mesh
-
-    ;(hoveredTile.material as THREE.MeshStandardMaterial).opacity = Colors.HOVERED_TILE.opacity // Підсвічуємо жовтим
-  }
+    ;(tile.material as THREE.MeshStandardMaterial).opacity = isHovered
+      ? Colors.HOVERED_TILE.opacity
+      : Colors.TILE.opacity
+  })
 }
 
 export default createTiles
+export { tiles }

@@ -1,9 +1,9 @@
 import * as THREE from 'three'
-import { sideMenu, toggleMenu } from '.'
-import { AnimationHandler, moveAndFlip } from '../canvas/animations'
-import { hoverCube, switchObjectSelectionState } from '../canvas/cube'
+import { AnimationHandler, moveAndFlip, moveLinear } from '../canvas/animations'
 import { enemies } from '../canvas/enemies' // Import enemies
-import { hoverTile } from '../canvas/tiles'
+import { hoverTile, tiles } from '../canvas/tiles'
+import {} from '../canvas/tower'
+import { hoverObject, switchObjectSelectionState } from '../canvas/utils'
 
 // Event Listeners
 export const handleResize = (camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer) => (event: Event) => {
@@ -18,60 +18,86 @@ export const handleMouseClick =
     mouse: THREE.Vector2,
     raycaster: THREE.Raycaster,
     camera: THREE.PerspectiveCamera,
-    cube: THREE.Mesh,
-    tiles: THREE.Mesh[],
+    tower: THREE.Mesh,
+    // tiles: THREE.Mesh[],
+    // enemies: THREE.Mesh[],
     spotLight: THREE.SpotLight
   ) =>
   (event: MouseEvent) => {
-    if (animationHandler.currentState) return
+    if (animationHandler.currentState) return // Блокування під час анімації
 
+    // Обчислення нормалізованих координат миші
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
 
     raycaster.setFromCamera(mouse, camera)
 
-    const cubeIntersects = raycaster.intersectObject(cube)
-    if (cubeIntersects.length > 0) {
-      switchObjectSelectionState(cube, !cube.userData.isSelected)
-      if (!sideMenu.classList.contains('hidden')) toggleMenu()
+    // Скидання вибору для всіх об'єктів
+    const resetSelections = () => {
+      ;[tower, ...enemies].forEach(obj => {
+        if (obj.userData.isSelected) {
+          obj.userData.isSelected = false
+          switchObjectSelectionState(obj, false)
+        }
+      })
+    }
+
+    // Перевірка натискання на Tower
+    const towerIntersects = raycaster.intersectObject(tower)
+    if (towerIntersects.length > 0) {
+      if (tower.userData.isSelected) {
+        // Якщо Tower вже вибраний, скасовуємо його вибір
+        tower.userData.isSelected = false
+        switchObjectSelectionState(tower, false)
+        return
+      }
+      resetSelections() // Скидаємо всі попередні вибори
+      switchObjectSelectionState(tower, true)
       return
     }
 
+    // Перевірка натискання на Enemy
     const enemyIntersects = raycaster.intersectObjects(enemies)
     if (enemyIntersects.length > 0) {
       const enemy = enemyIntersects[0].object as THREE.Mesh
-      switchObjectSelectionState(enemy, !enemy.userData.isSelected)
-      if (!sideMenu.classList.contains('hidden')) toggleMenu()
+      if (enemy.userData.isSelected) {
+        // Якщо Enemy вже вибраний, скасовуємо його вибір
+        enemy.userData.isSelected = false
+        switchObjectSelectionState(enemy, false)
+        return
+      }
+      resetSelections() // Скидаємо всі попередні вибори
+      switchObjectSelectionState(enemy, true)
       return
     }
 
+    // Перевірка натискання на Tile
     const tileIntersects = raycaster.intersectObjects(tiles)
     if (tileIntersects.length > 0) {
-      if (!sideMenu.classList.contains('hidden')) toggleMenu()
+      const tile = tileIntersects[0].object as THREE.Mesh
 
-      if (cube.userData.isSelected) {
-        const tile = tileIntersects[0].object
+      if (tower.userData.isSelected) {
+        // Tower: перевірка та переміщення
         if (!tile.userData.isOccupied) {
-          moveAndFlip(cube, tiles, tile.position.clone(), animationHandler, spotLight)
-          switchObjectSelectionState(cube, false)
+          resetSelections()
+          moveAndFlip(tower, tile.position.clone(), animationHandler, spotLight)
         } else {
-          switchObjectSelectionState(cube, false)
-          throw new Error("Can't move there! Tile is occupied")
+          console.error("Can't move there! Tile is occupied")
         }
+        return
       }
 
-      enemies.forEach(enemy => {
-        if (enemy.userData.isSelected) {
-          const tile = tileIntersects[0].object
-          if (!tile.userData.isOccupied) {
-            moveAndFlip(enemy, tiles, tile.position.clone(), animationHandler, spotLight)
-            switchObjectSelectionState(enemy, false)
-          } else {
-            switchObjectSelectionState(enemy, false)
-            throw new Error("Can't move there! Tile is occupied")
-          }
+      const selectedEnemy = enemies.find(enemy => enemy.userData.isSelected)
+      if (selectedEnemy) {
+        // Enemy: перевірка та переміщення
+        if (!tile.userData.isOccupied) {
+          resetSelections()
+          moveLinear(selectedEnemy, tile.position.clone(), animationHandler)
+        } else {
+          console.error("Can't move there! Tile is occupied")
         }
-      })
+        return
+      }
     }
   }
 
@@ -80,35 +106,49 @@ export const handleMouseMove =
     mouse: THREE.Vector2,
     raycaster: THREE.Raycaster,
     camera: THREE.PerspectiveCamera,
-    cube: THREE.Mesh,
-    tiles: THREE.Mesh[],
+    tower: THREE.Mesh,
+    // tiles: THREE.Mesh[],
+    // enemies: THREE.Mesh[],
     animationHandler: AnimationHandler
   ) =>
   (event: MouseEvent) => {
+    // Оновлюємо позицію миші
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
 
     raycaster.setFromCamera(mouse, camera)
 
-    const objectsToIntersect = [...tiles, cube, ...enemies]
-    let intersects = raycaster.intersectObjects(objectsToIntersect)
+    // Об'єкти для перевірки ховера
+    const objectsToIntersect = [...tiles, tower, ...enemies]
+    const intersects = raycaster.intersectObjects(objectsToIntersect)
+
+    // Оновлюємо курсор миші
     document.body.style.cursor = intersects.length > 0 ? 'pointer' : 'default'
 
-    intersects = raycaster.intersectObjects(tiles)
-    hoverTile(tiles, intersects)
-    hoverCube(cube, [])
-    enemies.forEach(enemy => hoverCube(enemy, []))
+    // Скидаємо ховер для всіх плиток та об'єктів
+    hoverTile([])
+    hoverObject(tower, [])
+    enemies.forEach(enemy => hoverObject(enemy, []))
 
-    intersects = raycaster.intersectObject(cube)
-    if (!animationHandler.currentState && intersects.length > 0) {
-      hoverCube(cube, intersects)
-      hoverTile(tiles, [])
+    if (animationHandler.currentState) return // Блокуємо ховер під час анімації
+
+    // Ховер для плиток
+    const tileIntersects = raycaster.intersectObjects(tiles)
+    if (tileIntersects.length > 0) {
+      hoverTile(tileIntersects)
     }
 
-    intersects = raycaster.intersectObjects(enemies)
-    if (!animationHandler.currentState && intersects.length > 0) {
-      const enemy = intersects[0].object as THREE.Mesh
-      hoverCube(enemy, intersects)
-      hoverTile(tiles, [])
+    // Ховер для Tower
+    const towerIntersects = raycaster.intersectObject(tower)
+    if (towerIntersects.length > 0) {
+      hoverObject(tower, towerIntersects)
+      return // Пріоритет для Tower
+    }
+
+    // Ховер для ворогів
+    const enemyIntersects = raycaster.intersectObjects(enemies)
+    if (enemyIntersects.length > 0) {
+      const hoveredEnemy = enemyIntersects[0].object as THREE.Mesh
+      hoverObject(hoveredEnemy, enemyIntersects)
     }
   }

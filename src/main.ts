@@ -1,6 +1,5 @@
 import * as THREE from 'three'
 import { AnimationHandler, flickerLight } from './canvas/animations'
-import createCube from './canvas/cube'
 import { resetScene, spawnCube, spawnIcosahedron, spawnOctahedron, spawnSphere } from './canvas/enemies'
 import createGround from './canvas/ground'
 import {
@@ -11,6 +10,7 @@ import {
   createSpotLight,
 } from './canvas/light'
 import createTiles from './canvas/tiles'
+import createTower from './canvas/tower'
 import { enableCameraDrag, enableMouseWheelTilt } from './canvas/utils'
 import './ui'
 import {
@@ -47,7 +47,7 @@ const { gridHelper, plane } = createGround(scene)
 const tiles: THREE.Mesh[] = createTiles(scene, 2)
 
 // Cube
-const cube = createCube(scene, 2)
+const tower = createTower(scene, 1.25)
 
 // Raycaster
 const raycaster = new THREE.Raycaster()
@@ -56,7 +56,7 @@ const mouse = new THREE.Vector2()
 // Lighting
 const ambientLight = createAmbienLight(scene)
 const directionalLight = createDirectionalLight(scene)
-const spotLight = createSpotLight(scene, cube)
+const spotLight = createSpotLight(scene, tower)
 const { lightSphere, pointLight } = createPointLight(scene)
 const hemisphereLight = createHemisphereLight(scene)
 flickerLight(pointLight)
@@ -68,7 +68,7 @@ renderer.shadowMap.enabled = true // Увімкнення тіней на рів
 renderer.shadowMap.type = THREE.PCFSoftShadowMap // М'які тіні
 
 // Об'єкти
-cube.castShadow = true
+tower.castShadow = true
 plane.receiveShadow = true
 tiles.forEach(tile => (tile.receiveShadow = true))
 
@@ -80,15 +80,15 @@ const render = () => {
 
 // Initialize
 window.addEventListener('resize', handleResize(camera, renderer))
-window.addEventListener('click', handleMouseClick(isCubeAnimating, mouse, raycaster, camera, cube, tiles, spotLight))
-window.addEventListener('mousemove', handleMouseMove(mouse, raycaster, camera, cube, tiles, isCubeAnimating))
+window.addEventListener('click', handleMouseClick(isCubeAnimating, mouse, raycaster, camera, tower, spotLight))
+window.addEventListener('mousemove', handleMouseMove(mouse, raycaster, camera, tower, isCubeAnimating))
 
 // Прив'язка функцій до кнопок
-spawnCubeButton.addEventListener('click', spawnCube(scene, tiles))
-spawnSphereButton.addEventListener('click', spawnSphere(scene, tiles))
-spawnOctahedronButton.addEventListener('click', spawnOctahedron(scene, tiles))
-spawnIcosahedronButton.addEventListener('click', spawnIcosahedron(scene, tiles))
+spawnCubeButton.addEventListener('click', spawnCube(scene))
+spawnSphereButton.addEventListener('click', spawnSphere(scene))
+spawnOctahedronButton.addEventListener('click', spawnOctahedron(scene))
+spawnIcosahedronButton.addEventListener('click', spawnIcosahedron(scene))
 
-resetSceneButton.addEventListener('click', resetScene(scene, camera, tiles))
+resetSceneButton.addEventListener('click', resetScene(scene, camera))
 
 render()

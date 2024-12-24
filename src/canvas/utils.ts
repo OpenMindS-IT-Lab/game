@@ -1,4 +1,19 @@
 import * as THREE from 'three'
+import { Colors } from './constants'
+
+// Utility: Switch Cube State
+export const switchObjectSelectionState = (object: THREE.Mesh, selected: boolean) => {
+  const { initialColor } = object.userData
+
+  object.material = new THREE.MeshStandardMaterial(selected ? Colors.SELECTED_TOWER : initialColor)
+  object.userData.isSelected = selected
+}
+
+export function hoverObject(object: THREE.Mesh, intersects: THREE.Intersection[]) {
+  const isHovered = intersects.length > 0 && intersects[0].object === object
+
+  ;(object.material as THREE.MeshStandardMaterial).opacity = isHovered ? 0.6 : 1
+}
 
 export function enableCameraDrag(camera: THREE.PerspectiveCamera, { domElement }: THREE.Renderer) {
   let isDragging = false // Track if the mouse is being dragged
@@ -83,19 +98,35 @@ export function disableMouseWheelTilt(disableHandler: ReturnType<typeof enableMo
 }
 
 export function checkCollisions(object: THREE.Mesh, objects: THREE.Mesh[]) {
-  const objectBoundingBox = object.userData.boundingBox as THREE.Box3
-  objectBoundingBox.setFromObject(object)
+  if (objects.length > 0) {
+    const objectBoundingBox = object.userData.boundingBox as THREE.Box3
+    objectBoundingBox.setFromObject(object)
 
-  for (const otherObject of objects) {
-    if (object === otherObject) continue
+    for (const otherObject of objects) {
+      if (object === otherObject) continue
 
-    const otherBoundingBox = otherObject.userData.boundingBox as THREE.Box3
-    otherBoundingBox.setFromObject(otherObject)
+      const otherBoundingBox = otherObject.userData.boundingBox as THREE.Box3
+      otherBoundingBox.setFromObject(otherObject)
 
-    if (objectBoundingBox.intersectsBox(otherBoundingBox)) {
-      return otherObject
+      if (objectBoundingBox.intersectsBox(otherBoundingBox)) {
+        return otherObject
+      }
     }
   }
 
   return null
+}
+
+export function checkCollisionsAll(object: THREE.Mesh, objects: THREE.Mesh[]) {
+  const objectBoundingBox = object.userData.boundingBox as THREE.Box3
+  objectBoundingBox.setFromObject(object)
+
+  return objects.filter(otherObject => {
+    if (object === otherObject) return false
+
+    const otherBoundingBox = otherObject.userData.boundingBox as THREE.Box3
+    otherBoundingBox.setFromObject(otherObject)
+
+    return objectBoundingBox.intersectsBox(otherBoundingBox)
+  })
 }

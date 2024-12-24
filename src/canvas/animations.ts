@@ -1,4 +1,7 @@
 import * as THREE from 'three'
+import { enemies } from './enemies'
+import { tiles } from './tiles'
+import { checkCollisions } from './utils'
 
 export class AnimationHandler {
   protected _isAnimating = false
@@ -24,7 +27,7 @@ export class AnimationHandler {
 // 2. Функція для запуску анімації
 export function moveAndFlip(
   object: THREE.Mesh,
-  tiles: THREE.Mesh[],
+  // tiles: THREE.Mesh[],
   targetPosition: THREE.Vector3,
   handler: AnimationHandler,
   spotLight: THREE.SpotLight
@@ -40,7 +43,7 @@ export function moveAndFlip(
     elapsed += frameTime
 
     // Стрибок: синусоїдальний рух по осі Y
-    object.position.y = initialPosition.y + Math.sin(elapsed * Math.PI) * 3
+    object.position.y = initialPosition.y + Math.sin(elapsed * Math.PI) * 6
 
     // Обертання об'єкта
     object.rotation.x += 0.04
@@ -56,14 +59,24 @@ export function moveAndFlip(
       spotLight.position.y = object.position.y + 10
     }
 
+    const collidedObject = checkCollisions(
+      object,
+      enemies.filter(obj => (obj as THREE.Mesh).isMesh && 'boundingBox' in obj.userData) as THREE.Mesh[]
+    )
+    if (collidedObject) {
+      console.log('Collision detected with:', collidedObject)
+    } else {
+      console.log('No collisions detected')
+    }
+
     // Завершення анімації, коли elapsed досягає 1
     if (elapsed >= 1) {
-      object.position.y = initialPosition.y // Повернення на початкову висоту
       object.position.x = targetPosition?.x ?? initialPosition.x
       object.position.z = targetPosition?.z ?? initialPosition.z
+      object.position.round()
+      object.position.y = initialPosition.y // Повернення на початкову висоту
 
       object.rotation.copy(initialRotation) // Скидання обертання
-      object.position.round()
       handler.switchState(false)
 
       tiles.find(
@@ -93,6 +106,67 @@ export function flickerLight(pointLight: THREE.PointLight) {
 
     pointLight.intensity = lightIntensity * 20 // Масштабуємо до бажаного рівня
 
+    requestAnimationFrame(animate)
+  }
+
+  animate()
+}
+
+export function moveLinear(
+  object: THREE.Mesh,
+  // tiles: THREE.Mesh[],
+  targetPosition: THREE.Vector3,
+  handler: AnimationHandler
+) {
+  handler.switchState(true) // Блокування повторного запуску
+
+  const initialPosition = object.position.clone()
+  let elapsed = 0 // Час, який минув
+
+  function animate() {
+    const frameTime = 0.0128 // Фіксована частка часу для кожного кадру
+    elapsed += frameTime
+
+    // Лінійне наближення до цільової позиції
+    if (targetPosition) {
+      object.position.x += (targetPosition.x - initialPosition.x) * frameTime
+      object.position.z += (targetPosition.z - initialPosition.z) * frameTime
+    }
+
+    // Перевірка колізій
+    const collidedObject = checkCollisions(
+      object,
+      tiles.filter(obj => (obj as THREE.Mesh).isMesh && 'boundingBox' in obj.userData) as THREE.Mesh[]
+    )
+
+    if (collidedObject) {
+      console.log('Enemy collision detected with:', collidedObject)
+    } else {
+      console.log('Enemy has no collisions')
+    }
+
+    // Завершення анімації, коли elapsed досягає 1
+    if (elapsed >= 1) {
+      object.position.x = targetPosition?.x ?? initialPosition.x
+      object.position.z = targetPosition?.z ?? initialPosition.z
+
+      handler.switchState(false) // Розблокування
+
+      // Оновлення статусу плитки
+      const targetTile = tiles.find(
+        tile => tile.position.x === object.position.x && tile.position.z === object.position.z
+      )
+      if (targetTile) targetTile.userData.isOccupied = true
+
+      const initialTile = tiles.find(
+        tile => tile.position.x === initialPosition.x && tile.position.z === initialPosition.z
+      )
+      if (initialTile) initialTile.userData.isOccupied = false
+
+      return
+    }
+
+    // Запускаємо наступний кадр
     requestAnimationFrame(animate)
   }
 
