@@ -1,7 +1,5 @@
 import * as THREE from 'three'
-import { enemies } from './enemies'
 import { tiles } from './tiles'
-import { checkCollisions } from './utils'
 
 export class AnimationHandler {
   protected _isAnimating = false
@@ -57,16 +55,6 @@ export function moveAndFlip(
       spotLight.position.x = object.position.x
       spotLight.position.z = object.position.z / 2
       spotLight.position.y = object.position.y + 10
-    }
-
-    const collidedObject = checkCollisions(
-      object,
-      enemies.filter(obj => (obj as THREE.Mesh).isMesh && 'boundingBox' in obj.userData) as THREE.Mesh[]
-    )
-    if (collidedObject) {
-      console.log('Collision detected with:', collidedObject)
-    } else {
-      console.log('No collisions detected')
     }
 
     // Завершення анімації, коли elapsed досягає 1
@@ -131,18 +119,6 @@ export function moveLinear(
     if (targetPosition) {
       object.position.x += (targetPosition.x - initialPosition.x) * frameTime
       object.position.z += (targetPosition.z - initialPosition.z) * frameTime
-    }
-
-    // Перевірка колізій
-    const collidedObject = checkCollisions(
-      object,
-      tiles.filter(obj => (obj as THREE.Mesh).isMesh && 'boundingBox' in obj.userData) as THREE.Mesh[]
-    )
-
-    if (collidedObject) {
-      console.log('Enemy collision detected with:', collidedObject)
-    } else {
-      console.log('Enemy has no collisions')
     }
 
     // Завершення анімації, коли elapsed досягає 1

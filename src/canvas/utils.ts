@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { Colors } from './constants'
+import { tiles } from './tiles'
 
 // Utility: Switch Cube State
 export const switchObjectSelectionState = (object: THREE.Mesh, selected: boolean) => {
@@ -81,7 +82,7 @@ export function enableMouseWheelTilt(camera: THREE.PerspectiveCamera, { domEleme
 
     // Змінюємо висоту камери пропорційно зміні куту нахилу
     const tiltRatio = (newTilt - minTilt) / (maxTilt - minTilt)
-    camera.position.y = initialHeight * (1 - 2 * tiltRatio)
+    camera.position.y = initialHeight * (1.25 - tiltRatio)
 
     console.log(camera.position, camera.rotation)
   }
@@ -99,7 +100,7 @@ export function disableMouseWheelTilt(disableHandler: ReturnType<typeof enableMo
   if (disableHandler) disableHandler()
 }
 
-export function checkCollisions(object: THREE.Mesh, objects: THREE.Mesh[]) {
+export function checkCollision(object: THREE.Mesh, objects: THREE.Mesh[]) {
   if (objects.length > 0) {
     const objectBoundingBox = object.userData.boundingBox as THREE.Box3
     objectBoundingBox.setFromObject(object)
@@ -119,16 +120,43 @@ export function checkCollisions(object: THREE.Mesh, objects: THREE.Mesh[]) {
   return null
 }
 
-export function checkCollisionsAll(object: THREE.Mesh, objects: THREE.Mesh[]) {
+export function checkCollisionsAll(object: THREE.Mesh, scene: THREE.Scene) {
   const objectBoundingBox = object.userData.boundingBox as THREE.Box3
   objectBoundingBox.setFromObject(object)
 
-  return objects.filter(otherObject => {
-    if (object === otherObject) return false
+  return (
+    scene.children?.filter(child => {
+      if (object === child) return false
 
-    const otherBoundingBox = otherObject.userData.boundingBox as THREE.Box3
-    otherBoundingBox.setFromObject(otherObject)
+      if ('boundingBox' in child.userData) {
+        const otherBoundingBox = child.userData.boundingBox as THREE.Box3
+        otherBoundingBox.setFromObject(child)
 
-    return objectBoundingBox.intersectsBox(otherBoundingBox)
+        return objectBoundingBox.intersectsBox(otherBoundingBox)
+      }
+
+      return false
+    }) ?? []
+  )
+}
+
+export function deleteAllObjects(scene: THREE.Scene) {
+  const objectsToRemove: THREE.Object3D<THREE.Object3DEventMap>[] = []
+
+  scene.traverse(object => {
+    if (!object.userData.isPersistant) {
+      objectsToRemove.push(object)
+    }
   })
+
+  scene.remove(...objectsToRemove)
+}
+
+export const resetScene = (scene: THREE.Scene, camera: THREE.PerspectiveCamera) => () => {
+  deleteAllObjects(scene) // Видаляємо всі об'єкти
+  tiles.forEach(tile => {
+    if (tile.position.x === 0 && tile.position.z === 14) tile.userData.isOccupied = true
+    else tile.userData.isOccupied = false
+  })
+  camera.position.y = 20 // Повертаємо камеру на висоту
 }

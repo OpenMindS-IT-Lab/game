@@ -1,7 +1,7 @@
 import * as THREE from 'three'
-import { spawnAirTower, spawnEarthTower, spawnFireTower, spawnWaterTower } from './canvas/allies'
+import { resetScene, spawnAirTower, spawnEarthTower, spawnFireTower, spawnWaterTower } from './canvas/allies'
 import { AnimationHandler, flickerLight } from './canvas/animations'
-import { resetScene, spawnCube, spawnIcosahedron, spawnOctahedron, spawnSphere } from './canvas/enemies'
+import { spawnCube, spawnIcosahedron, spawnOctahedron, spawnRandomEnemy, spawnSphere } from './canvas/enemies'
 import createGround from './canvas/ground'
 import {
   createAmbienLight,
@@ -11,7 +11,7 @@ import {
   createSpotLight,
 } from './canvas/light'
 import createTiles from './canvas/tiles'
-import createTower from './canvas/tower'
+import createTower, { shootAtNearestEnemy } from './canvas/tower'
 import { enableCameraDrag, enableMouseWheelTilt } from './canvas/utils'
 import './ui'
 import {
@@ -78,6 +78,19 @@ tower.castShadow = true
 plane.receiveShadow = true
 tiles.forEach(tile => (tile.receiveShadow = true))
 
+setInterval(() => spawnRandomEnemy(scene), 2500)
+setInterval(() => shootAtNearestEnemy(tower, scene), 2000)
+// moveEnemiesTowardTower(tower, scene)
+
+// function animate() {
+//   requestAnimationFrame(animate)
+
+//   // Рух ворогів
+
+//   renderer.render(scene, camera)
+// }
+// animate()
+
 // Rendering Loop
 const render = () => {
   renderer.render(scene, camera)
@@ -90,10 +103,10 @@ window.addEventListener('click', handleMouseClick(isCubeAnimating, mouse, raycas
 window.addEventListener('mousemove', handleMouseMove(mouse, raycaster, camera, tower, isCubeAnimating))
 
 // Прив'язка функцій до кнопок
-spawnCubeButton.addEventListener('click', spawnCube(scene))
-spawnSphereButton.addEventListener('click', spawnSphere(scene))
-spawnOctahedronButton.addEventListener('click', spawnOctahedron(scene))
-spawnIcosahedronButton.addEventListener('click', spawnIcosahedron(scene))
+spawnCubeButton.addEventListener('click', () => spawnCube(scene))
+spawnSphereButton.addEventListener('click', () => spawnSphere(scene))
+spawnOctahedronButton.addEventListener('click', () => spawnOctahedron(scene))
+spawnIcosahedronButton.addEventListener('click', () => spawnIcosahedron(scene))
 
 spawnWaterTowerButton.addEventListener('click', spawnWaterTower(scene))
 spawnFireTowerButton.addEventListener('click', spawnFireTower(scene))
@@ -101,5 +114,19 @@ spawnEarthTowerButton.addEventListener('click', spawnEarthTower(scene))
 spawnAirTowerButton.addEventListener('click', spawnAirTower(scene))
 
 resetSceneButton.addEventListener('click', resetScene(scene, camera))
+
+window.addEventListener(
+  'keydown',
+  event => {
+    if (event.code === 'Space') {
+      const enemy = findNearestEnemy(tower)
+
+      if (enemy) {
+        shootAtEnemy(tower, enemy, scene)
+      }
+    }
+  },
+  { passive: true }
+)
 
 render()

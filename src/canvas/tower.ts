@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils'
 import { Colors } from './constants'
+import { enemies } from './enemies'
 
 const createTower = (scene: THREE.Scene, size: number = 2) => {
   // Base of the tower
@@ -32,6 +33,7 @@ const createTower = (scene: THREE.Scene, size: number = 2) => {
     boundingBox: new THREE.Box3(),
     initialColor: Colors.TOWER,
   }
+  tower.name = 'Tower'
 
   // Додаємо tower у сцену
   scene.add(tower)
@@ -40,3 +42,47 @@ const createTower = (scene: THREE.Scene, size: number = 2) => {
 }
 
 export default createTower
+
+export function shootAtNearestEnemy(tower: THREE.Mesh, scene: THREE.Scene) {
+  if (enemies.length === 0) return null
+
+  const towerPosition = tower.position.clone()
+
+  const enemy =
+    enemies.sort(({ position: a }, { position: b }) => a.distanceTo(towerPosition) - b.distanceTo(towerPosition))[0] ??
+    null
+
+  if (!enemy) return
+
+  // Обчислюємо напрямок руху
+  const speed = 0.25 // Швидкість руху снаряда
+  const enemyInitialPosition = enemy.position.clone()
+  const direction = new THREE.Vector3()
+    .subVectors(enemyInitialPosition, tower.position.clone())
+    .multiplyScalar(2)
+    .normalize()
+
+  // Створюємо снаряд
+  const projectileGeometry = new THREE.SphereGeometry(0.1, 16, 16)
+  const projectileMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000, metalness: 1, roughness: 0.1 })
+  const projectile = new THREE.Mesh(projectileGeometry, projectileMaterial)
+
+  projectile.position.copy(tower.position).setY(enemyInitialPosition.y / 2) // Початкова позиція — позиція башти
+  projectile.castShadow = true
+  projectile.receiveShadow = true
+  projectile.userData = { isPersistant: false, boundingBox: new THREE.Box3() }
+
+  scene.add(projectile)
+
+  // Анімація руху снаряда
+  const interval = setInterval(() => {
+    // Рухаємо снаряд у напрямку ворога
+    projectile.position.addScaledVector(direction, speed)
+
+    // Якщо снаряд виходить за межі сцени (додатковий захист від "завислих" снарядів)
+    if (projectile.position.distanceTo(tower.position) > 50) {
+      scene.remove(projectile)
+      clearInterval(interval)
+    }
+  }, 16)
+}
