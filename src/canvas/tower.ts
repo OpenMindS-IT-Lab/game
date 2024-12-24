@@ -25,7 +25,7 @@ const createTower = (scene: THREE.Scene, size: number = 2) => {
   const tower = new THREE.Mesh(combinedGeometry, material)
 
   // Встановлюємо позицію та userData
-  tower.position.set(0, 0, 12)
+  tower.position.set(0, 0, 14)
   tower.userData = {
     isSelected: false,
     isPersistant: true,

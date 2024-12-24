@@ -8,6 +8,11 @@ export const spawnSphereButton = document.getElementById('spawn-sphere') as Elem
 export const spawnOctahedronButton = document.getElementById('spawn-octahedron') as Element
 export const spawnIcosahedronButton = document.getElementById('spawn-icosahedron') as Element
 
+export const spawnWaterTowerButton = document.getElementById('spawn-water-tower') as Element
+export const spawnFireTowerButton = document.getElementById('spawn-fire-tower') as Element
+export const spawnEarthTowerButton = document.getElementById('spawn-earth-tower') as Element
+export const spawnAirTowerButton = document.getElementById('spawn-air-tower') as Element
+
 export const resetSceneButton = document.getElementById('reset-scene') as Element
 
 export function toggleMenu() {

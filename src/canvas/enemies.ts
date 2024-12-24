@@ -115,7 +115,10 @@ export function deleteAllObjects(scene: THREE.Scene) {
 
 export const resetScene = (scene: THREE.Scene, camera: THREE.PerspectiveCamera) => () => {
   deleteAllObjects(scene) // Видаляємо всі об'єкти
-  tiles?.forEach(tile => (tile.userData.isOccupied = false))
+  tiles.forEach(tile => {
+    if (tile.position.x === 0 && tile.position.z === 14) tile.userData.isOccupied = true
+    else tile.userData.isOccupied = false
+  })
   camera.position.y = 20 // Повертаємо камеру на висоту
 }
 

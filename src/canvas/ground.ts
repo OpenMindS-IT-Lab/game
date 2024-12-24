@@ -6,7 +6,7 @@ const createGround = (scene: THREE.Scene) => {
   gridHelper.userData = { isPersistant: true }
   scene.add(gridHelper)
 
-  const planeGeometry = new THREE.PlaneGeometry(14, 30)
+  const planeGeometry = new THREE.PlaneGeometry(10, 30)
   const planeMaterial = new THREE.MeshStandardMaterial({ color: Colors.PLANE })
   const plane = new THREE.Mesh(planeGeometry, planeMaterial)
   plane.rotation.x = -Math.PI / 2

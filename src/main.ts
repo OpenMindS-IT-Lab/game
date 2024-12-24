@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { spawnAirTower, spawnEarthTower, spawnFireTower, spawnWaterTower } from './canvas/allies'
 import { AnimationHandler, flickerLight } from './canvas/animations'
 import { resetScene, spawnCube, spawnIcosahedron, spawnOctahedron, spawnSphere } from './canvas/enemies'
 import createGround from './canvas/ground'
@@ -15,10 +16,14 @@ import { enableCameraDrag, enableMouseWheelTilt } from './canvas/utils'
 import './ui'
 import {
   resetSceneButton,
+  spawnAirTowerButton,
   spawnCubeButton,
+  spawnEarthTowerButton,
+  spawnFireTowerButton,
   spawnIcosahedronButton,
   spawnOctahedronButton,
   spawnSphereButton,
+  spawnWaterTowerButton,
 } from './ui'
 import { handleMouseClick, handleMouseMove, handleResize } from './ui/event-listeners'
 
@@ -88,6 +93,11 @@ spawnCubeButton.addEventListener('click', spawnCube(scene))
 spawnSphereButton.addEventListener('click', spawnSphere(scene))
 spawnOctahedronButton.addEventListener('click', spawnOctahedron(scene))
 spawnIcosahedronButton.addEventListener('click', spawnIcosahedron(scene))
+
+spawnWaterTowerButton.addEventListener('click', spawnWaterTower(scene))
+spawnFireTowerButton.addEventListener('click', spawnFireTower(scene))
+spawnEarthTowerButton.addEventListener('click', spawnEarthTower(scene))
+spawnAirTowerButton.addEventListener('click', spawnAirTower(scene))
 
 resetSceneButton.addEventListener('click', resetScene(scene, camera))
 

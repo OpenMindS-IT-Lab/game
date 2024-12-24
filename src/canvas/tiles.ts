@@ -6,7 +6,7 @@ const tiles: THREE.Mesh[] = []
 const createTiles = (scene: THREE.Scene, size: number = 2) => {
   const tileSize = size
 
-  for (let x = -3; x <= 3; x++) {
+  for (let x = -2; x <= 2; x++) {
     for (let z = -7; z <= 7; z++) {
       const tileGeometry = new THREE.BoxGeometry(tileSize, 0, tileSize)
       const tileMaterial = new THREE.MeshStandardMaterial(Colors.TILE)
@@ -16,7 +16,7 @@ const createTiles = (scene: THREE.Scene, size: number = 2) => {
       tile.userData = {
         isPersistant: true,
         active: false,
-        isOccupied: tile.position.x === 0 && tile.position.z === 12,
+        isOccupied: tile.position.x === 0 && tile.position.z === 14,
       }
       tiles.push(tile)
       scene.add(tile)
