@@ -1,5 +1,8 @@
 import * as THREE from 'three'
+import camera, { resetCamera } from './camera'
 import { Colors } from './constants'
+import renderer from './renderer'
+import { scene } from './scene'
 import { tiles } from './tiles'
 
 // Utility: Switch Cube State
@@ -16,7 +19,7 @@ export function hoverObject(object: THREE.Mesh, intersects: THREE.Intersection[]
   ;(object.material as THREE.MeshStandardMaterial).opacity = isHovered ? 0.6 : 1
 }
 
-export function enableCameraDrag(camera: THREE.PerspectiveCamera, { domElement }: THREE.Renderer) {
+export function enableCameraDrag() {
   let isDragging = false // Track if the mouse is being dragged
   let previousMousePosition = { x: 0, y: 0 } // Previous mouse position
 
@@ -46,17 +49,17 @@ export function enableCameraDrag(camera: THREE.PerspectiveCamera, { domElement }
   }
 
   // Attach event listeners
-  domElement.addEventListener('mousedown', onMouseDown)
-  domElement.addEventListener('mousemove', onMouseMove)
-  domElement.addEventListener('mouseup', onMouseUp)
-  domElement.addEventListener('mouseleave', onMouseUp) // Handle when mouse leaves the canvas
+  renderer.domElement.addEventListener('mousedown', onMouseDown)
+  renderer.domElement.addEventListener('mousemove', onMouseMove)
+  renderer.domElement.addEventListener('mouseup', onMouseUp)
+  renderer.domElement.addEventListener('mouseleave', onMouseUp) // Handle when mouse leaves the canvas
 
   // Return a cleanup function to remove event listeners
   return () => {
-    domElement.removeEventListener('mousedown', onMouseDown)
-    domElement.removeEventListener('mousemove', onMouseMove)
-    domElement.removeEventListener('mouseup', onMouseUp)
-    domElement.removeEventListener('mouseleave', onMouseUp)
+    renderer.domElement.removeEventListener('mousedown', onMouseDown)
+    renderer.domElement.removeEventListener('mousemove', onMouseMove)
+    renderer.domElement.removeEventListener('mouseup', onMouseUp)
+    renderer.domElement.removeEventListener('mouseleave', onMouseUp)
   }
 }
 
@@ -64,7 +67,7 @@ export function disableCameraDrag(disableHandler: ReturnType<typeof enableCamera
   if (disableHandler) disableHandler() // Call the cleanup function returned by `enableCameraDrag`
 }
 
-export function enableMouseWheelTilt(camera: THREE.PerspectiveCamera, { domElement }: THREE.Renderer) {
+export function enableMouseWheelTilt() {
   const maxTilt = Math.PI / 2 // Максимальний нахил (90°)
   const minTilt = -Math.PI / 2 // Мінімальний нахил (-90°)
   const tiltSpeed = 0.002 // Чутливість нахилу
@@ -88,11 +91,11 @@ export function enableMouseWheelTilt(camera: THREE.PerspectiveCamera, { domEleme
   }
 
   // Додаємо слухача події
-  domElement.addEventListener('wheel', onWheel, { passive: true })
+  renderer.domElement.addEventListener('wheel', onWheel, { passive: true })
 
   // Повертаємо функцію для очищення
   return () => {
-    domElement.removeEventListener('wheel', onWheel)
+    renderer.domElement.removeEventListener('wheel', onWheel)
   }
 }
 
@@ -120,7 +123,7 @@ export function checkCollision(object: THREE.Mesh, objects: THREE.Mesh[]) {
   return null
 }
 
-export function checkCollisionsAll(object: THREE.Mesh, scene: THREE.Scene) {
+export function checkCollisionsAll(object: THREE.Mesh) {
   const objectBoundingBox = object.userData.boundingBox as THREE.Box3
   objectBoundingBox.setFromObject(object)
 
@@ -140,7 +143,7 @@ export function checkCollisionsAll(object: THREE.Mesh, scene: THREE.Scene) {
   )
 }
 
-export function deleteAllObjects(scene: THREE.Scene) {
+export function deleteAllObjects() {
   const objectsToRemove: THREE.Object3D<THREE.Object3DEventMap>[] = []
 
   scene.traverse(object => {
@@ -152,11 +155,14 @@ export function deleteAllObjects(scene: THREE.Scene) {
   scene.remove(...objectsToRemove)
 }
 
-export const resetScene = (scene: THREE.Scene, camera: THREE.PerspectiveCamera) => () => {
-  deleteAllObjects(scene) // Видаляємо всі об'єкти
+export const resetScene = () => {
+  deleteAllObjects() // Видаляємо всі об'єкти
   tiles.forEach(tile => {
     if (tile.position.x === 0 && tile.position.z === 14) tile.userData.isOccupied = true
     else tile.userData.isOccupied = false
   })
-  camera.position.y = 20 // Повертаємо камеру на висоту
+
+  resetCamera()
+
+  console.log(tiles)
 }

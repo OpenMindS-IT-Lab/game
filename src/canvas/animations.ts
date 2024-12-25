@@ -1,6 +1,8 @@
 import * as THREE from 'three'
 import { tiles } from './tiles'
 
+const FRAME_TIME = 0.0128 // Fixed time fraction for each frame
+
 export class AnimationHandler {
   protected _isAnimating = false
 
@@ -25,46 +27,44 @@ export class AnimationHandler {
 // 2. Функція для запуску анімації
 export function moveAndFlip(
   object: THREE.Mesh,
-  // tiles: THREE.Mesh[],
   targetPosition: THREE.Vector3,
   handler: AnimationHandler,
   spotLight: THREE.SpotLight
 ) {
-  handler.switchState(true) // Блокування повторного запуску
+  handler.switchState(true) // Block re-triggering
 
   const initialPosition = object.position.clone()
   const initialRotation = object.rotation.clone()
-  let elapsed = 0 // Час, який минув
+  let elapsed = 0 // Elapsed time
 
   function animate() {
-    const frameTime = 0.0128 // Фіксована частка часу для кожного кадру
-    elapsed += frameTime
+    elapsed += FRAME_TIME
 
-    // Стрибок: синусоїдальний рух по осі Y
+    // Jump: sinusoidal movement along the Y-axis
     object.position.y = initialPosition.y + Math.sin(elapsed * Math.PI) * 6
 
-    // Обертання об'єкта
+    // Rotate the object
     object.rotation.x += 0.04
     object.rotation.z -= 0.04
 
-    // Лінійне наближення до цільової позиції (якщо вказано)
+    // Linear approach to the target position (if specified)
     if (targetPosition) {
-      object.position.x += (targetPosition.x - initialPosition.x) * frameTime
-      object.position.z += (targetPosition.z - initialPosition.z) * frameTime
+      object.position.x += (targetPosition.x - initialPosition.x) * FRAME_TIME
+      object.position.z += (targetPosition.z - initialPosition.z) * FRAME_TIME
 
       spotLight.position.x = object.position.x
       spotLight.position.z = object.position.z / 2
       spotLight.position.y = object.position.y + 10
     }
 
-    // Завершення анімації, коли elapsed досягає 1
+    // End animation when elapsed reaches 1
     if (elapsed >= 1) {
       object.position.x = targetPosition?.x ?? initialPosition.x
       object.position.z = targetPosition?.z ?? initialPosition.z
       object.position.round()
-      object.position.y = initialPosition.y // Повернення на початкову висоту
+      object.position.y = initialPosition.y // Return to initial height
 
-      object.rotation.copy(initialRotation) // Скидання обертання
+      object.rotation.copy(initialRotation) // Reset rotation
       handler.switchState(false)
 
       tiles.find(
@@ -78,7 +78,7 @@ export function moveAndFlip(
       return
     }
 
-    // Запускаємо наступний кадр
+    // Trigger the next frame
     requestAnimationFrame(animate)
   }
 

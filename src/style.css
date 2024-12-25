@@ -1,16 +1,6 @@
 body {
   margin: 0;
   overflow: hidden;
-  /* cursor: pointer; */
-}
-#game-container {
-  width: 100vw;
-  height: 100vh;
-}
-/* Базова стилізація */
-body {
-  margin: 0;
-  overflow: hidden;
   font-family: Arial, sans-serif;
 }
 

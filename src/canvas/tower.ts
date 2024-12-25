@@ -2,8 +2,9 @@ import * as THREE from 'three'
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils'
 import { Colors } from './constants'
 import { enemies } from './enemies'
+import { scene } from './scene'
 
-const createTower = (scene: THREE.Scene, size: number = 2) => {
+const createTower = (size: number = 2) => {
   // Base of the tower
   const baseGeometry = new THREE.BoxGeometry(size, size / 2, size)
   baseGeometry.translate(0, size / 4, 0) // Піднімаємо базу
@@ -43,8 +44,8 @@ const createTower = (scene: THREE.Scene, size: number = 2) => {
 
 export default createTower
 
-export function shootAtNearestEnemy(tower: THREE.Mesh, scene: THREE.Scene): () => void {
-  if (enemies.length === 0) return () => void 0
+export function shootAtNearestEnemy(tower: THREE.Mesh): void {
+  if (enemies.length === 0) return
 
   const towerPosition = tower.position.clone()
 
@@ -52,7 +53,7 @@ export function shootAtNearestEnemy(tower: THREE.Mesh, scene: THREE.Scene): () =
     enemies.sort(({ position: a }, { position: b }) => a.distanceTo(towerPosition) - b.distanceTo(towerPosition))[0] ??
     null
 
-  if (!enemy) return () => void 0
+  if (!enemy) return
 
   // Обчислюємо напрямок руху
   const speed = 0.25 // Швидкість руху снаряда
@@ -85,6 +86,4 @@ export function shootAtNearestEnemy(tower: THREE.Mesh, scene: THREE.Scene): () =
       clearInterval(interval)
     }
   }, 16)
-
-  return () => clearInterval(interval)
 }

@@ -1,9 +1,10 @@
 import * as THREE from 'three'
 import { Colors } from './constants'
+import { scene } from './scene'
 
 const tiles: THREE.Mesh[] = []
 
-const createTiles = (scene: THREE.Scene, size: number = 2) => {
+const createTiles = (size: number = 2) => {
   const tileSize = size
 
   for (let x = -2; x <= 2; x++) {

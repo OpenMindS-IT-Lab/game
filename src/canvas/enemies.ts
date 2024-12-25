@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { Colors } from './constants'
+import { scene } from './scene'
 import { tiles } from './tiles'
 import { checkCollisionsAll } from './utils'
 
@@ -41,29 +42,37 @@ const enemies: THREE.Mesh[] = []
 
 // Функція для створення геометрії
 function spawnEnemy(
-  scene: THREE.Scene,
   geometry: THREE.BoxGeometry | THREE.SphereGeometry | THREE.CylinderGeometry | THREE.IcosahedronGeometry,
-  customMaterial?: THREE.MeshStandardMaterial,
-  initialY?: number
+  materialParams?: THREE.MeshStandardMaterialParameters,
+  stats?: { speed?: number; height?: number }
 ) {
-  const material =
-    customMaterial ??
-    new THREE.MeshStandardMaterial({
-      ...Colors.ENEMY,
-      color: getRandomColor(),
-      metalness: 0.3,
-      roughness: 0.7,
-    })
-  const mesh = new THREE.Mesh(geometry, material)
+  const defaultMaterialParams = {
+    ...Colors.ENEMY,
+    color: getRandomColor(),
+    metalness: 0.3,
+    roughness: 0.7,
+  }
 
-  let position
+  const defaultStats = {
+    speed: 0.05,
+    height: 1,
+  }
+
+  const material = new THREE.MeshStandardMaterial({
+    ...defaultMaterialParams,
+    ...materialParams,
+  })
+  const newEnemy = new THREE.Mesh(geometry, material)
+  const { speed, height } = { ...defaultStats, ...stats }
+
+  let randomPosition
   let attempts = 0
   const maxAttempts = 5
 
   while (attempts < maxAttempts) {
     try {
-      position = getRandomPosition()
-      mesh.position.set(position.x, initialY ?? 0.5, position.z)
+      randomPosition = getRandomPosition()
+      newEnemy.position.copy(randomPosition).setY(height / 2 - 0.05)
       break
     } catch (error) {
       attempts++
@@ -74,9 +83,9 @@ function spawnEnemy(
     }
   }
 
-  mesh.castShadow = true
-  mesh.receiveShadow = true
-  mesh.userData = {
+  newEnemy.castShadow = true
+  newEnemy.receiveShadow = true
+  newEnemy.userData = {
     isPersistant: false,
     isSelected: false,
     boundingBox: new THREE.Box3(),
@@ -84,65 +93,8 @@ function spawnEnemy(
     isDestroyed: false,
   }
 
-  scene.add(mesh)
-  enemies.push(mesh)
-
-  return mesh
-}
-
-// Індивідуальні функції для кожного типу геометрії
-export function spawnCube(scene: THREE.Scene) {
-  const geometry = new THREE.BoxGeometry(1.25, 1.25, 1.25)
-  console.log('Spawned Cube')
-  return spawnEnemy(scene, geometry, undefined, 0.625)
-}
-
-export function spawnSphere(scene: THREE.Scene) {
-  const geometry = new THREE.SphereGeometry(0.75, 16, 16)
-  console.log('Spawned Sphere')
-  return spawnEnemy(scene, geometry, undefined, 0.75)
-}
-
-export function spawnOctahedron(scene: THREE.Scene) {
-  const geometry = new THREE.OctahedronGeometry(0.9)
-  geometry.rotateY(Math.PI / 4)
-  console.log('Spawned Octahedron')
-  return spawnEnemy(scene, geometry, undefined, 0.9)
-}
-
-export function spawnIcosahedron(scene: THREE.Scene) {
-  const geometry = new THREE.IcosahedronGeometry(0.9, 0)
-  console.log('Spawned Icosahedron')
-  return spawnEnemy(scene, geometry, undefined, 0.9)
-}
-
-export function spawnRandomEnemy(scene: THREE.Scene) {
-  console.log('Spawning random enemy')
-
-  let speed = 0
-
-  const EnemiesMap = {
-    0() {
-      speed = 0.05
-      return spawnCube(scene)
-    },
-    1() {
-      speed = 0.1
-      return spawnSphere(scene)
-    },
-    2() {
-      speed = 0.05
-      return spawnOctahedron(scene)
-    },
-    3() {
-      speed = 0.05
-      return spawnIcosahedron(scene)
-    },
-  }
-
-  const newEnemy = EnemiesMap[Math.floor(Math.random() * 4) as keyof typeof EnemiesMap]()
-
-  if (!newEnemy) throw new Error('Failed to spawn new enemy!')
+  scene.add(newEnemy)
+  enemies.push(newEnemy)
 
   const enemyInitialPosition = newEnemy.position.clone()
   const towerPosition =
@@ -152,11 +104,15 @@ export function spawnRandomEnemy(scene: THREE.Scene) {
     .subVectors(towerPosition.setY(enemyInitialPosition.y), enemyInitialPosition)
     .normalize()
 
+  newEnemy.lookAt(towerPosition)
+
+  const fieldTiles = tiles.filter(tile => tile.position.z !== 14)
+
   let interval = setInterval(() => {
     newEnemy.position.addScaledVector(direction, speed).setY(enemyInitialPosition.y)
 
     // Оновлення статусу плитки
-    tiles.forEach(tile => {
+    fieldTiles.forEach(tile => {
       if (tile.position.distanceTo(newEnemy.position) <= 0.05) {
         tile.userData.isOccupied = true
       } else if (tile.userData.isOccupied && tile.position.distanceTo(newEnemy.position) > 1) {
@@ -164,20 +120,64 @@ export function spawnRandomEnemy(scene: THREE.Scene) {
       }
     })
 
-    const collisions = checkCollisionsAll(newEnemy, scene)
+    const collisions = checkCollisionsAll(newEnemy)
 
     if (collisions.length > 0) {
       for (let collision of collisions) {
         // Видаляємо ворога та снаряд
-        destroyEnemy(newEnemy, scene)
+        destroyEnemy(newEnemy)
         scene.remove(collision)
       }
       clearInterval(interval)
     }
   }, 1000 / 60) // 60 FPS
+
+  return newEnemy
 }
 
-export function destroyEnemy(enemy: THREE.Mesh, scene: THREE.Scene) {
+// Індивідуальні функції для кожного типу геометрії
+export function spawnCube() {
+  const geometry = new THREE.BoxGeometry(1.25, 1.25, 1.25)
+  console.log('Spawned Cube')
+  return spawnEnemy(geometry, {}, { height: 1.25 })
+}
+
+export function spawnSphere() {
+  const geometry = new THREE.SphereGeometry(0.75, 16, 16)
+  console.log('Spawned Sphere')
+  return spawnEnemy(geometry, {}, { height: 1.5, speed: 0.1 })
+}
+
+export function spawnOctahedron() {
+  const geometry = new THREE.OctahedronGeometry(0.9)
+  geometry.rotateY(Math.PI / 4)
+  console.log('Spawned Octahedron')
+  return spawnEnemy(geometry, {}, { height: 1.8 })
+}
+
+export function spawnIcosahedron() {
+  const geometry = new THREE.IcosahedronGeometry(0.9, 0)
+
+  console.log('Spawned Icosahedron')
+  return spawnEnemy(geometry, {}, { height: 1.8 })
+}
+
+export function spawnRandomEnemy() {
+  console.log('Spawning random enemy')
+
+  const EnemiesMap = {
+    0: spawnCube,
+    1: spawnSphere,
+    2: spawnOctahedron,
+    3: spawnIcosahedron,
+  }
+
+  const randomEnemy = EnemiesMap[Math.floor(Math.random() * 4) as keyof typeof EnemiesMap]()
+
+  if (!randomEnemy) throw new Error('Failed to spawn new enemy!')
+}
+
+export function destroyEnemy(enemy: THREE.Mesh) {
   scene.remove(enemy)
 
   enemy.userData.isDestroyed = true

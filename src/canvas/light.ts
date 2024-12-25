@@ -1,7 +1,8 @@
 import * as THREE from 'three'
+import { scene } from './scene'
 
-export const createAmbienLight = (scene: THREE.Scene) => {
-  const ambientLight = new THREE.AmbientLight(0xffffff, 1) // М'яке біле освітлення
+export const createAmbientLight = () => {
+  const ambientLight = new THREE.AmbientLight(0xffffff, 1) // Soft white light
 
   ambientLight.userData = { isPersistant: true }
 
@@ -10,7 +11,7 @@ export const createAmbienLight = (scene: THREE.Scene) => {
   return ambientLight
 }
 
-export const createDirectionalLight = (scene: THREE.Scene) => {
+export const createDirectionalLight = () => {
   const directionalLight = new THREE.DirectionalLight(0xffffff, 2.5)
 
   directionalLight.position.set(0, 20, -5)
@@ -33,7 +34,7 @@ export const createDirectionalLight = (scene: THREE.Scene) => {
   return directionalLight
 }
 
-export const createSpotLight = (scene: THREE.Scene, target: THREE.Mesh) => {
+export const createSpotLight = (target: THREE.Mesh) => {
   const spotLight = new THREE.SpotLight(0xffffff, 2.5, 15, Math.PI / 16, 0.25, 0.5) // Довжина, кут, розсіювання
 
   spotLight.position.copy(target.position)
@@ -53,7 +54,7 @@ export const createSpotLight = (scene: THREE.Scene, target: THREE.Mesh) => {
   return spotLight
 }
 
-export const createPointLight = (scene: THREE.Scene) => {
+export const createPointLight = () => {
   const pointLight = new THREE.PointLight(0xffaa00, 1, 20, 0.75) // Колір, інтенсивність, відстань, згасання
 
   pointLight.position.set(0, 15, -5)
@@ -82,7 +83,7 @@ export const createPointLight = (scene: THREE.Scene) => {
   return { pointLight, lightSphere }
 }
 
-export const createHemisphereLight = (scene: THREE.Scene) => {
+export const createHemisphereLight = () => {
   const hemisphereLight = new THREE.HemisphereLight(0x87ceeb, 0x222222, 1) // Небо, земля, інтенсивність
 
   hemisphereLight.userData = { isPersistant: true }

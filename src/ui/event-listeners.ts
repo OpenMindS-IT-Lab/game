@@ -1,12 +1,12 @@
 import * as THREE from 'three'
 import { AnimationHandler, moveAndFlip, moveLinear } from '../canvas/animations'
+import camera from '../canvas/camera'
 import { enemies } from '../canvas/enemies' // Import enemies
 import { hoverTile, tiles } from '../canvas/tiles'
-import {} from '../canvas/tower'
 import { hoverObject, switchObjectSelectionState } from '../canvas/utils'
 
 // Event Listeners
-export const handleResize = (camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer) => (_event: Event) => {
+export const handleResize = (renderer: THREE.WebGLRenderer) => (_event: Event) => {
   camera.aspect = window.innerWidth / window.innerHeight
   camera.updateProjectionMatrix()
   renderer.setSize(window.innerWidth, window.innerHeight)
@@ -17,7 +17,7 @@ export const handleMouseClick =
     animationHandler: AnimationHandler,
     mouse: THREE.Vector2,
     raycaster: THREE.Raycaster,
-    camera: THREE.PerspectiveCamera,
+    // camera: THREE.PerspectiveCamera,
     tower: THREE.Mesh,
     // tiles: THREE.Mesh[],
     // enemies: THREE.Mesh[],
@@ -105,7 +105,7 @@ export const handleMouseMove =
   (
     mouse: THREE.Vector2,
     raycaster: THREE.Raycaster,
-    camera: THREE.PerspectiveCamera,
+    // camera: THREE.PerspectiveCamera,
     tower: THREE.Mesh,
     // tiles: THREE.Mesh[],
     // enemies: THREE.Mesh[],

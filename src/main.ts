@@ -1,18 +1,20 @@
 import * as THREE from 'three'
-import { resetScene, spawnAirTower, spawnEarthTower, spawnFireTower, spawnWaterTower } from './canvas/allies'
+import { spawnAirTower, spawnEarthTower, spawnFireTower, spawnWaterTower } from './canvas/allies'
 import { AnimationHandler, flickerLight } from './canvas/animations'
+import { resetCamera } from './canvas/camera'
 import { spawnCube, spawnIcosahedron, spawnOctahedron, spawnRandomEnemy, spawnSphere } from './canvas/enemies'
 import createGround from './canvas/ground'
 import {
-  createAmbienLight,
+  createAmbientLight,
   createDirectionalLight,
   createHemisphereLight,
   createPointLight,
   createSpotLight,
 } from './canvas/light'
+import renderer, { render } from './canvas/renderer'
 import createTiles from './canvas/tiles'
 import createTower, { shootAtNearestEnemy } from './canvas/tower'
-import { enableCameraDrag, enableMouseWheelTilt } from './canvas/utils'
+import { enableCameraDrag, enableMouseWheelTilt, resetScene } from './canvas/utils'
 import './ui'
 import {
   resetSceneButton,
@@ -32,43 +34,36 @@ const gameContainer = document.getElementById('game-container')
 if (!gameContainer) throw new Error('Game container not found')
 
 // Scene, Camera, Renderer
-const scene = new THREE.Scene()
-const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000)
-camera.lookAt(0, 0, 0)
-camera.position.set(0, 14, 18)
-camera.rotation.set(-0.9, 0, 0)
-camera.userData = { isPersistant: true }
+resetCamera()
 
-const renderer = new THREE.WebGLRenderer({ antialias: true })
-renderer.setSize(window.innerWidth, window.innerHeight)
 gameContainer.appendChild(renderer.domElement)
 
-enableCameraDrag(camera, renderer)
-enableMouseWheelTilt(camera, renderer)
+enableCameraDrag()
+enableMouseWheelTilt()
 
 // Ground and Grid
-const { gridHelper: _gridHelper, plane } = createGround(scene)
+const { gridHelper: _gridHelper, plane } = createGround()
 
 // Tiles
-const tiles: THREE.Mesh[] = createTiles(scene, 2)
+const tiles: THREE.Mesh[] = createTiles(2)
 
-// Cube
-const tower = createTower(scene, 1.25)
+// Tower
+const tower = createTower(1.25)
 
 // Raycaster
 const raycaster = new THREE.Raycaster()
 const mouse = new THREE.Vector2()
 
 // Lighting
-createAmbienLight(scene)
-createDirectionalLight(scene)
-const spotLight = createSpotLight(scene, tower)
-const { lightSphere: _lightSphere, pointLight } = createPointLight(scene)
-createHemisphereLight(scene)
+createAmbientLight()
+createDirectionalLight()
+const spotLight = createSpotLight(tower)
+const { lightSphere: _lightSphere, pointLight } = createPointLight()
+createHemisphereLight()
 flickerLight(pointLight)
 
 // Animation Handlers
-const isCubeAnimating = new AnimationHandler(false)
+const isTowerAnimating = new AnimationHandler(false)
 
 renderer.shadowMap.enabled = true // Увімкнення тіней на рівні рендера
 renderer.shadowMap.type = THREE.PCFSoftShadowMap // М'які тіні
@@ -78,41 +73,25 @@ tower.castShadow = true
 plane.receiveShadow = true
 tiles.forEach(tile => (tile.receiveShadow = true))
 
-setInterval(() => spawnRandomEnemy(scene), 2500)
-setInterval(shootAtNearestEnemy(tower, scene), 2000)
-
-// Rendering Loop
-const render = () => {
-  renderer.render(scene, camera)
-  requestAnimationFrame(render)
-}
+setInterval(() => spawnRandomEnemy(), 2500)
+setInterval(() => shootAtNearestEnemy(tower), 2000)
 
 // Initialize
-window.addEventListener('resize', handleResize(camera, renderer))
-window.addEventListener('click', handleMouseClick(isCubeAnimating, mouse, raycaster, camera, tower, spotLight))
-window.addEventListener('mousemove', handleMouseMove(mouse, raycaster, camera, tower, isCubeAnimating))
+window.addEventListener('resize', handleResize(renderer))
+window.addEventListener('click', handleMouseClick(isTowerAnimating, mouse, raycaster, tower, spotLight))
+window.addEventListener('mousemove', handleMouseMove(mouse, raycaster, tower, isTowerAnimating))
 
 // Прив'язка функцій до кнопок
-spawnCubeButton.addEventListener('click', () => spawnCube(scene))
-spawnSphereButton.addEventListener('click', () => spawnSphere(scene))
-spawnOctahedronButton.addEventListener('click', () => spawnOctahedron(scene))
-spawnIcosahedronButton.addEventListener('click', () => spawnIcosahedron(scene))
+spawnCubeButton.addEventListener('click', () => spawnCube())
+spawnSphereButton.addEventListener('click', () => spawnSphere())
+spawnOctahedronButton.addEventListener('click', () => spawnOctahedron())
+spawnIcosahedronButton.addEventListener('click', () => spawnIcosahedron())
 
-spawnWaterTowerButton.addEventListener('click', spawnWaterTower(scene))
-spawnFireTowerButton.addEventListener('click', spawnFireTower(scene))
-spawnEarthTowerButton.addEventListener('click', spawnEarthTower(scene))
-spawnAirTowerButton.addEventListener('click', spawnAirTower(scene))
+spawnWaterTowerButton.addEventListener('click', spawnWaterTower)
+spawnFireTowerButton.addEventListener('click', spawnFireTower)
+spawnEarthTowerButton.addEventListener('click', spawnEarthTower)
+spawnAirTowerButton.addEventListener('click', spawnAirTower)
 
-resetSceneButton.addEventListener('click', resetScene(scene, camera))
-
-window.addEventListener(
-  'keydown',
-  event => {
-    if (event.code === 'Space') {
-      shootAtNearestEnemy(tower, scene)()
-    }
-  },
-  { passive: true }
-)
+resetSceneButton.addEventListener('click', resetScene)
 
 render()
