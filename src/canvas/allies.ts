@@ -2,11 +2,6 @@ import * as THREE from 'three'
 import { AllyTypes, Colors } from './constants'
 import { tiles } from './tiles'
 
-// Функція для створення випадкового кольору
-function getRandomColor() {
-  return Math.random() * 0xffffff
-}
-
 // Функція для випадкового розташування
 function getRandomPosition() {
   let targetTile

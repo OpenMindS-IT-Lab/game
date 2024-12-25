@@ -6,7 +6,7 @@ import {} from '../canvas/tower'
 import { hoverObject, switchObjectSelectionState } from '../canvas/utils'
 
 // Event Listeners
-export const handleResize = (camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer) => (event: Event) => {
+export const handleResize = (camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer) => (_event: Event) => {
   camera.aspect = window.innerWidth / window.innerHeight
   camera.updateProjectionMatrix()
   renderer.setSize(window.innerWidth, window.innerHeight)

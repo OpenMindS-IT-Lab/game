@@ -43,8 +43,8 @@ const createTower = (scene: THREE.Scene, size: number = 2) => {
 
 export default createTower
 
-export function shootAtNearestEnemy(tower: THREE.Mesh, scene: THREE.Scene) {
-  if (enemies.length === 0) return null
+export function shootAtNearestEnemy(tower: THREE.Mesh, scene: THREE.Scene): () => void {
+  if (enemies.length === 0) return () => void 0
 
   const towerPosition = tower.position.clone()
 
@@ -52,7 +52,7 @@ export function shootAtNearestEnemy(tower: THREE.Mesh, scene: THREE.Scene) {
     enemies.sort(({ position: a }, { position: b }) => a.distanceTo(towerPosition) - b.distanceTo(towerPosition))[0] ??
     null
 
-  if (!enemy) return
+  if (!enemy) return () => void 0
 
   // Обчислюємо напрямок руху
   const speed = 0.25 // Швидкість руху снаряда
@@ -85,4 +85,6 @@ export function shootAtNearestEnemy(tower: THREE.Mesh, scene: THREE.Scene) {
       clearInterval(interval)
     }
   }, 16)
+
+  return () => clearInterval(interval)
 }

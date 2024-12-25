@@ -43,11 +43,11 @@ const renderer = new THREE.WebGLRenderer({ antialias: true })
 renderer.setSize(window.innerWidth, window.innerHeight)
 gameContainer.appendChild(renderer.domElement)
 
-const cameraDragHandler = enableCameraDrag(camera, renderer)
-const wheelTiltHandler = enableMouseWheelTilt(camera, renderer)
+enableCameraDrag(camera, renderer)
+enableMouseWheelTilt(camera, renderer)
 
 // Ground and Grid
-const { gridHelper, plane } = createGround(scene)
+const { gridHelper: _gridHelper, plane } = createGround(scene)
 
 // Tiles
 const tiles: THREE.Mesh[] = createTiles(scene, 2)
@@ -60,11 +60,11 @@ const raycaster = new THREE.Raycaster()
 const mouse = new THREE.Vector2()
 
 // Lighting
-const ambientLight = createAmbienLight(scene)
-const directionalLight = createDirectionalLight(scene)
+createAmbienLight(scene)
+createDirectionalLight(scene)
 const spotLight = createSpotLight(scene, tower)
-const { lightSphere, pointLight } = createPointLight(scene)
-const hemisphereLight = createHemisphereLight(scene)
+const { lightSphere: _lightSphere, pointLight } = createPointLight(scene)
+createHemisphereLight(scene)
 flickerLight(pointLight)
 
 // Animation Handlers
@@ -79,7 +79,7 @@ plane.receiveShadow = true
 tiles.forEach(tile => (tile.receiveShadow = true))
 
 setInterval(() => spawnRandomEnemy(scene), 2500)
-setInterval(() => shootAtNearestEnemy(tower, scene), 2000)
+setInterval(shootAtNearestEnemy(tower, scene), 2000)
 
 // Rendering Loop
 const render = () => {
@@ -109,7 +109,7 @@ window.addEventListener(
   'keydown',
   event => {
     if (event.code === 'Space') {
-      shootAtNearestEnemy(tower, scene)
+      shootAtNearestEnemy(tower, scene)()
     }
   },
   { passive: true }
