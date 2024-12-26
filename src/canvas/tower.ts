@@ -1,7 +1,6 @@
 import * as THREE from 'three'
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils'
 import { Colors } from './constants'
-import { enemies } from './enemies'
 import { scene } from './scene'
 
 const createTower = (size: number = 2) => {
@@ -44,7 +43,7 @@ const createTower = (size: number = 2) => {
 
 export default createTower
 
-export function shootAtNearestEnemy(tower: THREE.Mesh): void {
+export function shootAtNearestEnemy(tower: THREE.Mesh, enemies: THREE.Mesh[]): void {
   if (enemies.length === 0) return
 
   const towerPosition = tower.position.clone()
@@ -71,7 +70,7 @@ export function shootAtNearestEnemy(tower: THREE.Mesh): void {
   projectile.position.copy(tower.position).setY(enemyInitialPosition.y / 2) // Початкова позиція — позиція башти
   projectile.castShadow = true
   projectile.receiveShadow = true
-  projectile.userData = { isPersistant: false, boundingBox: new THREE.Box3() }
+  projectile.userData = { isPersistant: false, boundingBox: new THREE.Box3(), damage: 1 }
 
   scene.add(projectile)
 
@@ -85,5 +84,5 @@ export function shootAtNearestEnemy(tower: THREE.Mesh): void {
       scene.remove(projectile)
       clearInterval(interval)
     }
-  }, 16)
+  }, 1000 / 60)
 }

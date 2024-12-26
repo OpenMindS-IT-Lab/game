@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { spawnAirTower, spawnEarthTower, spawnFireTower, spawnWaterTower } from './canvas/allies'
 import { AnimationHandler, flickerLight } from './canvas/animations'
 import { resetCamera } from './canvas/camera'
-import { spawnCube, spawnIcosahedron, spawnOctahedron, spawnRandomEnemy, spawnSphere } from './canvas/enemies'
+import EnemySpawner from './canvas/enemies'
 import createGround from './canvas/ground'
 import {
   createAmbientLight,
@@ -73,19 +73,23 @@ tower.castShadow = true
 plane.receiveShadow = true
 tiles.forEach(tile => (tile.receiveShadow = true))
 
-setInterval(() => spawnRandomEnemy(), 2500)
-setInterval(() => shootAtNearestEnemy(tower), 2000)
+const spawner = new EnemySpawner()
+spawner.start(1000)
+setInterval(() => shootAtNearestEnemy(tower, spawner.enemies), 1000)
 
 // Initialize
 window.addEventListener('resize', handleResize(renderer))
-window.addEventListener('click', handleMouseClick(isTowerAnimating, mouse, raycaster, tower, spotLight))
-window.addEventListener('mousemove', handleMouseMove(mouse, raycaster, tower, isTowerAnimating))
+window.addEventListener(
+  'click',
+  handleMouseClick(isTowerAnimating, mouse, raycaster, tower, spawner.enemies, spotLight)
+)
+window.addEventListener('mousemove', handleMouseMove(mouse, raycaster, tower, spawner.enemies, isTowerAnimating))
 
 // Прив'язка функцій до кнопок
-spawnCubeButton.addEventListener('click', () => spawnCube())
-spawnSphereButton.addEventListener('click', () => spawnSphere())
-spawnOctahedronButton.addEventListener('click', () => spawnOctahedron())
-spawnIcosahedronButton.addEventListener('click', () => spawnIcosahedron())
+spawnCubeButton.addEventListener('click', () => spawner.spawnCube())
+spawnSphereButton.addEventListener('click', () => spawner.spawnSphere())
+spawnOctahedronButton.addEventListener('click', () => spawner.spawnOctahedron())
+spawnIcosahedronButton.addEventListener('click', () => spawner.spawnIcosahedron())
 
 spawnWaterTowerButton.addEventListener('click', spawnWaterTower)
 spawnFireTowerButton.addEventListener('click', spawnFireTower)

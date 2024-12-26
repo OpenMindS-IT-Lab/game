@@ -1,7 +1,6 @@
 import * as THREE from 'three'
 import { AnimationHandler, moveAndFlip, moveLinear } from '../canvas/animations'
 import camera from '../canvas/camera'
-import { enemies } from '../canvas/enemies' // Import enemies
 import { hoverTile, tiles } from '../canvas/tiles'
 import { hoverObject, switchObjectSelectionState } from '../canvas/utils'
 
@@ -20,7 +19,7 @@ export const handleMouseClick =
     // camera: THREE.PerspectiveCamera,
     tower: THREE.Mesh,
     // tiles: THREE.Mesh[],
-    // enemies: THREE.Mesh[],
+    enemies: THREE.Mesh[],
     spotLight: THREE.SpotLight
   ) =>
   (event: MouseEvent) => {
@@ -108,7 +107,7 @@ export const handleMouseMove =
     // camera: THREE.PerspectiveCamera,
     tower: THREE.Mesh,
     // tiles: THREE.Mesh[],
-    // enemies: THREE.Mesh[],
+    enemies: THREE.Mesh[],
     animationHandler: AnimationHandler
   ) =>
   (event: MouseEvent) => {
