@@ -15,9 +15,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "lodash": "^4.17.21",
     "three": "^0.171.0"
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.13",
     "@types/three": "^0.171.0",
     "typescript": "^5.7.2",
     "vite": "^6.0.3"
