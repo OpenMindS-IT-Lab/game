@@ -15,6 +15,10 @@ export const spawnAirTowerButton = document.getElementById('spawn-air-tower') as
 
 export const resetSceneButton = document.getElementById('reset-scene') as Element
 
+export const gameInfoTableBody = document.querySelector('#game-info-table tbody') as Element
+
+export const coinCounter = document.getElementById('coin-counter') as Element
+
 export function toggleMenu() {
   sideMenu.classList.toggle('hidden') // Відкриваємо/закриваємо меню
   console.log('here')

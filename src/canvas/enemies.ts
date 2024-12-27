@@ -63,14 +63,15 @@ export class Enemy extends THREE.Mesh {
   height: number
   moving: number
   watchingCollisions: number
+  coinDropRange: [number, number]
 
   protected spawner: EnemySpawner
 
   private statsMap = {
-    [EnemyType.REGULAR]: { health: 1, damage: 1, speed: 0.05, height: 1.9 },
-    [EnemyType.FAST]: { health: 1, damage: 1, speed: 0.1, height: 1.6 },
-    [EnemyType.FAT]: { health: 2, damage: 1, speed: 0.05, height: 1.3 },
-    [EnemyType.STRONG]: { health: 1, damage: 2, speed: 0.05, height: 1.6 },
+    [EnemyType.REGULAR]: { health: 1, damage: 1, speed: 0.05, height: 1.9, coinDropRange: [0, 1] },
+    [EnemyType.FAST]: { health: 1, damage: 1, speed: 0.1, height: 1.6, coinDropRange: [0, 2] },
+    [EnemyType.FAT]: { health: 2, damage: 1, speed: 0.05, height: 1.3, coinDropRange: [0, 3] },
+    [EnemyType.STRONG]: { health: 1, damage: 2, speed: 0.05, height: 1.6, coinDropRange: [0, 2] },
   }
 
   constructor(type: EnemyType = EnemyType.REGULAR, level: number, spawner: EnemySpawner) {
@@ -85,7 +86,13 @@ export class Enemy extends THREE.Mesh {
 
     this.enemyType = type
     const baseStats = this.statsMap[this.enemyType]
-    const { health, damage, height, speed } = baseStats
+    const {
+      health,
+      damage,
+      height,
+      speed,
+      coinDropRange: [minCoinDrop, maxCoinDrop],
+    } = baseStats
 
     this.level = level
     this.health = health * this.level
@@ -95,6 +102,7 @@ export class Enemy extends THREE.Mesh {
     this.moving = 0
     this.watchingCollisions = 0
     this.spawner = spawner
+    this.coinDropRange = [minCoinDrop + this.level - 1, maxCoinDrop * this.level]
 
     let randomPosition
     let attempts = 0
@@ -199,6 +207,7 @@ export class Enemy extends THREE.Mesh {
     this.health -= damage
 
     if (this.health <= 0) {
+      this.dropCoins()
       this.destroy()
     }
   }
@@ -213,6 +222,17 @@ export class Enemy extends THREE.Mesh {
     // pull(this.spawner.enemies, this)
     // this.spawner.purgeDestroyedEnemies()
     // remove(this.spawner.enemies, ({ userData }) => userData.isDestroyed)
+  }
+
+  private dropCoins() {
+    const [minDrop, maxDrop] = this.coinDropRange
+    const coinDropDelta = maxDrop - minDrop
+    const drop = Math.round(Math.random() * coinDropDelta) + minDrop
+
+    console.log(`${this.enemyType.toUpperCase()} ENEMY dropped ${drop} coins`)
+    console.log(`minDrop: ${minDrop}; maxDrop: ${maxDrop}; coinDropDelta: ${coinDropDelta}.`)
+
+    this.spawner.collectDrop(drop)
   }
 }
 
@@ -237,6 +257,10 @@ export default class EnemySpawner {
     this.spawnRate = (1 / this.level) * 3000
 
     this.spawnEnemy = this.spawnEnemy.bind(this)
+  }
+
+  public collectDrop(coins: number) {
+    if ('coins' in this) (this.coins as number) += coins
   }
 
   spawnEnemy(type?: EnemyType) {

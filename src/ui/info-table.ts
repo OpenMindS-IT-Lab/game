@@ -1,13 +1,13 @@
+import { gameInfoTableBody } from '.'
 import EnemySpawner from '../canvas/enemies'
 import Tower from '../canvas/tower'
 
 // Function to update the game info table
 function updateGameInfoTable(tower: Tower, spawner: EnemySpawner) {
-  const tableBody = document.querySelector('#game-info-table tbody')
-  if (!tableBody) return
+  if (!gameInfoTableBody) return
 
   // Clear existing rows
-  tableBody.innerHTML = ''
+  gameInfoTableBody.innerHTML = ''
 
   // Add Allies data
   const alliesHeading = document.createElement('tr')
@@ -24,7 +24,7 @@ function updateGameInfoTable(tower: Tower, spawner: EnemySpawner) {
     <td>${tower.bulletDamage}</td>
     <td>${tower.bulletSpeed}</td>
   `
-  tableBody.appendChild(alliesHeading)
+  gameInfoTableBody.appendChild(alliesHeading)
   alliesHeading.after(towerRow)
 
   tower.allies.forEach(ally => {
@@ -36,7 +36,7 @@ function updateGameInfoTable(tower: Tower, spawner: EnemySpawner) {
     <td>${ally.damage}</td>
     <td>${ally.speed}</td>
     `
-    tableBody.appendChild(allyRow)
+    gameInfoTableBody.appendChild(allyRow)
   })
 
   // Add Enemies data
@@ -44,7 +44,7 @@ function updateGameInfoTable(tower: Tower, spawner: EnemySpawner) {
   enemiesHeading.innerHTML = `
     <th colspan="5">Enemies</th>
   `
-  tableBody.appendChild(enemiesHeading)
+  gameInfoTableBody.appendChild(enemiesHeading)
 
   spawner.enemies.forEach(enemy => {
     const enemyRow = document.createElement('tr')
@@ -55,7 +55,7 @@ function updateGameInfoTable(tower: Tower, spawner: EnemySpawner) {
     <td>${enemy.userData.damage}</td>
     <td>${enemy.userData.speed}</td>
     `
-    tableBody.appendChild(enemyRow)
+    gameInfoTableBody.appendChild(enemyRow)
   })
 }
 
@@ -64,7 +64,7 @@ export default function renderInfoTable(tower: Tower, spawner: EnemySpawner) {
     // console.log(spawner.intervals)
     updateGameInfoTable(tower, spawner)
     if (spawner.intervals.length === 0 && spawner.enemies.length === 0) clearInterval(infoTableUpdateI)
-  }, 1000 / 4 )
+  }, 1000 / 4)
 
   return () => {
     clearInterval(infoTableUpdateI)

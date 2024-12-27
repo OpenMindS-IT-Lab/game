@@ -14,6 +14,7 @@ import renderer, { render } from './canvas/renderer'
 import createTiles from './canvas/tiles'
 import Tower from './canvas/tower'
 import { enableCameraDrag, enableMouseWheelTilt, resetScene } from './canvas/utils'
+import Game from './game'
 import './ui'
 import {
   resetSceneButton,
@@ -74,8 +75,8 @@ plane.receiveShadow = true
 tiles.forEach(tile => (tile.receiveShadow = true))
 
 const spawner = new EnemySpawner()
-spawner.start()
-tower.startShooting(spawner.enemies)
+const game = new Game(spawner, tower)
+game.start()
 
 // Call updateGameInfoTable periodically to refresh the data
 renderInfoTable(tower, spawner)

@@ -130,11 +130,12 @@ body {
 
 #game-info-table {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 20px;
+  right: 20px;
 
   background: #666;
   color: white;
+  border-radius: 5px;
 }
 
 #game-info-table > thead > tr > th {
@@ -154,4 +155,16 @@ body {
 
 #game-info-table > tbody > tr > td {
   text-align: center;
+}
+
+#coin-counter {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  padding: 10px;
+  background: #ff0000;
+  color: white;
+  border-radius: 5px;
+  font-size: 16px;
+  pointer-events: auto; /* To ensure it is clickable, if necessary */
 }
