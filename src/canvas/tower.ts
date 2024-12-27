@@ -132,6 +132,7 @@ class Tower extends THREE.Mesh {
     if (this.health <= 0) {
       this.stopShooting()
       spawner.stop()
+      // console.log(spawner.enemies)
       scene.remove(this)
     }
   }

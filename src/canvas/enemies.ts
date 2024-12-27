@@ -1,4 +1,4 @@
-import { difference, remove, without } from 'lodash'
+import { pull, remove, without } from 'lodash'
 import * as THREE from 'three'
 import { AllyType } from './allies'
 import { Colors } from './constants'
@@ -204,14 +204,14 @@ export class Enemy extends THREE.Mesh {
   }
 
   public destroy() {
-    clearInterval(this.moving)
-    clearInterval(this.watchingCollisions)
+    this.spawner.clearInterval(this.moving)
+    this.spawner.clearInterval(this.watchingCollisions)
 
     this.userData.isDestroyed = true
     scene.remove(this)
 
     // pull(this.spawner.enemies, this)
-    this.spawner.purgeDestroyedEnemies()
+    // this.spawner.purgeDestroyedEnemies()
     // remove(this.spawner.enemies, ({ userData }) => userData.isDestroyed)
   }
 }
@@ -303,14 +303,17 @@ export default class EnemySpawner {
     return this._intervals
   }
 
-  private set intervals(entrries: number[]) {
-    difference(this._intervals, entrries).forEach(clearInterval)
-
+  set intervals(entrries: number[]) {
     this._intervals = entrries
   }
 
   private startI = 0
   private levelUpI = 0
+
+  public clearInterval(interval: number) {
+    clearInterval(interval)
+    pull(this.intervals, interval)
+  }
 
   public start() {
     this.startI = setInterval(() => this.spawnRandomEnemy(), this.spawnRate)
@@ -322,7 +325,22 @@ export default class EnemySpawner {
   }
 
   public stop() {
+    // console.log('stop() called')
+
+    // console.log('Interating throught ' + this.enemies.length + ' enemies')
+    this.enemies.forEach(enemy => {
+      // console.log(enemy)
+      enemy.destroy()
+      // console.log('destroy() called')
+    })
+    // console.log('After iterationg the list of enemies is: ' + this.enemies)
+    this.purgeDestroyedEnemies()
+    // console.log('purgeDestroyedEnemies() called')
+    // console.log('Enemies: ', this.enemies)
+
     this.intervals.forEach(interval => clearInterval(interval))
+
+    this.intervals = []
   }
 
   private update() {
