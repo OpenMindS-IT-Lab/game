@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-import { spawnAirTower, spawnEarthTower, spawnFireTower, spawnWaterTower } from './canvas/allies'
 import { AnimationHandler, flickerLight } from './canvas/animations'
 import { resetCamera } from './canvas/camera'
 import EnemySpawner from './canvas/enemies'
@@ -19,12 +18,12 @@ import './ui'
 import {
   resetSceneButton,
   spawnAirTowerButton,
-  spawnCubeButton,
   spawnEarthTowerButton,
+  spawnFastButton,
+  spawnFatButton,
   spawnFireTowerButton,
-  spawnIcosahedronButton,
-  spawnOctahedronButton,
-  spawnSphereButton,
+  spawnRegularButton,
+  spawnStrongButton,
   spawnWaterTowerButton,
 } from './ui'
 import { handleMouseClick, handleMouseMove, handleResize } from './ui/event-listeners'
@@ -74,8 +73,69 @@ plane.receiveShadow = true
 tiles.forEach(tile => (tile.receiveShadow = true))
 
 const spawner = new EnemySpawner()
-spawner.start(1500)
+spawner.start()
 tower.startShooting(spawner.enemies)
+
+// Function to update the game info table
+function updateGameInfoTable(tower: Tower, spawner: EnemySpawner) {
+  const tableBody = document.querySelector('#game-info-table tbody')
+  if (!tableBody) return
+
+  // Clear existing rows
+  tableBody.innerHTML = ''
+
+  // Add Allies data
+  const alliesHeading = document.createElement('tr')
+  alliesHeading.innerHTML = `
+    <th colspan="5">Allies</th>
+  `
+
+  // Add Tower data
+  const towerRow = document.createElement('tr')
+  towerRow.innerHTML = `
+    <td>Tower</td>
+    <td>${tower.health}</td>
+    <td>${tower.level}</td>
+    <td>${tower.bulletDamage}</td>
+    <td>${tower.bulletSpeed}</td>
+  `
+  tableBody.appendChild(alliesHeading)
+  alliesHeading.after(towerRow)
+
+  tower.allies.forEach(ally => {
+    const allyRow = document.createElement('tr')
+    allyRow.innerHTML = `
+    <td>${ally.allyTowerType}</td>
+    <td>${ally.health}</td>
+    <td>${ally.level}</td>
+    <td>${ally.damage}</td>
+    <td>${ally.speed}</td>
+    `
+    tableBody.appendChild(allyRow)
+  })
+
+  // Add Enemies data
+  const enemiesHeading = document.createElement('tr')
+  enemiesHeading.innerHTML = `
+    <th colspan="5">Enemies</th>
+  `
+  tableBody.appendChild(enemiesHeading)
+
+  spawner.enemies.forEach(enemy => {
+    const enemyRow = document.createElement('tr')
+    enemyRow.innerHTML = `
+    <td>${enemy.userData.type}</td>
+    <td>${enemy.userData.health}</td>
+    <td>${spawner.level}</td>
+    <td>${enemy.userData.damage}</td>
+    <td>${enemy.userData.speed}</td>
+    `
+    tableBody.appendChild(enemyRow)
+  })
+}
+
+// Call updateGameInfoTable periodically to refresh the data
+setInterval(() => updateGameInfoTable(tower, spawner), 250)
 
 // Initialize
 window.addEventListener('resize', handleResize(renderer))
@@ -86,15 +146,18 @@ window.addEventListener(
 window.addEventListener('mousemove', handleMouseMove(mouse, raycaster, tower, spawner.enemies, isTowerAnimating))
 
 // Прив'язка функцій до кнопок
-spawnCubeButton.addEventListener('click', () => spawner.spawnCube())
-spawnSphereButton.addEventListener('click', () => spawner.spawnSphere())
-spawnOctahedronButton.addEventListener('click', () => spawner.spawnOctahedron())
-spawnIcosahedronButton.addEventListener('click', () => spawner.spawnIcosahedron())
+spawnFatButton.addEventListener('click', () => spawner.spawnFat())
+spawnFastButton.addEventListener('click', () => spawner.spawnFast())
+spawnRegularButton.addEventListener('click', () => spawner.spawnRegular())
+spawnStrongButton.addEventListener('click', () => spawner.spawnStrong())
 
-spawnWaterTowerButton.addEventListener('click', spawnWaterTower)
-spawnFireTowerButton.addEventListener('click', spawnFireTower)
-spawnEarthTowerButton.addEventListener('click', spawnEarthTower)
-spawnAirTowerButton.addEventListener('click', spawnAirTower)
+spawnWaterTowerButton.addEventListener('click', () => tower.spawnWaterTower())
+spawnFireTowerButton.addEventListener('click', () => {
+  const fireTower = tower.spawnFireTower()
+  fireTower.startCasting(spawner.enemies)
+})
+spawnEarthTowerButton.addEventListener('click', () => tower.spawnEarthTower())
+spawnAirTowerButton.addEventListener('click', () => tower.spawnAirTower())
 
 resetSceneButton.addEventListener('click', resetScene)
 

@@ -3,10 +3,10 @@ export const menuToggle = document.getElementById('burger-button') as Element
 export const sideMenu = document.getElementById('side-menu') as Element
 export const closeButton = document.getElementById('close-button') as Element
 
-export const spawnCubeButton = document.getElementById('spawn-cube') as Element
-export const spawnSphereButton = document.getElementById('spawn-sphere') as Element
-export const spawnOctahedronButton = document.getElementById('spawn-octahedron') as Element
-export const spawnIcosahedronButton = document.getElementById('spawn-icosahedron') as Element
+export const spawnFatButton = document.getElementById('spawn-fat') as Element
+export const spawnFastButton = document.getElementById('spawn-fast') as Element
+export const spawnRegularButton = document.getElementById('spawn-regular') as Element
+export const spawnStrongButton = document.getElementById('spawn-strong') as Element
 
 export const spawnWaterTowerButton = document.getElementById('spawn-water-tower') as Element
 export const spawnFireTowerButton = document.getElementById('spawn-fire-tower') as Element

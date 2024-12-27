@@ -24,10 +24,10 @@
 
     <!-- Бічні кнопки (для зручності під час розробки; не входитимуть в кінцевий інтерфейс гри) -->
     <div id="side-buttons">
-      <button id="spawn-cube" type="button" class="ui-button">Spawn Cube</button>
-      <button id="spawn-sphere" type="button" class="ui-button">Spawn Sphere</button>
-      <button id="spawn-octahedron" type="button" class="ui-button">Spawn Octahedron</button>
-      <button id="spawn-icosahedron" type="button" class="ui-button">Spawn Icosahedron</button>
+      <button id="spawn-fat" type="button" class="ui-button">Spawn Fat</button>
+      <button id="spawn-fast" type="button" class="ui-button">Spawn Fast</button>
+      <button id="spawn-regular" type="button" class="ui-button">Spawn Regular</button>
+      <button id="spawn-strong" type="button" class="ui-button">Spawn Strong</button>
     </div>
 
     <!-- Кнопка-бургер -->
@@ -48,6 +48,21 @@
         <li><button type="button" class="menu-item">Menu Option 4</button></li>
       </ul>
     </div>
+
+    <table id="game-info-table">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Health</th>
+          <th>Level</th>
+          <th>Damage</th>
+          <th>Speed</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- ... -->
+      </tbody>
+    </table>
   </div>
 
   <script type="module" src="/src/main.ts" charset="utf-8"></script>

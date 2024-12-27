@@ -127,3 +127,31 @@ body {
 #side-menu.hidden {
   transform: translateX(-100%);
 }
+
+#game-info-table {
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  background: #666;
+  color: white;
+}
+
+#game-info-table > thead > tr > th {
+  padding: 5px 10px;
+}
+
+#game-info-table > tbody > tr > th {
+  text-align: center;
+}
+
+#game-info-table > tbody > tr > td:first-of-type {
+  font-weight: bold;
+  text-align: left;
+  font-size: 0.75em;
+  text-transform: capitalize;
+}
+
+#game-info-table > tbody > tr > td {
+  text-align: center;
+}
