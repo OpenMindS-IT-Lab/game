@@ -1,5 +1,6 @@
-import { difference } from 'lodash'
+import { difference, remove, without } from 'lodash'
 import * as THREE from 'three'
+import { AllyType } from './allies'
 import { Colors } from './constants'
 import { scene } from './scene'
 import { tiles } from './tiles'
@@ -8,7 +9,7 @@ import { checkCollisionsAll, showDamageText } from './utils'
 
 // Функція для створення випадкового кольору
 function getRandomColor() {
-  return Math.random() * 0xffffff
+  return { ...Colors.ENEMY, color: new THREE.Color(Math.random() * 0xffffff) }
 }
 
 // Функція для випадкового розташування
@@ -39,49 +40,61 @@ function getRandomPosition() {
   }
 }
 
-// Функція для створення геометрії
-export default class EnemySpawner {
-  private _enemies: THREE.Mesh[] = []
+const enum EnemyType {
+  REGULAR = 'regular',
+  FAST = 'fast',
+  FAT = 'fat',
+  STRONG = 'strong',
+}
 
-  public get enemies() {
-    return this._enemies
+const geometryMap = {
+  [EnemyType.FAT]: () => new THREE.BoxGeometry(1.25, 1.25, 1.25),
+  [EnemyType.FAST]: () => new THREE.SphereGeometry(0.75, 16, 16),
+  [EnemyType.REGULAR]: () => new THREE.OctahedronGeometry(0.9).rotateY(Math.PI / 4),
+  [EnemyType.STRONG]: () => new THREE.IcosahedronGeometry(0.9, 0),
+}
+
+export class Enemy extends THREE.Mesh {
+  enemyType: EnemyType
+  level: number
+  health: number
+  damage: number
+  speed: number
+  height: number
+  moving: number
+  watchingCollisions: number
+
+  protected spawner: EnemySpawner
+
+  private statsMap = {
+    [EnemyType.REGULAR]: { health: 1, damage: 1, speed: 0.05, height: 1.9 },
+    [EnemyType.FAST]: { health: 1, damage: 1, speed: 0.1, height: 1.6 },
+    [EnemyType.FAT]: { health: 2, damage: 1, speed: 0.05, height: 1.3 },
+    [EnemyType.STRONG]: { health: 1, damage: 2, speed: 0.05, height: 1.6 },
   }
-  private set enemies(enemies: THREE.Mesh[]) {
-    this._enemies = enemies
-  }
 
-  constructor() {
-    this.enemies = []
-    this.intervals = []
-
-    this.spawnEnemy = this.spawnEnemy.bind(this)
-  }
-
-  spawnEnemy(
-    geometry: THREE.BoxGeometry | THREE.SphereGeometry | THREE.CylinderGeometry | THREE.IcosahedronGeometry,
-    materialParams?: THREE.MeshStandardMaterialParameters,
-    stats?: { speed?: number; height?: number; health?: number; damage?: number }
-  ) {
-    const defaultMaterialParams = {
-      ...Colors.ENEMY,
-      color: getRandomColor(),
+  constructor(type: EnemyType = EnemyType.REGULAR, level: number, spawner: EnemySpawner) {
+    const geometry = geometryMap[type]()
+    const material = new THREE.MeshStandardMaterial({
+      ...getRandomColor(),
       metalness: 0.3,
       roughness: 0.7,
-    }
-
-    const defaultStats = {
-      speed: 0.05,
-      height: 1,
-      health: 1,
-      damage: 1,
-    }
-
-    const material = new THREE.MeshStandardMaterial({
-      ...defaultMaterialParams,
-      ...materialParams,
     })
-    const newEnemy = new THREE.Mesh(geometry, material)
-    const { speed, height, health, damage } = { ...defaultStats, ...stats }
+
+    super(geometry, material)
+
+    this.enemyType = type
+    const baseStats = this.statsMap[this.enemyType]
+    const { health, damage, height, speed } = baseStats
+
+    this.level = level
+    this.health = health * this.level
+    this.damage = this.level / 2 + damage - 0.5
+    this.speed = parseFloat((speed * (0.75 + this.level / 4)).toFixed(5))
+    this.height = height / 2 - 0.05
+    this.moving = 0
+    this.watchingCollisions = 0
+    this.spawner = spawner
 
     let randomPosition
     let attempts = 0
@@ -90,76 +103,70 @@ export default class EnemySpawner {
     while (attempts < maxAttempts) {
       try {
         randomPosition = getRandomPosition()
-        newEnemy.position.copy(randomPosition).setY(height / 2 - 0.05)
+        this.position.copy(randomPosition).setY(this.height)
         break
       } catch (error) {
         attempts++
         if (attempts >= maxAttempts) {
           console.error('Failed to generate position after multiple attempts:', error)
-          return null
         }
       }
     }
 
-    newEnemy.castShadow = true
-    newEnemy.receiveShadow = true
-    newEnemy.userData = {
+    this.castShadow = true
+    this.receiveShadow = true
+    this.userData = {
       isPersistant: false,
       isSelected: false,
       boundingBox: new THREE.Box3(),
       initialColor: Colors.ENEMY,
       isDestroyed: false,
-      health,
-      damage,
+      health: this.health,
+      damage: this.damage,
+      speed: this.speed,
+      type,
     }
 
-    scene.add(newEnemy)
-    this.enemies.push(newEnemy)
+    scene.add(this)
+  }
 
-    const enemyInitialPosition = newEnemy.position.clone()
+  public move() {
+    const spawnPosition = this.position.clone()
     const towerPosition =
       scene.children.find(child => child.name === 'Tower')?.position.clone() ??
-      new THREE.Vector3(0, enemyInitialPosition.y, 14)
-    const direction = new THREE.Vector3()
-      .subVectors(towerPosition, enemyInitialPosition)
-      .setY(enemyInitialPosition.y)
-      .normalize()
+      new THREE.Vector3(0, spawnPosition.y, 14)
+    const direction = new THREE.Vector3().subVectors(towerPosition, spawnPosition).setY(spawnPosition.y).normalize()
 
-    newEnemy.lookAt(towerPosition)
+    this.lookAt(towerPosition)
 
     const fieldTiles = tiles.filter(tile => tile.position.z !== 14)
 
-    let moveEnemyI = setInterval(() => {
-      newEnemy.position.addScaledVector(direction, speed).setY(enemyInitialPosition.y)
+    this.moving = setInterval(() => {
+      this.position.addScaledVector(direction, this.speed).setY(spawnPosition.y)
 
       // Оновлення статусу плитки
       fieldTiles.forEach(tile => {
-        if (tile.position.distanceTo(newEnemy.position) <= 0.05) {
+        if (tile.position.distanceTo(this.position.clone()) <= 0.05) {
           tile.userData.isOccupied = true
-        } else if (tile.userData.isOccupied && tile.position.distanceTo(newEnemy.position) > 1) {
+        } else if (tile.userData.isOccupied && tile.position.distanceTo(this.position.clone()) > 1) {
           tile.userData.isOccupied = false
         }
       })
     }, 1000 / 60) // 60 FPS
 
-    let watchCollisionsI = setInterval(() => {
-      const collisions = checkCollisionsAll(newEnemy)
+    return this.moving
+  }
+
+  public watchCollisions() {
+    this.watchingCollisions = setInterval(() => {
+      const collisions = checkCollisionsAll(this)
 
       if (collisions.length > 0) {
         // Видаляємо ворога та снаряд
 
         for (let collision of collisions) {
           if ('projectile' in collision.userData && collision.userData.projectile) {
-            showDamageText(collision.userData.damage, newEnemy.position.clone(), 0xf0f0f0)
-
-            newEnemy.userData.health -= collision.userData.damage
-
-            if (newEnemy.userData.health <= 0) {
-              this.destroyEnemy(newEnemy)
-              clearInterval(watchCollisionsI)
-              clearInterval(moveEnemyI)
-            }
-
+            this.takeDamage(collision.userData.damage)
             scene.remove(collision)
           }
 
@@ -168,59 +175,108 @@ export default class EnemySpawner {
 
             if (!tower) throw new Error('Smth went wrong with Tower when handling collision!')
 
-            tower.takeDamage(newEnemy.userData.damage, this)
-            this.destroyEnemy(newEnemy)
-            clearInterval(watchCollisionsI)
-            clearInterval(moveEnemyI)
+            tower.takeDamage(this.damage, this.spawner)
+            this.destroy()
           }
-
-          // else clearInterval(moveEnemyI)
         }
+
+        this.spawner.purgeDestroyedEnemies()
       }
     }, 1000 / 60) // 60 FPS
 
-    this.intervals.push(moveEnemyI, watchCollisionsI)
+    return this.watchingCollisions
+  }
+
+  public takeDamage(damage: number, type?: AllyType) {
+    const colorMap = {
+      [AllyType.WATER]: 0x4277ff,
+      [AllyType.FIRE]: 0xff4444,
+      [AllyType.EARTH]: 0x423333,
+      [AllyType.AIR]: 0x42ffff,
+    }
+    showDamageText(damage, this.position.clone(), !!type ? colorMap[type] : 0xffffff)
+
+    this.health -= damage
+
+    if (this.health <= 0) {
+      this.destroy()
+    }
+  }
+
+  public destroy() {
+    clearInterval(this.moving)
+    clearInterval(this.watchingCollisions)
+
+    this.userData.isDestroyed = true
+    scene.remove(this)
+
+    // pull(this.spawner.enemies, this)
+    this.spawner.purgeDestroyedEnemies()
+    // remove(this.spawner.enemies, ({ userData }) => userData.isDestroyed)
+  }
+}
+
+// Функція для створення геометрії
+export default class EnemySpawner {
+  private _enemies: Enemy[] = []
+
+  public get enemies() {
+    return this._enemies
+  }
+  set enemies(enemies: Enemy[]) {
+    this._enemies = enemies
+  }
+
+  level: number
+  spawnRate: number
+
+  constructor() {
+    this.enemies = []
+    this.intervals = []
+    this.level = 1
+    this.spawnRate = (1 / this.level) * 3000
+
+    this.spawnEnemy = this.spawnEnemy.bind(this)
+  }
+
+  spawnEnemy(type?: EnemyType) {
+    const newEnemy = new Enemy(type, this.level, this)
+
+    this.enemies.push(newEnemy)
+
+    newEnemy.move()
+    newEnemy.watchCollisions()
+
+    this.intervals.push(newEnemy.moving, newEnemy.watchingCollisions)
 
     return newEnemy
   }
 
-  destroyEnemy(enemy: THREE.Mesh) {
-    scene.remove(enemy)
-
-    enemy.userData.isDestroyed = true
-    this.enemies.sort(({ userData: { isDestroyed: a } }) => a)
-    this.enemies.splice(0, this.enemies.length, ...this.enemies.filter(enemy => !enemy.userData.isDestroyed))
+  purgeDestroyedEnemies() {
+    // this.enemies.sort(({ userData: { isDestroyed: a } }) => a)
+    // this.enemies.splice(0, this.enemies.length, ...this.enemies.filter(enemy => !enemy.userData.isDestroyed))
+    remove(this.enemies, ({ userData }) => userData.isDestroyed)
   }
 
   // Індивідуальні функції для кожного типу геометрії
   // FAT ENEMY
-  spawnCube() {
-    const geometry = new THREE.BoxGeometry(1.25, 1.25, 1.25)
-    console.log('Spawned Cube')
-    return this.spawnEnemy(geometry, {}, { height: 1.3, health: 2 })
+  spawnFat() {
+    return this.spawnEnemy(EnemyType.FAT)
   }
 
   // FAST ENEMY
-  spawnSphere() {
-    const geometry = new THREE.SphereGeometry(0.75, 16, 16)
-    console.log('Spawned Sphere')
-    return this.spawnEnemy(geometry, {}, { height: 1.6, speed: 0.1 })
-  }
-
-  // STRONG ENEMY
-  spawnOctahedron() {
-    const geometry = new THREE.OctahedronGeometry(0.9)
-    geometry.rotateY(Math.PI / 4)
-    console.log('Spawned Octahedron')
-    return this.spawnEnemy(geometry, {}, { height: 1.9, damage: 2 })
+  spawnFast() {
+    return this.spawnEnemy(EnemyType.FAST)
   }
 
   // REGULAR ENEMY
-  spawnIcosahedron() {
-    const geometry = new THREE.IcosahedronGeometry(0.9, 0)
+  spawnRegular() {
+    return this.spawnEnemy()
+  }
 
-    console.log('Spawned Icosahedron')
-    return this.spawnEnemy(geometry, {}, { height: 1.6 })
+  // STRONG ENEMY
+  spawnStrong() {
+    return this.spawnEnemy(EnemyType.STRONG)
   }
 
   spawnRandomEnemy() {
@@ -228,10 +284,10 @@ export default class EnemySpawner {
     const _spawner = this
 
     const EnemiesMap = {
-      0: this.spawnCube.bind(_spawner),
-      1: this.spawnSphere.bind(_spawner),
-      2: this.spawnOctahedron.bind(_spawner),
-      3: this.spawnIcosahedron.bind(_spawner),
+      0: this.spawnFat.bind(_spawner),
+      1: this.spawnFast.bind(_spawner),
+      2: this.spawnStrong.bind(_spawner),
+      3: this.spawnRegular.bind(_spawner),
     }
 
     const randomEnemy = EnemiesMap[Math.floor(Math.random() * 4) as keyof typeof EnemiesMap]()
@@ -254,12 +310,26 @@ export default class EnemySpawner {
   }
 
   private startI = 0
-  public start(rate: number = 1000) {
-    this.startI = setInterval(() => this.spawnRandomEnemy(), rate)
-    this.intervals.push(this.startI)
+  private levelUpI = 0
+
+  public start() {
+    this.startI = setInterval(() => this.spawnRandomEnemy(), this.spawnRate)
+    this.levelUpI = setInterval(() => {
+      this.level += 1
+      this.update()
+    }, 30000)
+    this.intervals.push(this.startI, this.levelUpI)
   }
 
   public stop() {
     this.intervals.forEach(interval => clearInterval(interval))
+  }
+
+  private update() {
+    clearInterval(this.startI)
+    this.intervals = without(this.intervals, this.startI)
+    this.spawnRate = (1 / this.level) * 3000
+    this.startI = setInterval(() => this.spawnRandomEnemy(), this.spawnRate)
+    this.intervals.push(this.startI)
   }
 }

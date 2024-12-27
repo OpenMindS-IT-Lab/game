@@ -1,7 +1,8 @@
 import * as THREE from 'three'
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils'
+import { Ally, AllyType } from './allies'
 import { Colors } from './constants'
-import EnemySpawner from './enemies'
+import EnemySpawner, { Enemy } from './enemies'
 import { scene } from './scene'
 import { showDamageText } from './utils'
 
@@ -12,6 +13,7 @@ class Tower extends THREE.Mesh {
   bulletDamage: number
   bulletCooldown: number
   shooting: number
+  allies: Ally[]
 
   constructor(size: number = 1) {
     // Base of the tower
@@ -53,11 +55,13 @@ class Tower extends THREE.Mesh {
     }
     this.name = 'Tower'
 
+    this.allies = []
+
     // Додаємо tower у сцену
     scene.add(this)
   }
 
-  private shootAtNearestEnemy(enemies: THREE.Mesh[]): void {
+  private shootAtNearestEnemy(enemies: Enemy[]): void {
     if (enemies.length === 0) return
 
     const towerPosition = this.position.clone()
@@ -112,7 +116,7 @@ class Tower extends THREE.Mesh {
     }, 1000 / 60)
   }
 
-  public startShooting(enemies: THREE.Mesh[]): void {
+  public startShooting(enemies: Enemy[]): void {
     this.shooting = setInterval(() => this.shootAtNearestEnemy(enemies), this.bulletCooldown)
   }
 
@@ -123,13 +127,36 @@ class Tower extends THREE.Mesh {
   public takeDamage(damage: number, spawner: EnemySpawner) {
     this.health -= damage
 
-    showDamageText(damage, this.position)
+    showDamageText(damage, this.position, 0xff0000)
 
     if (this.health <= 0) {
       this.stopShooting()
       spawner.stop()
       scene.remove(this)
     }
+  }
+
+  public spawnAlly(type: AllyType) {
+    const newAlly = new Ally(type)
+    this.allies.push(newAlly)
+    return newAlly
+  }
+
+  // Індивідуальні функції для кожного типу геометрії
+  public spawnEarthTower() {
+    return this.spawnAlly(AllyType.EARTH)
+  }
+
+  public spawnAirTower() {
+    return this.spawnAlly(AllyType.AIR)
+  }
+
+  public spawnFireTower() {
+    return this.spawnAlly(AllyType.FIRE)
+  }
+
+  public spawnWaterTower() {
+    return this.spawnAlly(AllyType.WATER)
   }
 }
 
