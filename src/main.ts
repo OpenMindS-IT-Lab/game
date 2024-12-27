@@ -13,7 +13,7 @@ import {
 } from './canvas/light'
 import renderer, { render } from './canvas/renderer'
 import createTiles from './canvas/tiles'
-import createTower, { shootAtNearestEnemy } from './canvas/tower'
+import Tower from './canvas/tower'
 import { enableCameraDrag, enableMouseWheelTilt, resetScene } from './canvas/utils'
 import './ui'
 import {
@@ -48,7 +48,7 @@ const { gridHelper: _gridHelper, plane } = createGround()
 const tiles: THREE.Mesh[] = createTiles(2)
 
 // Tower
-const tower = createTower(1.25)
+const tower = new Tower(1.25)
 
 // Raycaster
 const raycaster = new THREE.Raycaster()
@@ -74,8 +74,8 @@ plane.receiveShadow = true
 tiles.forEach(tile => (tile.receiveShadow = true))
 
 const spawner = new EnemySpawner()
-spawner.start(1000)
-setInterval(() => shootAtNearestEnemy(tower, spawner.enemies), 1000)
+spawner.start(1500)
+tower.startShooting(spawner.enemies)
 
 // Initialize
 window.addEventListener('resize', handleResize(renderer))
