@@ -1,9 +1,10 @@
-import { difference, without } from 'lodash'
+import { difference } from 'lodash'
 import * as THREE from 'three'
 import { Colors } from './constants'
 import { scene } from './scene'
 import { tiles } from './tiles'
-import { checkCollisionsAll } from './utils'
+import Tower from './tower'
+import { checkCollisionsAll, showDamageText } from './utils'
 
 // Функція для створення випадкового кольору
 function getRandomColor() {
@@ -59,7 +60,7 @@ export default class EnemySpawner {
   spawnEnemy(
     geometry: THREE.BoxGeometry | THREE.SphereGeometry | THREE.CylinderGeometry | THREE.IcosahedronGeometry,
     materialParams?: THREE.MeshStandardMaterialParameters,
-    stats?: { speed?: number; height?: number; health?: number }
+    stats?: { speed?: number; height?: number; health?: number; damage?: number }
   ) {
     const defaultMaterialParams = {
       ...Colors.ENEMY,
@@ -72,6 +73,7 @@ export default class EnemySpawner {
       speed: 0.05,
       height: 1,
       health: 1,
+      damage: 1,
     }
 
     const material = new THREE.MeshStandardMaterial({
@@ -79,7 +81,7 @@ export default class EnemySpawner {
       ...materialParams,
     })
     const newEnemy = new THREE.Mesh(geometry, material)
-    const { speed, height, health } = { ...defaultStats, ...stats }
+    const { speed, height, health, damage } = { ...defaultStats, ...stats }
 
     let randomPosition
     let attempts = 0
@@ -108,6 +110,7 @@ export default class EnemySpawner {
       initialColor: Colors.ENEMY,
       isDestroyed: false,
       health,
+      damage,
     }
 
     scene.add(newEnemy)
@@ -118,7 +121,8 @@ export default class EnemySpawner {
       scene.children.find(child => child.name === 'Tower')?.position.clone() ??
       new THREE.Vector3(0, enemyInitialPosition.y, 14)
     const direction = new THREE.Vector3()
-      .subVectors(towerPosition.setY(enemyInitialPosition.y), enemyInitialPosition)
+      .subVectors(towerPosition, enemyInitialPosition)
+      .setY(enemyInitialPosition.y)
       .normalize()
 
     newEnemy.lookAt(towerPosition)
@@ -145,7 +149,9 @@ export default class EnemySpawner {
         // Видаляємо ворога та снаряд
 
         for (let collision of collisions) {
-          if ('damage' in collision.userData) {
+          if ('projectile' in collision.userData && collision.userData.projectile) {
+            showDamageText(collision.userData.damage, newEnemy.position.clone(), 0xf0f0f0)
+
             newEnemy.userData.health -= collision.userData.damage
 
             if (newEnemy.userData.health <= 0) {
@@ -157,12 +163,23 @@ export default class EnemySpawner {
             scene.remove(collision)
           }
 
-          if (collision.name === 'Tower') clearInterval(moveEnemyI)
-          //
+          if (collision.name === 'Tower') {
+            const tower = scene.getObjectByName('Tower') as Tower
+
+            if (!tower) throw new Error('Smth went wrong with Tower when handling collision!')
+
+            tower.takeDamage(newEnemy.userData.damage, this)
+            this.destroyEnemy(newEnemy)
+            clearInterval(watchCollisionsI)
+            clearInterval(moveEnemyI)
+          }
+
           // else clearInterval(moveEnemyI)
         }
       }
     }, 1000 / 60) // 60 FPS
+
+    this.intervals.push(moveEnemyI, watchCollisionsI)
 
     return newEnemy
   }
@@ -177,32 +194,33 @@ export default class EnemySpawner {
 
   // Індивідуальні функції для кожного типу геометрії
   // FAT ENEMY
-
   spawnCube() {
     const geometry = new THREE.BoxGeometry(1.25, 1.25, 1.25)
     console.log('Spawned Cube')
-    return this.spawnEnemy(geometry, {}, { height: 1.25, health: 2 })
+    return this.spawnEnemy(geometry, {}, { height: 1.3, health: 2 })
   }
 
   // FAST ENEMY
   spawnSphere() {
     const geometry = new THREE.SphereGeometry(0.75, 16, 16)
     console.log('Spawned Sphere')
-    return this.spawnEnemy(geometry, {}, { height: 1.5, speed: 0.1 })
+    return this.spawnEnemy(geometry, {}, { height: 1.6, speed: 0.1 })
   }
 
+  // STRONG ENEMY
   spawnOctahedron() {
     const geometry = new THREE.OctahedronGeometry(0.9)
     geometry.rotateY(Math.PI / 4)
     console.log('Spawned Octahedron')
-    return this.spawnEnemy(geometry, {}, { height: 1.8 })
+    return this.spawnEnemy(geometry, {}, { height: 1.9, damage: 2 })
   }
 
+  // REGULAR ENEMY
   spawnIcosahedron() {
     const geometry = new THREE.IcosahedronGeometry(0.9, 0)
 
     console.log('Spawned Icosahedron')
-    return this.spawnEnemy(geometry, {}, { height: 1.8 })
+    return this.spawnEnemy(geometry, {}, { height: 1.6 })
   }
 
   spawnRandomEnemy() {
@@ -242,6 +260,6 @@ export default class EnemySpawner {
   }
 
   public stop() {
-    this.intervals = without(this.intervals, this.startI)
+    this.intervals.forEach(interval => clearInterval(interval))
   }
 }

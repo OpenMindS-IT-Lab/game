@@ -1,4 +1,6 @@
 import * as THREE from 'three'
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry'
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader'
 import camera, { resetCamera } from './camera'
 import { Colors } from './constants'
 import renderer from './renderer'
@@ -98,7 +100,7 @@ export function enableMouseWheelTilt() {
     renderer.domElement.removeEventListener('wheel', onWheel)
   }
 }
-
+//! TRY ORBIT CPNTROL
 export function disableMouseWheelTilt(disableHandler: ReturnType<typeof enableMouseWheelTilt>) {
   if (disableHandler) disableHandler()
 }
@@ -165,4 +167,43 @@ export const resetScene = () => {
   resetCamera()
 
   console.log(tiles)
+}
+
+// Функція для відображення тексту пошкодження
+export function showDamageText(damage: number, position: THREE.Vector3, color?: number) {
+  const loader = new FontLoader()
+  loader.load('/node_modules/three/examples/fonts/helvetiker_regular.typeface.json', font => {
+    const geometry = new TextGeometry(`-${damage}`, {
+      font: font,
+      size: 0.2,
+      depth: 0.1,
+      // bevelEnabled: true,
+      // bevelThickness: 0.02,
+      // bevelSize: 0.02,
+      // bevelOffset: 0,
+    })
+    const material = new THREE.MeshBasicMaterial({ ...Colors.DAMAGE_TEXT, color })
+    const textMesh = new THREE.Mesh(geometry, material)
+
+    textMesh.position.copy(position)
+    textMesh.position.y += 1 // Піднімаємо текст над баштою
+    const cameraPosition = camera.position.clone().setX(position.x)
+    textMesh.lookAt(cameraPosition)
+    const distanceToCamera = textMesh.position.distanceTo(cameraPosition)
+    textMesh.scale.setScalar(distanceToCamera / 14)
+
+    scene.add(textMesh)
+
+    const textInitialPosition = textMesh.position.clone().y
+    let animateText = setInterval(() => {
+      textMesh.position.y += 5 / 60
+      textMesh.material.opacity -= 1 / 60
+      textMesh.lookAt(cameraPosition)
+
+      if (textMesh.position.y >= textInitialPosition + 5) {
+        clearInterval(animateText)
+        scene.remove(textMesh)
+      }
+    }, 1000 / 60)
+  })
 }

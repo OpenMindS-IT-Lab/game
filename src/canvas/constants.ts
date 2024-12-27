@@ -9,6 +9,7 @@ export const Colors = {
   PLANE: { color: 0x202020, transparent: false, opacity: 1 },
   ENEMY: { color: 0x888888, transparent: true, opacity: 1 },
   ALLY: { color: 0x888888, transparent: true, opacity: 1 },
+  DAMAGE_TEXT: { color: 0xff0000, transparent: true, opacity: 1 },
 } as const
 
 export const AllyTypes = {
