@@ -1,3 +1,4 @@
+import { entries } from 'lodash'
 import * as THREE from 'three'
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils'
 import { Ally, AllyType } from './allies'
@@ -7,13 +8,16 @@ import { scene } from './scene'
 import { showDamageText } from './utils'
 
 class Tower extends THREE.Mesh {
-  health: number
+  health: number = 0
   level: number
-  bulletSpeed: number
-  bulletDamage: number
-  bulletCooldown: number
+  bulletSpeed: number = 0
+  bulletDamage: number = 0
+  bulletCooldown: number = 0
   shooting: number
-  allies: Ally[]
+  upgradeCost: number = 0
+  allies: Record<AllyType, Ally | undefined>
+
+  private priceMap: number[] = [10, 20, 50, 100, 200, 500, 1000, 2000, 4000, 8000, 12000, 16000]
 
   constructor(size: number = 1) {
     // Base of the tower
@@ -37,11 +41,14 @@ class Tower extends THREE.Mesh {
     // Створюємо Mesh із комбінованою геометрією
     super(combinedGeometry, material)
 
-    this.level = 1
-    this.health = this.level * 10
-    this.bulletSpeed = this.level / 4
-    this.bulletDamage = this.level / 2 + 0.5
-    this.bulletCooldown = (1 / this.level) * 1000
+    this.level = 0
+
+    this.levelUp()
+    // this.health = this.level * 10
+    // this.bulletSpeed = this.level / 8
+    // this.bulletDamage = this.level / 2 + 0.5
+    // this.bulletCooldown = (1 / (this.level * 2)) * 1500
+    // this.upgradeCost = this.priceMap[this.level - 1]
     this.shooting = 0
 
     // Встановлюємо позицію та userData
@@ -55,10 +62,56 @@ class Tower extends THREE.Mesh {
     }
     this.name = 'Tower'
 
-    this.allies = []
+    this.allies = {
+      [AllyType.EARTH]: undefined,
+      [AllyType.AIR]: undefined,
+      [AllyType.FIRE]: undefined,
+      [AllyType.WATER]: undefined,
+    }
 
     // Додаємо tower у сцену
     scene.add(this)
+  }
+
+  updateAlliesCosts(score: number, divisor: number) {
+    for (let [type] of entries(this.allies).filter(ally => !!ally)) {
+      Ally.updateCost(type as AllyType, score, divisor)
+    }
+  }
+
+  previewUpgrade() {
+    return `
+      Main Tower
+
+      COST: ${this.upgradeCost}
+
+      Health: ${this.health} (+${this.calcHealth() - this.health}) 
+      Bullet Speed: ${this.bulletSpeed} (+${this.calcSpeed() - this.bulletSpeed})
+      Bullet Damage: ${this.bulletDamage} (+${this.calcDamage() - this.bulletDamage})
+      Bullet Cooldown: ${this.bulletCooldown} (${this.calcCooldown() - this.bulletCooldown})
+    `
+  }
+
+  private calcHealth() {
+    return this.health + (this.level || this.level + 1) * 10
+  }
+  private calcSpeed() {
+    return parseFloat(((this.level - 2 > 0 ? this.level - 2 : 1) / 6).toFixed(2))
+  }
+  private calcDamage() {
+    return parseFloat(((this.level + 1) / 2 + 0.25 * (this.level + 2)).toFixed(2))
+  }
+  private calcCooldown() {
+    return parseFloat((4000 / ((this.level + 1) * 2)).toFixed(2))
+  }
+
+  levelUp(_score?: number, _divisor?: number) {
+    this.health = this.calcHealth()
+    this.bulletSpeed = this.calcSpeed()
+    this.bulletDamage = this.calcDamage()
+    this.bulletCooldown = this.calcCooldown()
+    this.level += 1
+    this.upgradeCost = this.priceMap[this.level - 1]
   }
 
   private shootAtNearestEnemy(enemies: Enemy[]): void {
@@ -67,9 +120,10 @@ class Tower extends THREE.Mesh {
     const towerPosition = this.position.clone()
 
     const nearestEnemy =
-      enemies.sort(
-        ({ position: a }, { position: b }) => a.distanceTo(towerPosition) - b.distanceTo(towerPosition)
-      )[0] ?? null
+      enemies
+        .filter(enemy => !enemy.userData.isAnimating.currentState && !enemy.userData.isDestroyed)
+        .sort(({ position: a }, { position: b }) => a.distanceTo(towerPosition) - b.distanceTo(towerPosition))[0] ??
+      null
 
     if (!nearestEnemy) return
 
@@ -117,11 +171,18 @@ class Tower extends THREE.Mesh {
   }
 
   public startShooting(enemies: Enemy[]): void {
+    if (this.shooting) {
+      this.stopShooting()
+    }
+
     this.shooting = setInterval(() => this.shootAtNearestEnemy(enemies), this.bulletCooldown)
   }
 
   public stopShooting() {
-    if (this.shooting) clearInterval(this.shooting)
+    if (this.shooting) {
+      clearInterval(this.shooting)
+      this.shooting = 0
+    }
   }
 
   public takeDamage(damage: number, spawner: EnemySpawner) {
@@ -139,7 +200,7 @@ class Tower extends THREE.Mesh {
 
   public spawnAlly(type: AllyType) {
     const newAlly = new Ally(type)
-    this.allies.push(newAlly)
+    this.allies[type] = newAlly
     return newAlly
   }
 

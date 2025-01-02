@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { Ally, AllyType } from './canvas/allies'
 import { AnimationHandler, flickerLight } from './canvas/animations'
 import { resetCamera } from './canvas/camera'
 import EnemySpawner from './canvas/enemies'
@@ -18,14 +19,15 @@ import Game from './game'
 import './ui'
 import {
   resetSceneButton,
-  spawnAirTowerButton,
-  spawnEarthTowerButton,
   spawnFastButton,
   spawnFatButton,
-  spawnFireTowerButton,
   spawnRegularButton,
   spawnStrongButton,
-  spawnWaterTowerButton,
+  upgradeAirTowerButton,
+  upgradeEarthTowerButton,
+  upgradeFireTowerButton,
+  upgradeMainTowerButton,
+  upgradeWaterTowerButton,
 } from './ui'
 import { handleMouseClick, handleMouseMove, handleResize } from './ui/event-listeners'
 import renderInfoTable from './ui/info-table'
@@ -95,13 +97,88 @@ spawnFastButton.addEventListener('click', () => spawner.spawnFast())
 spawnRegularButton.addEventListener('click', () => spawner.spawnRegular())
 spawnStrongButton.addEventListener('click', () => spawner.spawnStrong())
 
-spawnWaterTowerButton.addEventListener('click', () => tower.spawnWaterTower())
-spawnFireTowerButton.addEventListener('click', () => {
-  const fireTower = tower.spawnFireTower()
-  fireTower.startCasting(spawner.enemies)
+const updateMainTowerButtonTooltip = () => upgradeMainTowerButton.setAttribute('data-title', tower.previewUpgrade())
+upgradeMainTowerButton.addEventListener('click', () => {
+  game.levelUp(tower)
+
+  updateMainTowerButtonTooltip()
 })
-spawnEarthTowerButton.addEventListener('click', () => tower.spawnEarthTower())
-spawnAirTowerButton.addEventListener('click', () => tower.spawnAirTower())
+upgradeMainTowerButton.addEventListener('mouseover', () => {
+  updateMainTowerButtonTooltip()
+})
+
+const updateWaterTowerButtonTooltip = () =>
+  upgradeWaterTowerButton.setAttribute(
+    'data-title',
+    tower.allies[AllyType.WATER]
+      ? tower.allies[AllyType.WATER].previewUpgrade()
+      : Ally.previewUpgrade(AllyType.WATER, 0)
+  )
+upgradeWaterTowerButton.addEventListener('click', () => {
+  let waterTower = tower.allies[AllyType.WATER]
+  if (!waterTower) {
+    waterTower = game.purchase(AllyType.WATER)
+    waterTower.startCasting(spawner.enemies)
+  } else game.levelUp(waterTower)
+
+  updateWaterTowerButtonTooltip()
+})
+upgradeWaterTowerButton.addEventListener('mouseover', () => {
+  updateWaterTowerButtonTooltip()
+})
+
+const updateFireTowerButtonTooltip = () =>
+  upgradeFireTowerButton.setAttribute(
+    'data-title',
+    tower.allies[AllyType.FIRE] ? tower.allies[AllyType.FIRE].previewUpgrade() : Ally.previewUpgrade(AllyType.FIRE, 0)
+  )
+upgradeFireTowerButton.addEventListener('click', () => {
+  let fireTower = tower.allies[AllyType.FIRE]
+  if (!fireTower) {
+    fireTower = game.purchase(AllyType.FIRE)
+    fireTower.startCasting(spawner.enemies)
+  } else game.levelUp(fireTower)
+  updateFireTowerButtonTooltip()
+})
+upgradeFireTowerButton.addEventListener('mouseover', () => {
+  updateFireTowerButtonTooltip()
+})
+
+const updateEarthTowerButtonTooltip = () =>
+  upgradeEarthTowerButton.setAttribute(
+    'data-title',
+    tower.allies[AllyType.EARTH]
+      ? tower.allies[AllyType.EARTH].previewUpgrade()
+      : Ally.previewUpgrade(AllyType.EARTH, 0)
+  )
+upgradeEarthTowerButton.addEventListener('click', () => {
+  let earthTower = tower.allies[AllyType.EARTH]
+  if (!earthTower) {
+    earthTower = game.purchase(AllyType.EARTH)
+    earthTower.startCasting(spawner.enemies)
+  } else game.levelUp(earthTower)
+  updateEarthTowerButtonTooltip()
+})
+upgradeEarthTowerButton.addEventListener('mouseover', () => {
+  updateEarthTowerButtonTooltip()
+})
+
+const updateAirTowerButtonTooltip = () =>
+  upgradeAirTowerButton.setAttribute(
+    'data-title',
+    tower.allies[AllyType.AIR] ? tower.allies[AllyType.AIR].previewUpgrade() : Ally.previewUpgrade(AllyType.AIR, 0)
+  )
+upgradeAirTowerButton.addEventListener('click', () => {
+  let airTower = tower.allies[AllyType.AIR]
+  if (!airTower) {
+    airTower = game.purchase(AllyType.AIR)
+    airTower.startCasting(spawner.enemies)
+  } else game.levelUp(airTower)
+  updateAirTowerButtonTooltip()
+})
+upgradeAirTowerButton.addEventListener('mouseover', () => {
+  updateAirTowerButtonTooltip()
+})
 
 resetSceneButton.addEventListener('click', resetScene)
 

@@ -16,11 +16,14 @@
   <div id="ui-container">
     <!-- Нижні кнопки (основний ігровий інтерфейс користувача для взаємодії зі сценою) -->
     <div id="bottom-buttons">
-      <button id="spawn-water-tower" type="button" class="ui-button">WATER</button>
-      <button id="spawn-fire-tower" type="button" class="ui-button">FIRE</button>
-      <button id="spawn-earth-tower" type="button" class="ui-button">EARTH</button>
-      <button id="spawn-air-tower" type="button" class="ui-button">AIR</button>
+      <button id="upgrade-main-tower" type="button" class="ui-button" data-title="">MAIN</button>
+      <button id="upgrade-water-tower" type="button" class="ui-button" data-title="">WATER</button>
+      <button id="upgrade-air-tower" type="button" class="ui-button" data-title="">AIR</button>
+      <button id="upgrade-earth-tower" type="button" class="ui-button" data-title="">EARTH</button>
+      <button id="upgrade-fire-tower" type="button" class="ui-button" data-title="">FIRE</button>
     </div>
+
+
 
     <!-- Бічні кнопки (для зручності під час розробки; не входитимуть в кінцевий інтерфейс гри) -->
     <div id="side-buttons">
@@ -50,6 +53,7 @@
     </div>
 
     <div id="coin-counter">Coins: 0</div>
+    <div id="score-counter">Score: 0</div>
 
     <table id="game-info-table">
       <thead>
@@ -59,6 +63,7 @@
           <th>Level</th>
           <th>Damage</th>
           <th>Speed</th>
+          <th>Skill Cooldown</th>
         </tr>
       </thead>
       <tbody>

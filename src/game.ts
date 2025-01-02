@@ -1,9 +1,25 @@
+import { Ally, AllyType, upgradesMap } from './canvas/allies'
 import EnemySpawner from './canvas/enemies'
 import Tower from './canvas/tower'
-import { coinCounter } from './ui'
+import { coinCounter, scoreCounter } from './ui'
+
+// function errorBoundary() {
+//   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+//     if (descriptor)
+//       descriptor.value = () => {
+//         try {
+//           target()
+//         } catch (error) {
+//           console.error(error)
+//         }
+//       }
+//   }
+// }
 
 export default class Game {
   _coins: number = 0
+  _score: number = 0
+  #divisor: number = 1
   spawner: EnemySpawner
   tower: Tower
   isRunning: boolean
@@ -21,6 +37,15 @@ export default class Game {
     coinCounter.innerHTML = `Coins: ${amount}`
   }
 
+  get score() {
+    return this._score
+  }
+  set score(value: number) {
+    this._score = value
+
+    scoreCounter.innerHTML = `Score: ${this.score}`
+  }
+
   constructor(spawner: EnemySpawner, tower: Tower) {
     this.spawner = spawner
     this.tower = tower
@@ -29,6 +54,39 @@ export default class Game {
     this.isOver = false
 
     this.spawner.collectDrop = this.spawner.collectDrop.bind(this)
+    this.spawner.addScore = this.spawner.addScore.bind(this)
+  }
+
+  public levelUp(allyTower: Tower | Ally) {
+    if (this.coins - allyTower.upgradeCost >= 0) {
+      if (allyTower.name === 'Tower') {
+        ;(allyTower as Tower).stopShooting()
+      } else {
+        ;(allyTower as Ally).stopCasting()
+      }
+
+      this.coins -= allyTower.upgradeCost
+      allyTower.levelUp(this.score, this.#divisor)
+
+      if (allyTower.name === 'Tower') {
+        this.#divisor += 1
+        ;(allyTower as Tower).startShooting(this.spawner.enemies)
+      } else {
+        this.tower.updateAlliesCosts(this.score, this.#divisor)
+        ;(allyTower as Ally).startCasting(this.spawner.enemies)
+      }
+    } else throw new Error('Not enough coins')
+  }
+
+  public purchase(allyType: AllyType) {
+    const cost = upgradesMap[allyType][0]
+
+    if (this.coins - cost >= 0) {
+      this.coins -= cost
+      this.#divisor += 1
+      this.tower.updateAlliesCosts(this.score, this.#divisor)
+      return this.tower.spawnAlly(allyType)
+    } else throw new Error('Not enough coins')
   }
 
   public start() {

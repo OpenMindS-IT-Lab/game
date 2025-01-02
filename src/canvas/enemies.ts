@@ -1,6 +1,7 @@
-import { pull, remove, without } from 'lodash'
+import { compact, entries, minBy, pull, remove, without } from 'lodash'
 import * as THREE from 'three'
-import { AllyType } from './allies'
+import { Ally, AllyType } from './allies'
+import { AnimationHandler } from './animations'
 import { Colors } from './constants'
 import { scene } from './scene'
 import { tiles } from './tiles'
@@ -64,8 +65,9 @@ export class Enemy extends THREE.Mesh {
   moving: number
   watchingCollisions: number
   coinDropRange: [number, number]
-
-  protected spawner: EnemySpawner
+  score: number
+  spawnPostion: THREE.Vector3
+  spawner: EnemySpawner
 
   private statsMap = {
     [EnemyType.REGULAR]: { health: 1, damage: 1, speed: 0.05, height: 1.9, coinDropRange: [0, 1] },
@@ -74,7 +76,7 @@ export class Enemy extends THREE.Mesh {
     [EnemyType.STRONG]: { health: 1, damage: 2, speed: 0.05, height: 1.6, coinDropRange: [0, 2] },
   }
 
-  constructor(type: EnemyType = EnemyType.REGULAR, level: number, spawner: EnemySpawner) {
+  constructor(type: EnemyType = EnemyType.REGULAR, spawner: EnemySpawner) {
     const geometry = geometryMap[type]()
     const material = new THREE.MeshStandardMaterial({
       ...getRandomColor(),
@@ -94,15 +96,19 @@ export class Enemy extends THREE.Mesh {
       coinDropRange: [minCoinDrop, maxCoinDrop],
     } = baseStats
 
-    this.level = level
+    this.level = spawner.level
     this.health = health * this.level
-    this.damage = this.level / 2 + damage - 0.5
-    this.speed = parseFloat((speed * (0.75 + this.level / 4)).toFixed(5))
+    this.damage = Math.ceil((this.level / 2) * damage + 0.5)
+    this.speed = parseFloat((speed * (0.875 + this.level / 8)).toFixed(5))
     this.height = height / 2 - 0.05
     this.moving = 0
     this.watchingCollisions = 0
     this.spawner = spawner
-    this.coinDropRange = [minCoinDrop + this.level - 1, maxCoinDrop * this.level]
+    this.coinDropRange = [minCoinDrop + this.level - 1, Math.ceil(maxCoinDrop * this.level / 2)]
+    this.score = Math.floor(
+      (this.level * (1 / this.speed) * (this.health / this.level) * (this.damage / (this.level / 2))) / 14
+    )
+    this.spawnPostion = this.position.clone().setY(this.height)
 
     let randomPosition
     let attempts = 0
@@ -112,6 +118,7 @@ export class Enemy extends THREE.Mesh {
       try {
         randomPosition = getRandomPosition()
         this.position.copy(randomPosition).setY(this.height)
+        this.spawnPostion = this.position.clone()
         break
       } catch (error) {
         attempts++
@@ -126,6 +133,7 @@ export class Enemy extends THREE.Mesh {
     this.userData = {
       isPersistant: false,
       isSelected: false,
+      isAnimating: new AnimationHandler(false),
       boundingBox: new THREE.Box3(),
       initialColor: Colors.ENEMY,
       isDestroyed: false,
@@ -139,13 +147,23 @@ export class Enemy extends THREE.Mesh {
   }
 
   public move() {
-    const spawnPosition = this.position.clone()
-    const towerPosition =
-      scene.children.find(child => child.name === 'Tower')?.position.clone() ??
-      new THREE.Vector3(0, spawnPosition.y, 14)
-    const direction = new THREE.Vector3().subVectors(towerPosition, spawnPosition).setY(spawnPosition.y).normalize()
+    const spawnPosition = this.spawnPostion
+    const tower = scene.children.find(child => child.name === 'Tower') as Tower
 
-    this.lookAt(towerPosition)
+    if (!tower) throw new Error('Tower not found!')
+
+    const towerPosition = tower.position.clone()
+    const alliesPositions = compact(entries(tower.allies).map(([, ally]) => (ally ? ally.position.clone() : null)))
+    const defaultDirectionSubVector = new THREE.Vector3(0, spawnPosition.y, 14)
+    const nearestAllyPosition =
+      minBy([...alliesPositions, towerPosition], position => this.position.distanceTo(position)) ??
+      defaultDirectionSubVector
+    const direction = new THREE.Vector3()
+      .subVectors(nearestAllyPosition, spawnPosition)
+      .setY(spawnPosition.y)
+      .normalize()
+
+    this.lookAt(nearestAllyPosition)
 
     const fieldTiles = tiles.filter(tile => tile.position.z !== 14)
 
@@ -163,6 +181,11 @@ export class Enemy extends THREE.Mesh {
     }, 1000 / 60) // 60 FPS
 
     return this.moving
+  }
+
+  public stop() {
+    clearInterval(this.moving)
+    this.moving = 0
   }
 
   public watchCollisions() {
@@ -184,6 +207,15 @@ export class Enemy extends THREE.Mesh {
             if (!tower) throw new Error('Smth went wrong with Tower when handling collision!')
 
             tower.takeDamage(this.damage, this.spawner)
+            this.dropCoins()
+            this.spawner.addScore(this.score)
+            this.destroy()
+          }
+
+          if ('allyTowerType' in collision) {
+            ;(collision as Ally).takeDamage(this.damage, this.spawner)
+            this.spawner.addScore(this.score)
+            this.dropCoins()
             this.destroy()
           }
         }
@@ -207,6 +239,7 @@ export class Enemy extends THREE.Mesh {
     this.health -= damage
 
     if (this.health <= 0) {
+      this.spawner.addScore(this.score)
       this.dropCoins()
       this.destroy()
     }
@@ -219,6 +252,7 @@ export class Enemy extends THREE.Mesh {
     this.userData.isDestroyed = true
     scene.remove(this)
 
+    // this.spawner.addScore(enemyScore)
     // pull(this.spawner.enemies, this)
     // this.spawner.purgeDestroyedEnemies()
     // remove(this.spawner.enemies, ({ userData }) => userData.isDestroyed)
@@ -229,8 +263,8 @@ export class Enemy extends THREE.Mesh {
     const coinDropDelta = maxDrop - minDrop
     const drop = Math.round(Math.random() * coinDropDelta) + minDrop
 
-    console.log(`${this.enemyType.toUpperCase()} ENEMY dropped ${drop} coins`)
-    console.log(`minDrop: ${minDrop}; maxDrop: ${maxDrop}; coinDropDelta: ${coinDropDelta}.`)
+    // console.log(`${this.enemyType.toUpperCase()} ENEMY dropped ${drop} coins`)
+    // console.log(`minDrop: ${minDrop}; maxDrop: ${maxDrop}; coinDropDelta: ${coinDropDelta}.`)
 
     this.spawner.collectDrop(drop)
   }
@@ -254,7 +288,7 @@ export default class EnemySpawner {
     this.enemies = []
     this.intervals = []
     this.level = 1
-    this.spawnRate = (1 / this.level) * 3000
+    this.spawnRate = (1 / (this.level * 2 - 1)) * 3000
 
     this.spawnEnemy = this.spawnEnemy.bind(this)
   }
@@ -263,8 +297,13 @@ export default class EnemySpawner {
     if ('coins' in this) (this.coins as number) += coins
   }
 
+  public addScore(score: number) {
+    if ('score' in this) (this.score as number) += score
+  }
+
   spawnEnemy(type?: EnemyType) {
-    const newEnemy = new Enemy(type, this.level, this)
+    const _spawner = this
+    const newEnemy = new Enemy(type, _spawner)
 
     this.enemies.push(newEnemy)
 
@@ -370,7 +409,7 @@ export default class EnemySpawner {
   private update() {
     clearInterval(this.startI)
     this.intervals = without(this.intervals, this.startI)
-    this.spawnRate = (1 / this.level) * 3000
+    this.spawnRate = 3000 / (this.level / 2)
     this.startI = setInterval(() => this.spawnRandomEnemy(), this.spawnRate)
     this.intervals.push(this.startI)
   }

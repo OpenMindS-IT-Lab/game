@@ -1,7 +1,11 @@
+import { capitalize } from 'lodash'
 import * as THREE from 'three'
-import { Enemy } from './enemies'
+import { moveAndFlip, moveLinear } from './animations'
+import EnemySpawner, { Enemy } from './enemies'
 import { scene } from './scene'
 import { tiles } from './tiles'
+import Tower from './tower'
+import { showDamageText } from './utils'
 
 export const enum AllyType {
   WATER = 'water',
@@ -31,6 +35,13 @@ export const heightMap = {
   [AllyType.AIR]: 1.8,
 }
 
+export const upgradesMap = {
+  [AllyType.WATER]: [10, 20, 50, 100, 200, 500, 1000, 2000, 4000, 8000, 12000, 16000],
+  [AllyType.FIRE]: [20, 50, 500, 1500, 3000, 5000, 10000, 15000, 20000, 25000, 35000],
+  [AllyType.EARTH]: [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 15000, 25000],
+  [AllyType.AIR]: [10, 20, 100, 200, 1000, 2000, 5000, 10000, 15000, 25000, 35000],
+}
+
 // Функція для випадкового розташування
 function getRandomPosition() {
   let targetTile
@@ -57,13 +68,77 @@ function getRandomPosition() {
 
 export class Ally extends THREE.Mesh {
   allyTowerType: AllyType
-  level: number
-  health: number
-  damage: number
-  speed: number
+  level: number = 0
+  health: number = 0
+  damage: number = 0
+  speed: number = 0
   height: number
-  skillCooldown: number
+  skillCooldown: number = 0
   casting: number
+  upgradeCost: number = 0
+  static #upgradesMap = upgradesMap
+
+  private static calcDamage(level: number) {
+    return level / 2 + 0.5 * level
+  }
+
+  private static calcSpeed(level: number) {
+    return parseFloat((level / 4).toFixed(4))
+  }
+  private static calcSkillCooldown(level: number) {
+    return parseFloat((2000 / level).toFixed(2))
+  }
+
+  private calcHealth(level: number) {
+    return this.health + (level - 1 || 1) * 10
+  }
+
+  levelUp(score?: number, divisor?: number) {
+    this.level += 1
+    this.health = this.calcHealth(this.level)
+    this.damage = Ally.calcDamage(this.level)
+    this.speed = Ally.calcSpeed(this.level)
+    this.skillCooldown = Ally.calcSkillCooldown(this.level)
+
+    if (score && divisor) Ally.updateCost(this.allyTowerType, score, divisor)
+    this.upgradeCost = Ally.#upgradesMap[this.allyTowerType][this.level - 1]
+  }
+
+  static updateCost(type: AllyType, score: number, divisor: number) {
+    this.#upgradesMap[type] = upgradesMap[type].map(cost => Math.floor(cost + score / divisor))
+  }
+
+  previewUpgrade() {
+    const name = capitalize(this.allyTowerType) + ' Tower'
+    const nextLevel = this.level + 1
+
+    return `${name}
+
+      COST: ${this.upgradeCost}
+      
+      Level: ${this.level} (+1)
+      Health: ${this.health} (+${this.calcHealth(nextLevel) - this.health})
+      Damage: ${this.damage} (+${Ally.calcDamage(nextLevel) - this.damage})
+      Speed: ${this.speed} (+${Ally.calcSpeed(nextLevel) - this.speed})
+      SkillCooldown: ${this.skillCooldown} (${Ally.calcSkillCooldown(nextLevel) - this.skillCooldown})
+    `
+  }
+
+  static previewUpgrade(type: AllyType, level?: number) {
+    const name = capitalize(type) + ' Tower'
+    const nextLevel = level || 1
+
+    return `${name}
+
+      COST: ${upgradesMap[type][level || 0]}
+      
+      Level: ${1}
+      Health: ${10}
+      Damage: ${Ally.calcDamage(nextLevel)}
+      Speed: ${Ally.calcSpeed(nextLevel)}
+      SkillCooldown: ${Ally.calcSkillCooldown(nextLevel)}
+      `
+  }
 
   constructor(type: AllyType) {
     const geometry = geometryMap[type]()
@@ -73,11 +148,10 @@ export class Ally extends THREE.Mesh {
 
     this.allyTowerType = type
     this.height = heightMap[this.allyTowerType]
-    this.level = 1
-    this.damage = this.level / 2 + 0.5
-    this.speed = this.level / 4
-    this.health = this.level * 10
-    this.skillCooldown = (1 / this.level) * 1000
+
+    this.level = 0
+    this.levelUp()
+
     this.casting = 0
 
     try {
@@ -104,21 +178,110 @@ export class Ally extends THREE.Mesh {
     scene.add(this)
   }
 
+  private getNearestEnemy(enemies: Enemy[]) {
+    if (!enemies.length) return false
+
+    const towerPosition = this.position.clone()
+
+    const nearestEnemy =
+      enemies
+        .filter(({ userData: { isAnimating } }) => !isAnimating.currentState)
+        .sort(({ position: a }, { position: b }) => a.distanceTo(towerPosition) - b.distanceTo(towerPosition))[0] ??
+      null
+
+    if (!nearestEnemy) return false
+
+    nearestEnemy.spawner.purgeDestroyedEnemies()
+    return nearestEnemy
+  }
+
   private freeze(enemies: Enemy[]) {
-    console.log(enemies)
+    const nearestEnemy = this.getNearestEnemy(enemies)
+
+    if (!nearestEnemy) return
+    // const waterDamage = this.damage
+
+    nearestEnemy.userData.isAnimating.switchState(true)
+    nearestEnemy.stop()
+
+    const freezed = setTimeout(() => {
+      // nearestEnemy.takeDamage(waterDamage, this.allyTowerType)
+      nearestEnemy.spawner.purgeDestroyedEnemies()
+      nearestEnemy.moving = nearestEnemy.move()
+      nearestEnemy.userData.isAnimating.switchState(false)
+    }, this.damage * 1000)
+
+    return () => {
+      clearInterval(freezed)
+    }
+  }
+
+  public takeDamage(damage: number, spawner: EnemySpawner) {
+    const tower = scene.getObjectByName('Tower') as Tower
+    if (!tower) return
+
+    this.health -= damage
+    showDamageText(damage, this.position, 0xff0000)
+
+    if (this.health <= 0) {
+      this.stopCasting()
+      scene.remove(this)
+
+      const occupiedTile = tiles
+        .filter(tile => tile.userData.isOccupied && tile.position.z === 14)
+        .find(tile => tile.position.x === this.position.x)
+      if (occupiedTile) occupiedTile.userData.isOccupied = false
+
+      spawner.purgeDestroyedEnemies()
+
+      spawner.enemies
+        .filter(enemy => !enemy.userData.isDestroyed && !enemy.userData.isAnimating.currentState)
+        .forEach(enemy => {
+          enemy.stop()
+        })
+
+      tower.allies[this.allyTowerType] = undefined
+
+      spawner.enemies
+        .filter(enemy => !enemy.userData.isAnimating.currentState && !enemy.userData.isDestroyed && !enemy.moving)
+        .forEach(enemy => {
+          enemy.moving = enemy.move()
+        })
+    }
   }
 
   private burn(enemies: Enemy[]) {
     const fireDamage = this.damage
-    enemies.forEach(enemy => enemy.takeDamage(fireDamage, this.allyTowerType))
+    enemies
+      .filter(enemy => !enemy.userData.isDestroyed)
+      .forEach(enemy => enemy.takeDamage(fireDamage, this.allyTowerType))
   }
 
   private toss(enemies: Enemy[]) {
-    console.log(enemies)
+    const nearestEnemy = this.getNearestEnemy(enemies)
+
+    if (!nearestEnemy) return
+    const earthDamage = this.damage
+
+    nearestEnemy.stop()
+    moveAndFlip(nearestEnemy, nearestEnemy.position.clone(), undefined, undefined, () => {
+      nearestEnemy.takeDamage(earthDamage, this.allyTowerType)
+      if (nearestEnemy.health >= 0) nearestEnemy.move()
+    })
   }
 
   private throwback(enemies: Enemy[]) {
-    console.log(enemies)
+    enemies
+      .filter(enemy => !enemy.userData.isAnimating.currentState && !enemy.userData.isDestroyed)
+      .forEach(enemy => {
+        enemy.stop()
+        enemy.userData.isAnimating.switchState(true)
+        const enemyPostion = enemy.position.clone().setZ(enemy.position.z - this.damage)
+        moveLinear(enemy, enemyPostion, undefined, () => {
+          enemy.userData.isAnimating.switchState(false)
+          enemy.move()
+        })
+      })
   }
 
   public startCasting(enemies: Enemy[]) {
@@ -132,5 +295,10 @@ export class Ally extends THREE.Mesh {
     const skill = skillMap[this.allyTowerType]
 
     this.casting = setInterval(() => skill(enemies), this.skillCooldown)
+  }
+
+  public stopCasting() {
+    clearInterval(this.casting)
+    this.casting = 0
   }
 }

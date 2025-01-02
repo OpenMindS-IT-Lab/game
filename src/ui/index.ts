@@ -8,16 +8,19 @@ export const spawnFastButton = document.getElementById('spawn-fast') as Element
 export const spawnRegularButton = document.getElementById('spawn-regular') as Element
 export const spawnStrongButton = document.getElementById('spawn-strong') as Element
 
-export const spawnWaterTowerButton = document.getElementById('spawn-water-tower') as Element
-export const spawnFireTowerButton = document.getElementById('spawn-fire-tower') as Element
-export const spawnEarthTowerButton = document.getElementById('spawn-earth-tower') as Element
-export const spawnAirTowerButton = document.getElementById('spawn-air-tower') as Element
+export const upgradeMainTowerButton = document.getElementById('upgrade-main-tower') as Element
+
+export const upgradeWaterTowerButton = document.getElementById('upgrade-water-tower') as Element
+export const upgradeFireTowerButton = document.getElementById('upgrade-fire-tower') as Element
+export const upgradeEarthTowerButton = document.getElementById('upgrade-earth-tower') as Element
+export const upgradeAirTowerButton = document.getElementById('upgrade-air-tower') as Element
 
 export const resetSceneButton = document.getElementById('reset-scene') as Element
 
 export const gameInfoTableBody = document.querySelector('#game-info-table tbody') as Element
 
 export const coinCounter = document.getElementById('coin-counter') as Element
+export const scoreCounter = document.getElementById('score-counter') as Element
 
 export function toggleMenu() {
   sideMenu.classList.toggle('hidden') // Відкриваємо/закриваємо меню
