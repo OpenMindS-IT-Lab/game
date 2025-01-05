@@ -178,11 +178,13 @@ body {
 }
 
 #game-info-table > thead > tr > th {
-  padding: 5px 10px;
+  padding: 2px;
+  font-size: 0.6em;
 }
 
 #game-info-table > tbody > tr > th {
   text-align: center;
+  font-size: 0.6em;
 }
 
 #game-info-table > tbody > tr > td:first-of-type {
@@ -194,6 +196,7 @@ body {
 
 #game-info-table > tbody > tr > td {
   text-align: center;
+  font-size: 0.6em;
 }
 
 #coin-counter {

@@ -13,7 +13,7 @@ function updateGameInfoTable(tower: Tower, spawner: EnemySpawner) {
   // Add Allies data
   const alliesHeading = document.createElement('tr')
   alliesHeading.innerHTML = `
-    <th colspan="5">Allies</th>
+    <th colspan="6">Allies</th>
   `
 
   // Add Tower data
@@ -48,7 +48,7 @@ function updateGameInfoTable(tower: Tower, spawner: EnemySpawner) {
   // Add Enemies data
   const enemiesHeading = document.createElement('tr')
   enemiesHeading.innerHTML = `
-    <th colspan="5">Enemies</th>
+    <th colspan="6">Enemies</th>
   `
   gameInfoTableBody.appendChild(enemiesHeading)
 

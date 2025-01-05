@@ -14,58 +14,6 @@ export const enum AllyType {
   AIR = 'air',
 }
 
-export const geometryMap = {
-  [AllyType.WATER]: () => new THREE.SphereGeometry(0.75, 16, 16),
-  [AllyType.FIRE]: () => new THREE.OctahedronGeometry(0.9).rotateY(Math.PI / 4),
-  [AllyType.EARTH]: () => new THREE.BoxGeometry(1.25, 1.25, 1.25),
-  [AllyType.AIR]: () => new THREE.IcosahedronGeometry(0.9, 0),
-}
-
-export const materialMap = {
-  [AllyType.WATER]: { color: 0x4277ff, transparent: true, opacity: 1 },
-  [AllyType.FIRE]: { color: 0xff4444, transparent: true, opacity: 1 },
-  [AllyType.EARTH]: { color: 0x423333, transparent: true, opacity: 1 },
-  [AllyType.AIR]: { color: 0x42ffff, transparent: true, opacity: 1 },
-}
-
-export const heightMap = {
-  [AllyType.WATER]: 1.5,
-  [AllyType.FIRE]: 1.8,
-  [AllyType.EARTH]: 1.25,
-  [AllyType.AIR]: 1.8,
-}
-
-export const upgradesMap = {
-  [AllyType.WATER]: [10, 20, 50, 100, 200, 500, 1000, 2000, 4000, 8000, 12000, 16000],
-  [AllyType.FIRE]: [20, 50, 500, 1500, 3000, 5000, 10000, 15000, 20000, 25000, 35000],
-  [AllyType.EARTH]: [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 15000, 25000],
-  [AllyType.AIR]: [10, 20, 100, 200, 1000, 2000, 5000, 10000, 15000, 25000, 35000],
-}
-
-// Функція для випадкового розташування
-function getRandomPosition() {
-  let targetTile
-
-  const getRandomFreeTile = () => {
-    let freeTiles = tiles.filter(tile => !tile.userData.isOccupied && tile.position.z === 14)
-    let randomIndex = Math.round(Math.random() * freeTiles.length)
-
-    if (freeTiles.length === 0) {
-      throw new Error("Can't spawn new ally! All tiles are occupied!")
-    }
-
-    return freeTiles[randomIndex]
-  }
-
-  do {
-    targetTile = getRandomFreeTile()
-  } while (!targetTile)
-
-  targetTile.userData.isOccupied = true
-
-  return targetTile.position.clone().setY(0)
-}
-
 export class Ally extends THREE.Mesh {
   allyTowerType: AllyType
   level: number = 0
@@ -76,7 +24,57 @@ export class Ally extends THREE.Mesh {
   skillCooldown: number = 0
   casting: number
   upgradeCost: number = 0
-  static #upgradesMap = upgradesMap
+
+  private static geometryMap = {
+    [AllyType.WATER]: () => new THREE.SphereGeometry(0.75, 16, 16),
+    [AllyType.FIRE]: () => new THREE.OctahedronGeometry(0.9).rotateY(Math.PI / 4),
+    [AllyType.EARTH]: () => new THREE.BoxGeometry(1.25, 1.25, 1.25),
+    [AllyType.AIR]: () => new THREE.IcosahedronGeometry(0.9, 0),
+  }
+
+  private static materialMap = {
+    [AllyType.WATER]: { color: 0x4277ff, transparent: true, opacity: 1 },
+    [AllyType.FIRE]: { color: 0xff4444, transparent: true, opacity: 1 },
+    [AllyType.EARTH]: { color: 0x423333, transparent: true, opacity: 1 },
+    [AllyType.AIR]: { color: 0x42ffff, transparent: true, opacity: 1 },
+  }
+
+  private static heightMap = {
+    [AllyType.WATER]: 1.5,
+    [AllyType.FIRE]: 1.8,
+    [AllyType.EARTH]: 1.25,
+    [AllyType.AIR]: 1.8,
+  }
+
+  static priceMap = {
+    [AllyType.WATER]: [10, 20, 50, 100, 200, 500, 1000, 2000, 4000, 8000, 12000, 20000],
+    [AllyType.AIR]: [15, 30, 150, 300, 1500, 3000, 15000, 30000, 100000, 200000, 1000000, 2000000],
+    [AllyType.EARTH]: [20, 40, 200, 400, 2000, 4000, 20000, 40000, 150000, 300000, 1000000, 2000000],
+    [AllyType.FIRE]: [25, 50, 250, 500, 2500, 5000, 25000, 50000, 200000, 400000, 1000000, 2000000],
+  }
+
+  private static getRandomPosition() {
+    let targetTile
+
+    const getRandomFreeTile = () => {
+      let freeTiles = tiles.filter(tile => !tile.userData.isOccupied && tile.position.z === 14)
+      let randomIndex = Math.round(Math.random() * freeTiles.length)
+
+      if (freeTiles.length === 0) {
+        throw new Error("Can't spawn new ally! All tiles are occupied!")
+      }
+
+      return freeTiles[randomIndex]
+    }
+
+    do {
+      targetTile = getRandomFreeTile()
+    } while (!targetTile)
+
+    targetTile.userData.isOccupied = true
+
+    return targetTile.position.clone().setY(0)
+  }
 
   private static calcDamage(level: number) {
     return level / 2 + 0.5 * level
@@ -93,19 +91,16 @@ export class Ally extends THREE.Mesh {
     return this.health + (level - 1 || 1) * 10
   }
 
-  levelUp(score?: number, divisor?: number) {
+  updatePrice(priceMap: typeof Ally.priceMap = Ally.priceMap) {
+    this.upgradeCost = priceMap[this.allyTowerType][this.level]
+  }
+
+  levelUp() {
     this.level += 1
     this.health = this.calcHealth(this.level)
     this.damage = Ally.calcDamage(this.level)
     this.speed = Ally.calcSpeed(this.level)
     this.skillCooldown = Ally.calcSkillCooldown(this.level)
-
-    if (score && divisor) Ally.updateCost(this.allyTowerType, score, divisor)
-    this.upgradeCost = Ally.#upgradesMap[this.allyTowerType][this.level - 1]
-  }
-
-  static updateCost(type: AllyType, score: number, divisor: number) {
-    this.#upgradesMap[type] = upgradesMap[type].map(cost => Math.floor(cost + score / divisor))
   }
 
   previewUpgrade() {
@@ -130,7 +125,7 @@ export class Ally extends THREE.Mesh {
 
     return `${name}
 
-      COST: ${upgradesMap[type][level || 0]}
+      COST: ${this.priceMap[type][level || 0]}
       
       Level: ${1}
       Health: ${10}
@@ -141,13 +136,13 @@ export class Ally extends THREE.Mesh {
   }
 
   constructor(type: AllyType) {
-    const geometry = geometryMap[type]()
-    const material = new THREE.MeshStandardMaterial({ metalness: 0.3, roughness: 0.7, ...materialMap[type] })
+    const geometry = Ally.geometryMap[type]()
+    const material = new THREE.MeshStandardMaterial({ metalness: 0.3, roughness: 0.7, ...Ally.materialMap[type] })
 
     super(geometry, material)
 
     this.allyTowerType = type
-    this.height = heightMap[this.allyTowerType]
+    this.height = Ally.heightMap[this.allyTowerType]
 
     this.level = 0
     this.levelUp()
@@ -155,7 +150,7 @@ export class Ally extends THREE.Mesh {
     this.casting = 0
 
     try {
-      const position = getRandomPosition()
+      const position = Ally.getRandomPosition()
       this.position.copy(position).setY(this.height / 2)
     } catch (error) {
       console.error(error)
@@ -209,7 +204,7 @@ export class Ally extends THREE.Mesh {
       nearestEnemy.spawner.purgeDestroyedEnemies()
       nearestEnemy.moving = nearestEnemy.move()
       nearestEnemy.userData.isAnimating.switchState(false)
-    }, this.damage * 1000)
+    }, this.damage * 1000 - this.level * 250)
 
     return () => {
       clearInterval(freezed)
@@ -261,7 +256,7 @@ export class Ally extends THREE.Mesh {
     const nearestEnemy = this.getNearestEnemy(enemies)
 
     if (!nearestEnemy) return
-    const earthDamage = this.damage
+    const earthDamage = this.damage * 3
 
     nearestEnemy.stop()
     moveAndFlip(nearestEnemy, nearestEnemy.position.clone(), undefined, undefined, () => {

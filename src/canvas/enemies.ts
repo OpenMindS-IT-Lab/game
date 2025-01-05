@@ -1,11 +1,11 @@
 import { compact, entries, minBy, pull, remove, without } from 'lodash'
 import * as THREE from 'three'
 import { Ally, AllyType } from './allies'
-import { AnimationHandler } from './animations'
+import { AnimationHandler, moveLinear } from './animations'
 import { Colors } from './constants'
 import { scene } from './scene'
 import { tiles } from './tiles'
-import Tower from './tower'
+import Tower, { Projectile } from './tower'
 import { checkCollisionsAll, showDamageText } from './utils'
 
 // Функція для створення випадкового кольору
@@ -70,17 +70,17 @@ export class Enemy extends THREE.Mesh {
   spawner: EnemySpawner
 
   private statsMap = {
-    [EnemyType.REGULAR]: { health: 1, damage: 1, speed: 0.05, height: 1.9, coinDropRange: [0, 1] },
-    [EnemyType.FAST]: { health: 1, damage: 1, speed: 0.1, height: 1.6, coinDropRange: [0, 2] },
-    [EnemyType.FAT]: { health: 2, damage: 1, speed: 0.05, height: 1.3, coinDropRange: [0, 3] },
-    [EnemyType.STRONG]: { health: 1, damage: 2, speed: 0.05, height: 1.6, coinDropRange: [0, 2] },
+    [EnemyType.REGULAR]: { health: 1, damage: 1, speed: 0.05, height: 1.9 * 0.75, coinDropRange: [0, 1] },
+    [EnemyType.FAST]: { health: 1, damage: 1, speed: 0.1, height: 1.6 * 0.75, coinDropRange: [0, 2] },
+    [EnemyType.FAT]: { health: 2, damage: 1, speed: 0.05, height: 1.3 * 0.75, coinDropRange: [0, 3] },
+    [EnemyType.STRONG]: { health: 1, damage: 2, speed: 0.05, height: 1.6 * 0.75, coinDropRange: [0, 2] },
   }
 
   constructor(type: EnemyType = EnemyType.REGULAR, spawner: EnemySpawner) {
-    const geometry = geometryMap[type]()
+    const geometry = geometryMap[type]().scale(0.75, 0.75, 0.75)
     const material = new THREE.MeshStandardMaterial({
       ...getRandomColor(),
-      metalness: 0.3,
+      metalness: 0.1,
       roughness: 0.7,
     })
 
@@ -97,14 +97,17 @@ export class Enemy extends THREE.Mesh {
     } = baseStats
 
     this.level = spawner.level
-    this.health = health * this.level
+    this.health = health * this.level + (this.level > 4 ? this.level % 4 : 0)
     this.damage = Math.ceil((this.level / 2) * damage + 0.5)
     this.speed = parseFloat((speed * (0.875 + this.level / 8)).toFixed(5))
     this.height = height / 2 - 0.05
     this.moving = 0
     this.watchingCollisions = 0
     this.spawner = spawner
-    this.coinDropRange = [minCoinDrop + this.level - 1, Math.ceil(maxCoinDrop * this.level / 2)]
+    this.coinDropRange = [
+      minCoinDrop + this.level - 1,
+      Math.ceil(maxCoinDrop * (this.level % 2 ? this.level : this.level / 2)),
+    ]
     this.score = Math.floor(
       (this.level * (1 / this.speed) * (this.health / this.level) * (this.damage / (this.level / 2))) / 14
     )
@@ -154,12 +157,13 @@ export class Enemy extends THREE.Mesh {
 
     const towerPosition = tower.position.clone()
     const alliesPositions = compact(entries(tower.allies).map(([, ally]) => (ally ? ally.position.clone() : null)))
-    const defaultDirectionSubVector = new THREE.Vector3(0, spawnPosition.y, 14)
+    const defaultDirectionSubVector = new THREE.Vector3(spawnPosition.x, spawnPosition.y, 14)
     const nearestAllyPosition =
       minBy([...alliesPositions, towerPosition], position => this.position.distanceTo(position)) ??
       defaultDirectionSubVector
-    const direction = new THREE.Vector3()
-      .subVectors(nearestAllyPosition, spawnPosition)
+    const direction = this.spawnPostion
+      .clone()
+      .subVectors(nearestAllyPosition, this.position.clone())
       .setY(spawnPosition.y)
       .normalize()
 
@@ -193,15 +197,13 @@ export class Enemy extends THREE.Mesh {
       const collisions = checkCollisionsAll(this)
 
       if (collisions.length > 0) {
-        // Видаляємо ворога та снаряд
-
         for (let collision of collisions) {
-          if ('projectile' in collision.userData && collision.userData.projectile) {
-            this.takeDamage(collision.userData.damage)
+          if (collision instanceof Projectile) {
+            this.takeDamage(collision.damage)
             scene.remove(collision)
           }
 
-          if (collision.name === 'Tower') {
+          if (collision instanceof Tower) {
             const tower = scene.getObjectByName('Tower') as Tower
 
             if (!tower) throw new Error('Smth went wrong with Tower when handling collision!')
@@ -212,11 +214,37 @@ export class Enemy extends THREE.Mesh {
             this.destroy()
           }
 
-          if ('allyTowerType' in collision) {
-            ;(collision as Ally).takeDamage(this.damage, this.spawner)
+          if (collision instanceof Ally) {
+            collision.takeDamage(this.damage, this.spawner)
             this.spawner.addScore(this.score)
             this.dropCoins()
             this.destroy()
+          }
+
+          if (collision instanceof Enemy) {
+            this.stop()
+            collision.takeDamage(parseFloat((0.1 * this.damage).toFixed(2)), AllyType.WATER)
+
+            const towerPosition = (scene.getObjectByName('Tower') as Tower).position.clone()
+            const distanceToTower = this.position.clone().distanceTo(towerPosition)
+            const collisionDistanceToTower = collision.position.clone().distanceTo(towerPosition)
+
+            const direction = new THREE.Vector3()
+              .subVectors(collision.position.clone(), this.position.clone())
+              .multiplyScalar(20)
+              .normalize()
+
+            if (distanceToTower > collisionDistanceToTower && !this.moving && !this.userData.isAnimating.currentState) {
+              moveLinear(
+                this,
+                this.position.clone().sub(direction.clone()),
+                this.userData.isAnimating,
+                () => this.move(),
+                2
+              )
+            } else if (!this.moving && !this.userData.isAnimating.currentState) {
+              this.move()
+            }
           }
         }
 
@@ -262,9 +290,6 @@ export class Enemy extends THREE.Mesh {
     const [minDrop, maxDrop] = this.coinDropRange
     const coinDropDelta = maxDrop - minDrop
     const drop = Math.round(Math.random() * coinDropDelta) + minDrop
-
-    // console.log(`${this.enemyType.toUpperCase()} ENEMY dropped ${drop} coins`)
-    // console.log(`minDrop: ${minDrop}; maxDrop: ${maxDrop}; coinDropDelta: ${coinDropDelta}.`)
 
     this.spawner.collectDrop(drop)
   }
@@ -343,7 +368,7 @@ export default class EnemySpawner {
   }
 
   spawnRandomEnemy() {
-    console.log('Spawning random enemy')
+    // console.log('Spawning random enemy')
     const _spawner = this
 
     const EnemiesMap = {

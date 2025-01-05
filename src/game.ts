@@ -1,4 +1,4 @@
-import { Ally, AllyType, upgradesMap } from './canvas/allies'
+import { Ally, AllyType } from './canvas/allies'
 import EnemySpawner from './canvas/enemies'
 import Tower from './canvas/tower'
 import { coinCounter, scoreCounter } from './ui'
@@ -16,10 +16,12 @@ import { coinCounter, scoreCounter } from './ui'
 //   }
 // }
 
+// TODO: Розділити процес гри на два окремі етапи: проходження рівня та покупка апгрейдів
+
 export default class Game {
   _coins: number = 0
   _score: number = 0
-  #divisor: number = 1
+  _totalUpgrades: number = 0
   spawner: EnemySpawner
   tower: Tower
   isRunning: boolean
@@ -29,8 +31,6 @@ export default class Game {
   get coins() {
     return this._coins
   }
-
-  // TODO: Економіка покупки башень (2 левел = 10 монет)
   set coins(amount: number) {
     this._coins = amount
 
@@ -46,6 +46,13 @@ export default class Game {
     scoreCounter.innerHTML = `Score: ${this.score}`
   }
 
+  get totalUpgrades() {
+    return this._totalUpgrades
+  }
+  set totalUpgrades(value: number) {
+    this._totalUpgrades = value
+  }
+
   constructor(spawner: EnemySpawner, tower: Tower) {
     this.spawner = spawner
     this.tower = tower
@@ -59,33 +66,37 @@ export default class Game {
 
   public levelUp(allyTower: Tower | Ally) {
     if (this.coins - allyTower.upgradeCost >= 0) {
-      if (allyTower.name === 'Tower') {
-        ;(allyTower as Tower).stopShooting()
+      if (allyTower instanceof Tower) {
+        allyTower.stopShooting()
       } else {
-        ;(allyTower as Ally).stopCasting()
+        allyTower.stopCasting()
       }
 
       this.coins -= allyTower.upgradeCost
-      allyTower.levelUp(this.score, this.#divisor)
+      this.totalUpgrades += 1
 
-      if (allyTower.name === 'Tower') {
-        this.#divisor += 1
-        ;(allyTower as Tower).startShooting(this.spawner.enemies)
+      allyTower.levelUp()
+
+      if (allyTower instanceof Tower) {
+        allyTower.startShooting(this.spawner.enemies)
       } else {
-        this.tower.updateAlliesCosts(this.score, this.#divisor)
-        ;(allyTower as Ally).startCasting(this.spawner.enemies)
+        this.tower.updateAlliesPriceMap(this.score, this.totalUpgrades)
+        allyTower.startCasting(this.spawner.enemies)
       }
     } else throw new Error('Not enough coins')
   }
 
   public purchase(allyType: AllyType) {
-    const cost = upgradesMap[allyType][0]
+    const cost = Ally.priceMap[allyType][0]
 
     if (this.coins - cost >= 0) {
       this.coins -= cost
-      this.#divisor += 1
-      this.tower.updateAlliesCosts(this.score, this.#divisor)
-      return this.tower.spawnAlly(allyType)
+      this.totalUpgrades += 1
+
+      const newAlly = this.tower.spawnAlly(allyType)
+      this.tower.updateAlliesPriceMap(this.score, this.totalUpgrades)
+
+      return newAlly
     } else throw new Error('Not enough coins')
   }
 

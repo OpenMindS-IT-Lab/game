@@ -129,20 +129,19 @@ export function checkCollisionsAll(object: THREE.Mesh) {
   const objectBoundingBox = object.userData.boundingBox as THREE.Box3
   objectBoundingBox.setFromObject(object)
 
-  return (
-    scene.children?.filter(child => {
-      if (object === child) return false
+  const collisions = scene.children.filter(child => {
+    if (object === child) return false
 
-      if ('boundingBox' in child.userData) {
-        const otherBoundingBox = child.userData.boundingBox as THREE.Box3
-        otherBoundingBox.setFromObject(child)
+    if ('boundingBox' in child.userData) {
+      const otherBoundingBox = child.userData.boundingBox as THREE.Box3
+      otherBoundingBox.setFromObject(child)
+      return objectBoundingBox.intersectsBox(otherBoundingBox)
+    }
 
-        return objectBoundingBox.intersectsBox(otherBoundingBox)
-      }
+    return false
+  })
 
-      return false
-    }) ?? []
-  )
+  return collisions
 }
 
 export function deleteAllObjects() {

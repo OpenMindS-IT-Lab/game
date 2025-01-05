@@ -110,7 +110,8 @@ export function moveLinear(
   object: THREE.Mesh,
   targetPosition: THREE.Vector3,
   animationHandler?: AnimationHandler,
-  cb?: () => void
+  cb?: () => void,
+  speed: number = 1
 ) {
   ;((object.userData.isAnimating as AnimationHandler) ?? animationHandler).switchState(true) // Блокування повторного запуску
 
@@ -118,7 +119,7 @@ export function moveLinear(
   let elapsed = 0 // Час, який минув
 
   function animate() {
-    const frameTime = 0.1024 // Фіксована частка часу для кожного кадру
+    const frameTime = 0.1024 * speed // Фіксована частка часу для кожного кадру
     elapsed += frameTime
 
     // Лінійне наближення до цільової позиції
