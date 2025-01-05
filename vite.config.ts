@@ -16,6 +16,7 @@ export default defineConfig({
       'es2018',
       'es2019',
       'es2020',
+      'es2022',
     ],
     emptyOutDir: true,
     minify: true,

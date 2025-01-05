@@ -8,6 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "vite build --watch && vite preview",
+    "bot:build": "tsc src/bot --outDir dist/bot",
+    "bot:dev": "ts-node src/bot",
+    "bot": "node dist/bot",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -21,7 +24,6 @@
     "express": "^4.21.2",
     "lodash": "^4.17.21",
     "serverless-http": "^3.2.0",
-    "telegraf": "^4.16.3",
     "three": "^0.171.0"
   },
   "devDependencies": {

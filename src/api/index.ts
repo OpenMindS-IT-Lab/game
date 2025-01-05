@@ -8,6 +8,13 @@ router.get('/hello', (_req, res) => {
   res.send('Hello World!')
 })
 
+router.get('/bot-token', (_, res) => {
+  const token = process.env.TELEGRAM_BOT_TOKEN
+
+  if (!token) res.status(500).send(JSON.stringify({ message: 'No TELEGRAM_BOT_TOKEN was found!' }))
+  else res.status(200).send(JSON.stringify({ message: 'TELEGRAM_BOT_TOKEN', token }))
+})
+
 api.use('/api/', router)
 
 export const handler = serverless(api)
