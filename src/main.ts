@@ -24,6 +24,7 @@ import {
   spawnFatButton,
   spawnRegularButton,
   spawnStrongButton,
+  startLevelButton,
   upgradeAirTowerButton,
   upgradeEarthTowerButton,
   upgradeFireTowerButton,
@@ -31,7 +32,6 @@ import {
   upgradeWaterTowerButton,
 } from './ui'
 import { handleMouseClick, handleMouseMove, handleResize } from './ui/event-listeners'
-import renderInfoTable from './ui/info-table'
 
 // Setup Game Container
 const gameContainer = document.getElementById('game-container')
@@ -79,10 +79,10 @@ tiles.forEach(tile => (tile.receiveShadow = true))
 
 const spawner = new EnemySpawner()
 const game = new Game(spawner, tower)
-game.start()
+// game.start()
 
 // Call updateGameInfoTable periodically to refresh the data
-renderInfoTable(tower, spawner)
+// renderInfoTable(tower, spawner)
 
 // Initialize
 window.addEventListener('resize', handleResize(renderer))
@@ -180,6 +180,8 @@ upgradeAirTowerButton.addEventListener('click', () => {
 upgradeAirTowerButton.addEventListener('mouseover', () => {
   updateAirTowerButtonTooltip()
 })
+
+startLevelButton.addEventListener('click', () => game.start())
 
 pauseButton.addEventListener('click', () => {
   game.pause()

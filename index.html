@@ -15,15 +15,21 @@
   <!-- Інтерфейс -->
   <div id="ui-container">
     <!-- Нижні кнопки (основний ігровий інтерфейс користувача для взаємодії зі сценою) -->
-    <div id="bottom-buttons">
+    <div id="bottom-buttons" class="active">
       <button id="upgrade-main-tower" type="button" class="ui-button" data-title="">MAIN</button>
       <button id="upgrade-water-tower" type="button" class="ui-button" data-title="">WATER</button>
       <button id="upgrade-air-tower" type="button" class="ui-button" data-title="">AIR</button>
       <button id="upgrade-earth-tower" type="button" class="ui-button" data-title="">EARTH</button>
       <button id="upgrade-fire-tower" type="button" class="ui-button" data-title="">FIRE</button>
+
+      <button id="start-level-button" type="button" class="ui-button">START</button>
     </div>
 
-
+    <div id="bottom-info" class="">
+      <h1 id="level-display">Level 1
+      </h1>
+      <span id="timer">30</span>
+    </div>
 
     <!-- Бічні кнопки (для зручності під час розробки; не входитимуть в кінцевий інтерфейс гри) -->
     <div id="side-buttons">

@@ -24,10 +24,54 @@ body {
   position: absolute;
   bottom: 20px;
   width: 100%;
-  display: flex;
+  display: none;
   justify-content: center;
   gap: 10px;
   pointer-events: auto;
+}
+
+#bottom-buttons.active {
+  display: flex;
+}
+
+#start-level-button {
+  background-color: green;
+  font-weight: bold;
+  box-shadow: 0 0 10px 2px green;
+}
+
+#bottom-info {
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  display: none;
+  justify-content: center;
+  /* justify-items: center; */
+  /* align-items: center; */
+  /* align-content: center; */
+  gap: 0;
+  pointer-events: auto;
+  flex-wrap: wrap;
+}
+
+#bottom-info.active {
+  display: flex;
+}
+
+#level-display {
+  color: green;
+  text-shadow: 0 0 3.5px #00ff00;
+  flex-basis: 100%;
+  text-align: center;
+  padding: 0;
+  margin: 0;
+}
+
+#timer {
+  color: white;
+  text-shadow: 0 0 3.5px #00ff00;
+  font-weight: bold;
+  font-size: 1.5em;
 }
 
 .ui-button {

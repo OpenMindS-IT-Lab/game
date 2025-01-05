@@ -1,4 +1,4 @@
-import { entries } from 'lodash'
+import { entries, values } from 'lodash'
 import * as THREE from 'three'
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils'
 import { Ally, AllyType } from './allies'
@@ -119,6 +119,13 @@ class Tower extends THREE.Mesh {
         ally.updatePrice(newPriceMap)
       }
     }
+  }
+
+  heal() {
+    this.health = 10 + (this.level || this.level + 1) * 10
+    values(this.allies).forEach(ally => {
+      if (ally) 10 + (ally.level - 1 || 1) * 10
+    })
   }
 
   private shootAtNearestEnemy(enemies: Enemy[]): void {

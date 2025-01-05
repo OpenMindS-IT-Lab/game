@@ -184,11 +184,13 @@ export class Enemy extends THREE.Mesh {
       })
     }, 1000 / 60) // 60 FPS
 
+    this.spawner.purgeDestroyedEnemies()
+
     return this.moving
   }
 
   public stop() {
-    clearInterval(this.moving)
+    this.spawner.clearInterval(this.moving)
     this.moving = 0
   }
 
@@ -209,8 +211,8 @@ export class Enemy extends THREE.Mesh {
             if (!tower) throw new Error('Smth went wrong with Tower when handling collision!')
 
             tower.takeDamage(this.damage, this.spawner)
-            this.dropCoins()
             this.spawner.addScore(this.score)
+            this.dropCoins()
             this.destroy()
           }
 
@@ -403,47 +405,34 @@ export default class EnemySpawner {
   }
 
   private startI = 0
-  private levelUpI = 0
 
   public clearInterval(interval: number) {
     clearInterval(interval)
     pull(this.intervals, interval)
   }
 
-  public start() {
+  public start(level: number) {
+    this.level = level
     this.startI = setInterval(() => this.spawnRandomEnemy(), this.spawnRate)
-    this.levelUpI = setInterval(() => {
-      this.level += 1
-      this.update()
-    }, 30000)
-    this.intervals.push(this.startI, this.levelUpI)
+
+    // this.levelUpI = setInterval(() => {
+    //   this.level += 1
+    //   this.update()
+    // }, 30000)
+
+    this.intervals.push(this.startI)
   }
 
   public stop() {
-    // console.log('stop() called')
-
-    // console.log('Interating throught ' + this.enemies.length + ' enemies')
-    this.enemies.forEach(enemy => {
-      // console.log(enemy)
-      enemy.destroy()
-      // console.log('destroy() called')
-    })
-    // console.log('After iterationg the list of enemies is: ' + this.enemies)
-    this.purgeDestroyedEnemies()
-    // console.log('purgeDestroyedEnemies() called')
-    // console.log('Enemies: ', this.enemies)
-
-    this.intervals.forEach(interval => clearInterval(interval))
-
-    this.intervals = []
+    this.clearInterval(this.startI)
+    this.intervals = without(this.intervals, this.startI)
+    this.startI = 0
   }
 
   public pause() {
     this.enemies.forEach(enemy => enemy.stop())
     this.clearInterval(this.startI)
-    this.clearInterval(this.levelUpI)
     this.startI = 0
-    this.levelUpI = 0
   }
 
   public resume() {

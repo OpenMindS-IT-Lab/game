@@ -202,15 +202,15 @@ export class Ally extends THREE.Mesh {
     nearestEnemy.stop()
 
     const freezed = setTimeout(() => {
+      if (!nearestEnemy) {
+        clearTimeout(freezed)
+        return
+      }
       // nearestEnemy.takeDamage(waterDamage, this.allyTowerType)
+      nearestEnemy.userData.isAnimating.switchState(false)
       nearestEnemy.spawner.purgeDestroyedEnemies()
       nearestEnemy.moving = nearestEnemy.move()
-      nearestEnemy.userData.isAnimating.switchState(false)
     }, (this.damage / 3) * 1000)
-
-    return () => {
-      clearInterval(freezed)
-    }
   }
 
   public takeDamage(damage: number, spawner: EnemySpawner) {
@@ -271,7 +271,7 @@ export class Ally extends THREE.Mesh {
     const earthDamage = this.damage * 3
 
     nearestEnemy.stop()
-    moveAndFlip(nearestEnemy, nearestEnemy.position.clone(), undefined, undefined, () => {
+    moveAndFlip(nearestEnemy, nearestEnemy.position.clone(), nearestEnemy.userData.isAnimating, undefined, () => {
       nearestEnemy.takeDamage(earthDamage, this.allyTowerType)
       if (nearestEnemy.health >= 0) nearestEnemy.move()
     })
@@ -312,6 +312,10 @@ export class Ally extends THREE.Mesh {
       [AllyType.AIR]: this.throwback.bind(_ally),
     }
     const skill = skillMap[this.allyTowerType]
+
+    if (this.casting) {
+      this.stopCasting()
+    }
 
     this.casting = setInterval(() => skill(enemies), this.skillCooldown)
   }

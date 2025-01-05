@@ -55,11 +55,11 @@ function updateGameInfoTable(tower: Tower, spawner: EnemySpawner) {
   spawner.enemies.forEach(enemy => {
     const enemyRow = document.createElement('tr')
     enemyRow.innerHTML = `
-    <td>${enemy.userData.type}</td>
-    <td>${enemy.userData.health}</td>
+    <td>${enemy.enemyType}</td>
+    <td>${enemy.health}</td>
     <td>${enemy.level}</td>
-    <td>${enemy.userData.damage}</td>
-    <td>${enemy.userData.speed}</td>
+    <td>${enemy.damage}</td>
+    <td>${enemy.speed}</td>
     `
     gameInfoTableBody.appendChild(enemyRow)
   })
@@ -72,7 +72,5 @@ export default function renderInfoTable(tower: Tower, spawner: EnemySpawner) {
     if (spawner.intervals.length === 0 && spawner.enemies.length === 0) clearInterval(infoTableUpdateI)
   }, 1000 / 4)
 
-  return () => {
-    clearInterval(infoTableUpdateI)
-  }
+  return infoTableUpdateI
 }

@@ -2,7 +2,8 @@ import { values } from 'lodash'
 import { Ally, AllyType } from './canvas/allies'
 import EnemySpawner from './canvas/enemies'
 import Tower from './canvas/tower'
-import { coinCounter, scoreCounter } from './ui'
+import { bottomButtons, bottomInfo, coinCounter, levelDisplay, scoreCounter, timer } from './ui'
+import renderInfoTable from './ui/info-table'
 
 // function errorBoundary() {
 //   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
@@ -24,11 +25,13 @@ export default class Game {
   _coins: number = 0
   _score: number = 0
   _totalUpgrades: number = 0
+  level: number
   spawner: EnemySpawner
   tower: Tower
   isRunning: boolean
   isPaused: boolean
   isOver: boolean
+  isUpgrading: boolean
 
   get coins() {
     return this._coins
@@ -61,12 +64,16 @@ export default class Game {
     this.isRunning = false
     this.isPaused = false
     this.isOver = false
+    this.isUpgrading = false
+    this.level = 0
 
     this.spawner.collectDrop = this.spawner.collectDrop.bind(this)
     this.spawner.addScore = this.spawner.addScore.bind(this)
   }
 
   public levelUp(allyTower: Tower | Ally) {
+    if (!this.isUpgrading) return
+
     if (this.coins - allyTower.upgradeCost >= 0) {
       if (allyTower instanceof Tower) {
         allyTower.stopShooting()
@@ -104,14 +111,64 @@ export default class Game {
 
   public start() {
     try {
-      this.spawner.start()
+      this.level += 1
+      let levelDuration = 30
+      levelDisplay.innerHTML = `LEVEL ${this.level}`
+      timer.innerHTML = `${levelDuration}`
+
+      bottomButtons.classList.remove('active')
+      bottomInfo.classList.add('active')
+
+      this.spawner.start(this.level)
       this.tower.startShooting(this.spawner.enemies)
+      values(this.tower.allies).forEach(ally => ally?.startCasting(this.spawner.enemies))
+      const infoTable = renderInfoTable(this.tower, this.spawner)
+
+      this.isUpgrading = false
+      this.isRunning = true
+
+      let level = setInterval(() => {
+        if (levelDuration) {
+          levelDuration--
+          timer.innerHTML = `${levelDuration}`
+        } else {
+          this.stop()
+          clearInterval(level)
+          clearInterval(infoTable)
+        }
+      }, 1000)
     } catch (error) {
       console.error(error)
       return
     }
+  }
 
-    this.isRunning = true
+  stop() {
+    try {
+      this.spawner.stop()
+
+      let finish = setInterval(() => {
+        // console.log('Waiting to finish level')
+        console.log(this.spawner.intervals)
+        this.spawner.purgeDestroyedEnemies()
+
+        if (this.spawner.intervals.length === 0) {
+          bottomButtons.classList.add('active')
+          bottomInfo.classList.remove('active')
+
+          this.tower.stopShooting()
+          values(this.tower.allies).forEach(ally => ally?.stopCasting())
+          this.tower.heal()
+
+          this.isRunning = false
+          this.isUpgrading = true
+
+          clearInterval(finish)
+        }
+      }, 1000)
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   public pause() {
@@ -142,7 +199,7 @@ export default class Game {
 
   public end() {
     try {
-      this.spawner.stop()
+      // this.spawner.stop()
       this.tower.stopShooting()
     } catch (error) {
       console.error(error)

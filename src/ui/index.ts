@@ -12,10 +12,16 @@ export const spawnStrongButton = document.getElementById('spawn-strong') as Elem
 
 export const upgradeMainTowerButton = document.getElementById('upgrade-main-tower') as Element
 
+export const bottomButtons = document.getElementById('bottom-buttons') as Element
 export const upgradeWaterTowerButton = document.getElementById('upgrade-water-tower') as Element
 export const upgradeFireTowerButton = document.getElementById('upgrade-fire-tower') as Element
 export const upgradeEarthTowerButton = document.getElementById('upgrade-earth-tower') as Element
 export const upgradeAirTowerButton = document.getElementById('upgrade-air-tower') as Element
+export const startLevelButton = document.getElementById('start-level-button') as Element
+
+export const bottomInfo = document.getElementById('bottom-info') as Element
+export const levelDisplay = document.getElementById('level-display') as Element
+export const timer = document.getElementById('timer') as Element
 
 export const gameInfoTableBody = document.querySelector('#game-info-table tbody') as Element
 
