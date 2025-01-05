@@ -1,3 +1,4 @@
+import { values } from 'lodash'
 import { Ally, AllyType } from './canvas/allies'
 import EnemySpawner from './canvas/enemies'
 import Tower from './canvas/tower'
@@ -19,6 +20,7 @@ import { coinCounter, scoreCounter } from './ui'
 // TODO: Розділити процес гри на два окремі етапи: проходження рівня та покупка апгрейдів
 
 export default class Game {
+  // _coins: number = 10000
   _coins: number = 0
   _score: number = 0
   _totalUpgrades: number = 0
@@ -114,8 +116,9 @@ export default class Game {
 
   public pause() {
     try {
-      //! this.spawner.pause()
+      this.spawner.pause()
       this.tower.stopShooting()
+      values(this.tower.allies).forEach(ally => ally?.stopCasting())
     } catch (error) {
       console.error(error)
       return
@@ -126,8 +129,9 @@ export default class Game {
 
   public resume() {
     try {
-      //! this.spawner.resume
+      this.spawner.resume()
       this.tower.startShooting(this.spawner.enemies)
+      values(this.tower.allies).forEach(ally => ally?.startCasting(this.spawner.enemies))
     } catch (error) {
       console.error(error)
       return

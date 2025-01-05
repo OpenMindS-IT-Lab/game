@@ -14,11 +14,12 @@ import {
 import renderer, { render } from './canvas/renderer'
 import createTiles from './canvas/tiles'
 import Tower from './canvas/tower'
-import { enableCameraDrag, enableMouseWheelTilt, resetScene } from './canvas/utils'
+import { enableCameraDrag, enableMouseWheelTilt } from './canvas/utils'
 import Game from './game'
 import './ui'
 import {
-  resetSceneButton,
+  pauseButton,
+  resumeButton,
   spawnFastButton,
   spawnFatButton,
   spawnRegularButton,
@@ -30,6 +31,7 @@ import {
   upgradeWaterTowerButton,
 } from './ui'
 import { handleMouseClick, handleMouseMove, handleResize } from './ui/event-listeners'
+import renderInfoTable from './ui/info-table'
 
 // Setup Game Container
 const gameContainer = document.getElementById('game-container')
@@ -80,7 +82,7 @@ const game = new Game(spawner, tower)
 game.start()
 
 // Call updateGameInfoTable periodically to refresh the data
-// renderInfoTable(tower, spawner)
+renderInfoTable(tower, spawner)
 
 // Initialize
 window.addEventListener('resize', handleResize(renderer))
@@ -179,6 +181,11 @@ upgradeAirTowerButton.addEventListener('mouseover', () => {
   updateAirTowerButtonTooltip()
 })
 
-resetSceneButton.addEventListener('click', resetScene)
+pauseButton.addEventListener('click', () => {
+  game.pause()
+})
+resumeButton.addEventListener('click', () => {
+  game.resume()
+})
 
 render()

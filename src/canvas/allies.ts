@@ -47,8 +47,8 @@ export class Ally extends THREE.Mesh {
   }
 
   static priceMap = {
-    [AllyType.WATER]: [10, 20, 50, 100, 200, 500, 1000, 2000, 4000, 8000, 12000, 20000],
-    [AllyType.AIR]: [15, 30, 150, 300, 1500, 3000, 15000, 30000, 100000, 200000, 1000000, 2000000],
+    [AllyType.AIR]: [10, 20, 100, 200, 1000, 2000, 10000, 20000, 50000, 100000, 1000000, 2000000],
+    [AllyType.WATER]: [15, 30, 150, 300, 1500, 3000, 15000, 30000, 100000, 200000, 1000000, 2000000],
     [AllyType.EARTH]: [20, 40, 200, 400, 2000, 4000, 20000, 40000, 150000, 300000, 1000000, 2000000],
     [AllyType.FIRE]: [25, 50, 250, 500, 2500, 5000, 25000, 50000, 200000, 400000, 1000000, 2000000],
   }
@@ -191,7 +191,9 @@ export class Ally extends THREE.Mesh {
   }
 
   private freeze(enemies: Enemy[]) {
-    const nearestEnemy = this.getNearestEnemy(enemies)
+    const nearestEnemy = this.getNearestEnemy(
+      enemies.filter(enemy => !enemy.userData.isAnimating.currentState && enemy.moving)
+    )
 
     if (!nearestEnemy) return
     // const waterDamage = this.damage
@@ -204,7 +206,7 @@ export class Ally extends THREE.Mesh {
       nearestEnemy.spawner.purgeDestroyedEnemies()
       nearestEnemy.moving = nearestEnemy.move()
       nearestEnemy.userData.isAnimating.switchState(false)
-    }, this.damage * 1000 - this.level * 250)
+    }, (this.damage / 3) * 1000)
 
     return () => {
       clearInterval(freezed)
@@ -246,10 +248,20 @@ export class Ally extends THREE.Mesh {
   }
 
   private burn(enemies: Enemy[]) {
-    const fireDamage = this.damage
     enemies
       .filter(enemy => !enemy.userData.isDestroyed)
-      .forEach(enemy => enemy.takeDamage(fireDamage, this.allyTowerType))
+      .forEach(enemy => {
+        const fireDamage = this.damage
+
+        enemy.takeDamage(fireDamage, this.allyTowerType)
+
+        for (let i = 0; i <= this.level; i++) {
+          setTimeout(() => {
+            if (!enemy.userData.isDestroyed)
+              enemy.takeDamage(parseFloat((fireDamage / (i + 1)).toFixed(2)), this.allyTowerType, true)
+          }, this.skillCooldown * (i + 1))
+        }
+      })
   }
 
   private toss(enemies: Enemy[]) {
@@ -267,15 +279,27 @@ export class Ally extends THREE.Mesh {
 
   private throwback(enemies: Enemy[]) {
     enemies
-      .filter(enemy => !enemy.userData.isAnimating.currentState && !enemy.userData.isDestroyed)
+      .filter(
+        enemy =>
+          !enemy.userData.isAnimating.currentState &&
+          !enemy.userData.isDestroyed &&
+          enemy.position.z >= -12 &&
+          -5 <= enemy.position.x &&
+          enemy.position.x <= 5
+      )
       .forEach(enemy => {
         enemy.stop()
         enemy.userData.isAnimating.switchState(true)
-        const enemyPostion = enemy.position.clone().setZ(enemy.position.z - this.damage)
-        moveLinear(enemy, enemyPostion, undefined, () => {
-          enemy.userData.isAnimating.switchState(false)
-          enemy.move()
-        })
+        const enemyPostion = enemy.position.clone().setZ(enemy.position.z - this.damage / 3)
+        moveLinear(
+          enemy,
+          enemyPostion,
+          enemy.userData.isAnimating.switchState,
+          () => {
+            enemy.move()
+          },
+          Math.max(1, 3 / this.damage)
+        )
       })
   }
 

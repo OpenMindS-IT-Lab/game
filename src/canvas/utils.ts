@@ -195,14 +195,14 @@ export function showDamageText(damage: number, position: THREE.Vector3, color?: 
 
     const textInitialPosition = textMesh.position.clone().y
     let animateText = setInterval(() => {
-      textMesh.position.y += 5 / 60
-      textMesh.material.opacity -= 1 / 60
+      textMesh.position.y += 1 / 15
+      textMesh.material.opacity -= 1 / 15
       textMesh.lookAt(cameraPosition)
 
-      if (textMesh.position.y >= textInitialPosition + 5) {
+      if (textMesh.position.y >= textInitialPosition + 1) {
         clearInterval(animateText)
         scene.remove(textMesh)
       }
-    }, 1000 / 60)
+    }, 250 / 15)
   })
 }

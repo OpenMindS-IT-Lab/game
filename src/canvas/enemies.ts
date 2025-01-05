@@ -223,7 +223,13 @@ export class Enemy extends THREE.Mesh {
 
           if (collision instanceof Enemy) {
             this.stop()
-            collision.takeDamage(parseFloat((0.1 * this.damage).toFixed(2)), AllyType.WATER)
+
+            if (this.position.z >= -12 && collision.position.z >= -12)
+              collision.takeDamage(
+                parseFloat((0.1 * this.damage).toFixed(2)),
+                AllyType.WATER,
+                this.spawner.enemies.length > 25
+              )
 
             const towerPosition = (scene.getObjectByName('Tower') as Tower).position.clone()
             const distanceToTower = this.position.clone().distanceTo(towerPosition)
@@ -255,14 +261,15 @@ export class Enemy extends THREE.Mesh {
     return this.watchingCollisions
   }
 
-  public takeDamage(damage: number, type?: AllyType) {
+  public takeDamage(damage: number, type?: AllyType, hideDamageText: boolean = false) {
     const colorMap = {
       [AllyType.WATER]: 0x4277ff,
       [AllyType.FIRE]: 0xff4444,
       [AllyType.EARTH]: 0x423333,
       [AllyType.AIR]: 0x42ffff,
     }
-    showDamageText(damage, this.position.clone(), !!type ? colorMap[type] : 0xffffff)
+
+    if (!hideDamageText) showDamageText(damage, this.position.clone(), !!type ? colorMap[type] : 0xffffff)
 
     this.health -= damage
 
@@ -429,6 +436,19 @@ export default class EnemySpawner {
     this.intervals.forEach(interval => clearInterval(interval))
 
     this.intervals = []
+  }
+
+  public pause() {
+    this.enemies.forEach(enemy => enemy.stop())
+    this.clearInterval(this.startI)
+    this.clearInterval(this.levelUpI)
+    this.startI = 0
+    this.levelUpI = 0
+  }
+
+  public resume() {
+    this.enemies.forEach(enemy => enemy.move())
+    this.update()
   }
 
   private update() {
