@@ -122,9 +122,9 @@ class Tower extends THREE.Mesh {
   }
 
   heal() {
-    this.health = 10 + (this.level || this.level + 1) * 10
+    this.health = (this.level || this.level + 1) * 10
     values(this.allies).forEach(ally => {
-      if (ally) 10 + (ally.level - 1 || 1) * 10
+      if (ally) ally.health = (ally.level - 1 || 1) * 10
     })
   }
 

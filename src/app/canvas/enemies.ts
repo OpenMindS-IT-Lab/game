@@ -411,9 +411,20 @@ export default class EnemySpawner {
     pull(this.intervals, interval)
   }
 
+  private updateSpawnRate() {
+    const dividend = 3000
+    const divisor = this.level / 2 <= 1 ? 1 : this.level / 2
+    const quotient = dividend / divisor
+
+    this.spawnRate = Math.round(quotient)
+  }
+
   public start(level: number) {
     this.level = level
+    this.updateSpawnRate()
     this.startI = setInterval(() => this.spawnRandomEnemy(), this.spawnRate)
+
+    console.log(this.spawnRate)
 
     // this.levelUpI = setInterval(() => {
     //   this.level += 1
