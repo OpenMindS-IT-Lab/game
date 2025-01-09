@@ -1,11 +1,11 @@
 import { entries, values } from 'lodash'
 import * as THREE from 'three'
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils'
+import { showDamageText, Timeout } from '../utils'
 import { Ally, AllyType } from './allies'
 import { Colors } from './constants'
 import EnemySpawner, { Enemy } from './enemies'
 import { scene } from './scene'
-import { showDamageText } from './utils'
 
 class Tower extends THREE.Mesh {
   health: number = 0
@@ -13,7 +13,7 @@ class Tower extends THREE.Mesh {
   bulletSpeed: number = 0
   bulletDamage: number = 0
   bulletCooldown: number = 0
-  shooting: number
+  shooting: Timeout
   upgradeCost: number = 0
   allies: Record<AllyType, Ally | undefined>
 
@@ -124,7 +124,7 @@ class Tower extends THREE.Mesh {
   heal() {
     this.health = (this.level || this.level + 1) * 10
     values(this.allies).forEach(ally => {
-      if (ally) ally.health = (ally.level - 1 || 1) * 10
+      if (ally) ally.health = (ally.level || ally.level + 1) * 10
     })
   }
 

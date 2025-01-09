@@ -3,7 +3,7 @@ import { Ally, AllyType } from './canvas/allies'
 import EnemySpawner from './canvas/enemies'
 import Tower from './canvas/tower'
 import { bottomButtons, bottomInfo, coinCounter, levelDisplay, scoreCounter, timer } from './ui'
-import renderInfoTable from './ui/info-table'
+// import renderInfoTable from './ui/info-table'
 
 // function errorBoundary() {
 //   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
@@ -122,7 +122,7 @@ export default class Game {
       this.spawner.start(this.level)
       this.tower.startShooting(this.spawner.enemies)
       values(this.tower.allies).forEach(ally => ally?.startCasting(this.spawner.enemies))
-      const infoTable = renderInfoTable(this.tower, this.spawner)
+      // const infoTable = renderInfoTable(this.tower, this.spawner)
 
       this.isUpgrading = false
       this.isRunning = true
@@ -134,7 +134,7 @@ export default class Game {
         } else {
           this.stop()
           clearInterval(level)
-          clearInterval(infoTable)
+          // clearInterval(infoTable)
         }
       }, 1000)
     } catch (error) {

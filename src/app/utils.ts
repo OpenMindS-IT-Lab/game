@@ -1,11 +1,11 @@
 import * as THREE from 'three'
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry'
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader'
-import camera, { resetCamera } from './camera'
-import { Colors } from './constants'
-import renderer from './renderer'
-import { scene } from './scene'
-import { tiles } from './tiles'
+import camera, { resetCamera } from './canvas/camera'
+import { Colors } from './canvas/constants'
+import renderer from './canvas/renderer'
+import { scene } from './canvas/scene'
+import { tiles } from './canvas/tiles'
 
 // Utility: Switch Cube State
 export const switchObjectSelectionState = (object: THREE.Mesh, selected: boolean) => {
@@ -158,7 +158,7 @@ export function deleteAllObjects() {
 
 export const resetScene = () => {
   deleteAllObjects() // Видаляємо всі об'єкти
-  tiles.forEach(tile => {
+  tiles.forEach((tile: THREE.Mesh) => {
     if (tile.position.x === 0 && tile.position.z === 14) tile.userData.isOccupied = true
     else tile.userData.isOccupied = false
   })
@@ -168,8 +168,12 @@ export const resetScene = () => {
   console.log(tiles)
 }
 
+let damageTextCounter = 0
 // Функція для відображення тексту пошкодження
 export function showDamageText(damage: number, position: THREE.Vector3, color?: number) {
+  if (damageTextCounter >= 20) return
+
+  damageTextCounter++
   const loader = new FontLoader()
   loader.load('/node_modules/three/examples/fonts/helvetiker_regular.typeface.json', font => {
     const geometry = new TextGeometry(`-${damage}`, {
@@ -200,9 +204,12 @@ export function showDamageText(damage: number, position: THREE.Vector3, color?: 
       textMesh.lookAt(cameraPosition)
 
       if (textMesh.position.y >= textInitialPosition + 1) {
+        damageTextCounter--
         clearInterval(animateText)
         scene.remove(textMesh)
       }
     }, 250 / 15)
   })
 }
+
+export type Timeout = NodeJS.Timeout | 0

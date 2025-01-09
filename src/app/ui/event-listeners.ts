@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { AnimationHandler, moveAndFlip, moveLinear } from '../canvas/animations'
 import camera from '../canvas/camera'
 import { hoverTile, tiles } from '../canvas/tiles'
-import { hoverObject, switchObjectSelectionState } from '../canvas/utils'
+import { hoverObject, switchObjectSelectionState } from '../utils'
 
 // Event Listeners
 export const handleResize = (renderer: THREE.WebGLRenderer) => (_event: Event) => {

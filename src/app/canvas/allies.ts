@@ -1,11 +1,11 @@
 import { capitalize } from 'lodash'
 import * as THREE from 'three'
+import { showDamageText, Timeout } from '../utils'
 import { moveAndFlip, moveLinear } from './animations'
 import EnemySpawner, { Enemy } from './enemies'
 import { scene } from './scene'
 import { tiles } from './tiles'
 import Tower from './tower'
-import { showDamageText } from './utils'
 
 export const enum AllyType {
   WATER = 'water',
@@ -22,7 +22,7 @@ export class Ally extends THREE.Mesh {
   speed: number = 0
   height: number
   skillCooldown: number = 0
-  casting: number
+  casting: Timeout
   upgradeCost: number = 0
 
   private static geometryMap = {

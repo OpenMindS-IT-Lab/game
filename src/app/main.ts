@@ -14,16 +14,9 @@ import {
 import renderer, { render } from './canvas/renderer'
 import createTiles from './canvas/tiles'
 import Tower from './canvas/tower'
-import { enableCameraDrag, enableMouseWheelTilt } from './canvas/utils'
 import Game from './game'
 import './ui'
 import {
-  pauseButton,
-  resumeButton,
-  spawnFastButton,
-  spawnFatButton,
-  spawnRegularButton,
-  spawnStrongButton,
   startLevelButton,
   upgradeAirTowerButton,
   upgradeEarthTowerButton,
@@ -32,6 +25,7 @@ import {
   upgradeWaterTowerButton,
 } from './ui'
 import { handleMouseClick, handleMouseMove, handleResize } from './ui/event-listeners'
+import { enableCameraDrag, enableMouseWheelTilt } from './utils'
 
 // Setup Game Container
 const gameContainer = document.getElementById('game-container')
@@ -93,10 +87,10 @@ window.addEventListener(
 window.addEventListener('mousemove', handleMouseMove(mouse, raycaster, tower, spawner.enemies, isTowerAnimating))
 
 // Прив'язка функцій до кнопок
-spawnFatButton.addEventListener('click', () => spawner.spawnFat())
-spawnFastButton.addEventListener('click', () => spawner.spawnFast())
-spawnRegularButton.addEventListener('click', () => spawner.spawnRegular())
-spawnStrongButton.addEventListener('click', () => spawner.spawnStrong())
+// spawnFatButton.addEventListener('click', () => spawner.spawnFat())
+// spawnFastButton.addEventListener('click', () => spawner.spawnFast())
+// spawnRegularButton.addEventListener('click', () => spawner.spawnRegular())
+// spawnStrongButton.addEventListener('click', () => spawner.spawnStrong())
 
 const updateMainTowerButtonTooltip = () => upgradeMainTowerButton.setAttribute('data-title', tower.previewUpgrade())
 upgradeMainTowerButton.addEventListener('click', () => {
@@ -183,11 +177,11 @@ upgradeAirTowerButton.addEventListener('mouseover', () => {
 
 startLevelButton.addEventListener('click', () => game.start())
 
-pauseButton.addEventListener('click', () => {
-  game.pause()
-})
-resumeButton.addEventListener('click', () => {
-  game.resume()
-})
+// pauseButton.addEventListener('click', () => {
+//   game.pause()
+// })
+// resumeButton.addEventListener('click', () => {
+//   game.resume()
+// })
 
 render()

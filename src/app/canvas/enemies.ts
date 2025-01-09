@@ -1,12 +1,12 @@
 import { compact, entries, minBy, pull, remove, without } from 'lodash'
 import * as THREE from 'three'
+import { checkCollisionsAll, showDamageText, Timeout } from '../utils'
 import { Ally, AllyType } from './allies'
 import { AnimationHandler, moveLinear } from './animations'
 import { Colors } from './constants'
 import { scene } from './scene'
 import { tiles } from './tiles'
 import Tower, { Projectile } from './tower'
-import { checkCollisionsAll, showDamageText } from './utils'
 
 // Функція для створення випадкового кольору
 function getRandomColor() {
@@ -62,8 +62,8 @@ export class Enemy extends THREE.Mesh {
   damage: number
   speed: number
   height: number
-  moving: number
-  watchingCollisions: number
+  moving: Timeout
+  watchingCollisions: Timeout
   coinDropRange: [number, number]
   score: number
   spawnPostion: THREE.Vector3
@@ -394,19 +394,19 @@ export default class EnemySpawner {
     return randomEnemy
   }
 
-  private _intervals = [] as number[]
+  private _intervals = [] as Timeout[]
 
-  get intervals() {
+  get intervals(): Timeout[] {
     return this._intervals
   }
 
-  set intervals(entrries: number[]) {
+  set intervals(entrries: Timeout[]) {
     this._intervals = entrries
   }
 
-  private startI = 0
+  private startI = 0 as Timeout
 
-  public clearInterval(interval: number) {
+  public clearInterval(interval: Timeout) {
     clearInterval(interval)
     pull(this.intervals, interval)
   }

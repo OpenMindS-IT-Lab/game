@@ -32,5 +32,5 @@ export function toggleMenu() {
   sideMenu.classList.toggle('hidden') // Відкриваємо/закриваємо меню
 }
 
-closeButton.addEventListener('click', toggleMenu)
-menuToggle.addEventListener('click', toggleMenu)
+// closeButton.addEventListener('click', toggleMenu)
+// menuToggle.addEventListener('click', toggleMenu)

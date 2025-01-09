@@ -75,7 +75,7 @@ body {
 }
 
 .ui-button {
-  padding: 10px 20px;
+  padding: 10px;
   background: #444;
   color: white;
   border: none;
@@ -245,7 +245,7 @@ body {
 
 #coin-counter {
   position: absolute;
-  bottom: 20px;
+  top: 110px;
   right: 20px;
   padding: 10px;
   background: #ff0000;
@@ -257,8 +257,8 @@ body {
 
 #score-counter {
   position: absolute;
-  bottom: 20px;
-  left: 20px;
+  top: 60px;
+  right: 20px;
   padding: 10px;
   background: #00ff00;
   color: white;
