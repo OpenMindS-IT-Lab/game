@@ -27,6 +27,7 @@ export default defineConfig({
         },
       },
     },
+    copyPublicDir: true,
   },
   server: {
     host: true,
