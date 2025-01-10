@@ -1,9 +1,35 @@
+// import legacy from '@vitejs/plugin-legacy'
+import TurboConsole from 'unplugin-turbo-console/vite'
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
+import { qrcode } from 'vite-plugin-qrcode'
+// import removeConsole from 'vite-plugin-remove-console'
 
 export default defineConfig({
+  plugins: [
+    qrcode({
+      filter: url => url.startsWith('http://172'),
+    }),
+    TurboConsole({
+      specifiedEditor: 'code',
+      extendedPathFileNames: ['index'],
+      prefix: `\\r\\n[${new Date().toLocaleString()}]`,
+      suffix: '\\r\\n',
+    }),
+    nodePolyfills(),
+  ],
+  appType: 'spa',
+  assetsInclude: ['src/**/assets/*'],
+  optimizeDeps: {
+    include: ['src/app/**/*.ts', 'src/app/*.ts'],
+  },
   build: {
+    modulePreload: {
+      polyfill: true,
+    },
     target: [
+      'esnext',
       'chrome58',
       'firefox57',
       'safari11',
@@ -17,17 +43,28 @@ export default defineConfig({
       'es2019',
       'es2020',
       'es2022',
+      'esnext',
     ],
     emptyOutDir: true,
     minify: true,
+    assetsDir: '.',
     rollupOptions: {
+      external: ['node_modules'],
+      input: {
+        app: 'index.html',
+        api: 'src/api/api.ts',
+      },
       output: {
-        manualChunks: {
-          three: ['three'],
-        },
+        esModule: 'if-default-prop',
+        entryFileNames: '[name]/index-[hash].js',
+        // manualChunks: {
+        //   three: ['three'],
+        // },
       },
     },
     copyPublicDir: true,
+    chunkSizeWarningLimit: 1000,
+    sourcemap: true,
   },
   server: {
     host: true,
