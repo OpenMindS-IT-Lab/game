@@ -34,3 +34,6 @@ export function toggleMenu() {
 
 // closeButton.addEventListener('click', toggleMenu)
 // menuToggle.addEventListener('click', toggleMenu)
+
+export * from './event-listeners'
+export * from './info-table'

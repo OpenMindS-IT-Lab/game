@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+/// <reference types="unplugin-turbo-console/client" />
 
 interface ImportMetaEnv {
   readonly VITE_APP_TITLE: string

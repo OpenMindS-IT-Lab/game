@@ -175,7 +175,7 @@ export function showDamageText(damage: number, position: THREE.Vector3, color?: 
 
   damageTextCounter++
   const loader = new FontLoader()
-  loader.load('/helvetiker_regular.typeface.json', font => {
+  loader.load('/src/app/assets/helvetiker_regular.typeface.json', font => {
     const geometry = new TextGeometry(`-${damage}`, {
       font: font,
       size: 0.2,

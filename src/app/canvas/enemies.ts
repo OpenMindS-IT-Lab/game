@@ -424,7 +424,7 @@ export default class EnemySpawner {
     this.updateSpawnRate()
     this.startI = setInterval(() => this.spawnRandomEnemy(), this.spawnRate)
 
-    console.log(this.spawnRate)
+    // console.log(this.spawnRate)
 
     // this.levelUpI = setInterval(() => {
     //   this.level += 1

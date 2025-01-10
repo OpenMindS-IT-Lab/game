@@ -149,7 +149,7 @@ export default class Game {
 
       let finish = setInterval(() => {
         // console.log('Waiting to finish level')
-        console.log(this.spawner.intervals)
+        // console.log(this.spawner.intervals)
         this.spawner.purgeDestroyedEnemies()
 
         if (this.spawner.intervals.length === 0) {
@@ -210,6 +210,6 @@ export default class Game {
     this.isPaused = false
     this.isOver = true
 
-    console.log(`Total coins: ${this.coins}`)
+    // console.log(`Total coins: ${this.coins}`)
   }
 }

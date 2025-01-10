@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { Ally, AllyType } from './canvas/allies'
-import { AnimationHandler, flickerLight } from './canvas/animations'
+import { flickerLight } from './canvas/animations'
 import { resetCamera } from './canvas/camera'
 import EnemySpawner from './canvas/enemies'
 import createGround from './canvas/ground'
@@ -24,8 +24,29 @@ import {
   upgradeMainTowerButton,
   upgradeWaterTowerButton,
 } from './ui'
-import { handleMouseClick, handleMouseMove, handleResize } from './ui/event-listeners'
-import { enableCameraDrag, enableMouseWheelTilt } from './utils'
+import { handleResize } from './ui/event-listeners'
+// import { enableCameraDrag, enableMouseWheelTilt } from './utils'
+
+try {
+  Telegram.WebApp.ready()
+} catch (error) {
+  throw error
+}
+
+try {
+  Telegram.WebApp.showAlert(Telegram.WebApp.safeAreaInset, () => {
+    console.log('test')
+  })
+} catch (error) {
+  console.info(error)
+  alert(JSON.stringify(Telegram.WebApp.safeAreaInset))
+}
+
+try {
+  Telegram.WebApp.requestFullscreen()
+} catch (error) {
+  console.info(error)
+}
 
 // Setup Game Container
 const gameContainer = document.getElementById('game-container')
@@ -36,32 +57,32 @@ resetCamera()
 
 gameContainer.appendChild(renderer.domElement)
 
-enableCameraDrag()
-enableMouseWheelTilt()
+// enableCameraDrag()
+// enableMouseWheelTilt()
 
 // Ground and Grid
 const { gridHelper: _gridHelper, plane } = createGround()
 
 // Tiles
-const tiles: THREE.Mesh[] = createTiles(2)
+const tiles = createTiles(2)
 
 // Tower
 const tower = new Tower(1.25)
 
 // Raycaster
-const raycaster = new THREE.Raycaster()
-const mouse = new THREE.Vector2()
+// const raycaster = new THREE.Raycaster()
+// const mouse = new THREE.Vector2()
 
 // Lighting
 createAmbientLight()
 createDirectionalLight()
-const spotLight = createSpotLight(tower)
+createSpotLight(tower)
 const { lightSphere: _lightSphere, pointLight } = createPointLight()
 createHemisphereLight()
 flickerLight(pointLight)
 
 // Animation Handlers
-const isTowerAnimating = new AnimationHandler(false)
+// const isTowerAnimating = new AnimationHandler(false)
 
 renderer.shadowMap.enabled = true // Увімкнення тіней на рівні рендера
 renderer.shadowMap.type = THREE.PCFSoftShadowMap // М'які тіні
@@ -80,11 +101,11 @@ const game = new Game(spawner, tower)
 
 // Initialize
 window.addEventListener('resize', handleResize(renderer))
-window.addEventListener(
-  'click',
-  handleMouseClick(isTowerAnimating, mouse, raycaster, tower, spawner.enemies, spotLight)
-)
-window.addEventListener('mousemove', handleMouseMove(mouse, raycaster, tower, spawner.enemies, isTowerAnimating))
+// window.addEventListener(
+//   'click',
+//   handleMouseClick(isTowerAnimating, mouse, raycaster, tower, spawner.enemies, spotLight)
+// )
+// window.addEventListener('mousemove', handleMouseMove(mouse, raycaster, tower, spawner.enemies, isTowerAnimating))
 
 // Прив'язка функцій до кнопок
 // spawnFatButton.addEventListener('click', () => spawner.spawnFat())
