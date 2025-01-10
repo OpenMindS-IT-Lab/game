@@ -12,10 +12,29 @@ body {
 }
 
 #ui-container {
+  --top: calc(var(--tg-safe-area-inset-top));
+  --right: calc(var(--tg-safe-area-inset-right) + var(--tg-safe-area-inset-left));
+
+  --content-vertical: calc(var(--tg-content-safe-area-inset-top) + var(--tg-content-safe-area-inset-bottom));
+  --content-horizontal: calc(var(--tg-content-safe-area-inset-left) + var(--tg-content-safe-area-inset-right));
+
+  --height: calc(100vh - var(--content-vertical) - var(--top) - var(--tg-safe-area-inset-bottom));
+  --width: calc(100vw - var(--right));
+
   position: absolute;
-  top: 0;
-  width: 100%;
-  height: 100%;
+  top: var(--top);
+  right: var(--right);
+  left: 0;
+  bottom: 0;
+
+  width: var(--width);
+  height: var(--height);
+
+  margin: var(--tg-content-safe-area-inset-top) var(--tg-content-safe-area-inset-right) 0
+    var(--tg-content-safe-area-inset-left);
+
+  padding: var(--tg-safe-area-inset-bottom) var(--tg-safe-area-inset-left) 0 var(--tg-safe-area-inset-right);
+
   pointer-events: none; /* Щоб UI не блокував мишу для сцени */
 }
 
@@ -243,27 +262,38 @@ body {
   font-size: 0.6em;
 }
 
-#coin-counter {
+.counters {
   position: absolute;
-  top: 110px;
-  right: 20px;
+  top: 0;
+  right: 0;
+  padding: 0;
+  margin: 20px 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 20px;
+}
+
+.counters > div[id$='counter'] {
   padding: 10px;
   background: #ff0000;
   color: white;
   border-radius: 5px;
-  font-size: 16px;
+  font-size: 0.8em;
   pointer-events: auto; /* To ensure it is clickable, if necessary */
 }
 
+#coin-counter {
+  font-weight: 500;
+}
+
 #score-counter {
-  position: absolute;
-  top: 60px;
-  right: 20px;
   padding: 10px;
   background: #00ff00;
   color: white;
   border-radius: 5px;
-  font-size: 16px;
+  font-size: 0.8em;
   font-weight: bold;
   pointer-events: auto; /* To ensure it is clickable, if necessary */
 }

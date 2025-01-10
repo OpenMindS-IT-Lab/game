@@ -16,7 +16,7 @@
   <!-- Інтерфейс -->
   <div id="ui-container">
     <!-- Нижні кнопки (основний ігровий інтерфейс користувача для взаємодії зі сценою) -->
-    <div id="bottom-buttons" class="active">
+    <nav id="bottom-buttons" class="active">
       <button id="upgrade-main-tower" type="button" class="ui-button" data-title="">main</button>
       <button id="upgrade-water-tower" type="button" class="ui-button" data-title="">water</button>
       <button id="upgrade-air-tower" type="button" class="ui-button" data-title="">air</button>
@@ -24,7 +24,7 @@
       <button id="upgrade-fire-tower" type="button" class="ui-button" data-title="">fire</button>
 
       <button id="start-level-button" type="button" class="ui-button">start</button>
-    </div>
+    </nav>
 
     <div id="bottom-info" class="">
       <h1 id="level-display">Level 1
@@ -33,12 +33,12 @@
     </div>
 
     <!-- Бічні кнопки (для зручності під час розробки; не входитимуть в кінцевий інтерфейс гри) -->
-    <!-- <div id="side-buttons">
+    <!-- <nav id="side-buttons">
       <button id="spawn-fat" type="button" class="ui-button">Spawn Fat</button>
       <button id="spawn-fast" type="button" class="ui-button">Spawn Fast</button>
       <button id="spawn-regular" type="button" class="ui-button">Spawn Regular</button>
       <button id="spawn-strong" type="button" class="ui-button">Spawn Strong</button>
-    </div> -->
+    </nav> -->
 
     <!-- Кнопка-бургер -->
     <!-- <button id="burger-button" type="button" aria-label="Toggle Menu">
@@ -46,7 +46,7 @@
     </button> -->
 
     <!-- Випадаюче меню -->
-    <!-- <div id="side-menu" class="hidden">
+    <!-- <nav id="side-menu" class="hidden">
       <button id="close-button" type="button" aria-label="Toggle Menu">
         X
       </button>
@@ -57,10 +57,12 @@
         <li><button type="button" class="menu-item">Menu Option 3</button></li>
         <li><button type="button" class="menu-item">Menu Option 4</button></li>
       </ul>
-    </div> -->
+    </nav> -->
 
-    <div id="coin-counter">Coins: 0</div>
-    <div id="score-counter">Score: 0</div>
+    <div class="counters">
+      <div id="coin-counter">Coins: 0</div>
+      <div id="score-counter">Score: 0</div>
+    </div>
 
     <!-- <table id="game-info-table">
       <thead>

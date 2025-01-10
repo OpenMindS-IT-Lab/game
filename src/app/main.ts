@@ -1,7 +1,6 @@
 import * as THREE from 'three'
 import { Ally, AllyType } from './canvas/allies'
 import { flickerLight } from './canvas/animations'
-import { resetCamera } from './canvas/camera'
 import EnemySpawner from './canvas/enemies'
 import createGround from './canvas/ground'
 import {
@@ -34,28 +33,10 @@ try {
 }
 
 try {
-  Telegram.WebApp.showAlert(Telegram.WebApp.safeAreaInset, () => {
-    console.log('test')
-  })
-} catch (error) {
-  console.info(error)
-  alert(JSON.stringify(Telegram.WebApp.safeAreaInset))
-}
-
-try {
-  Telegram.WebApp.requestFullscreen()
+  if (!Telegram.WebApp.isFullscreen) Telegram.WebApp.requestFullscreen()
 } catch (error) {
   console.info(error)
 }
-
-// Setup Game Container
-const gameContainer = document.getElementById('game-container')
-if (!gameContainer) throw new Error('Game container not found')
-
-// Scene, Camera, Renderer
-resetCamera()
-
-gameContainer.appendChild(renderer.domElement)
 
 // enableCameraDrag()
 // enableMouseWheelTilt()

@@ -9,7 +9,7 @@ import { qrcode } from 'vite-plugin-qrcode'
 export default defineConfig({
   plugins: [
     qrcode({
-      filter: url => url.startsWith('http://172'),
+      filter: url => url.startsWith('http://192.168'),
     }),
     TurboConsole({
       specifiedEditor: 'code',
