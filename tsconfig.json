@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "module": "ESNext",
-    "target": "ES6",
+    "target": "ESnext",
     "lib": ["DOM", "DOM.Iterable", "ESNext", "ES6"],
     "rootDir": "./src",
     "moduleResolution": "node",
@@ -20,8 +20,9 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noImplicitOverride": true,
-    "types": ["./node_modules/telegram-webapps"],
-    "typeRoots": ["src/types"],
+    // "types": ["./node_modules/telegram-webapps/"],
+    "types": ["unplugin-turbo-console/client"],
+    "typeRoots": ["src/types", "node_modules/telegram-webapps"],
     "allowUmdGlobalAccess": true
   },
   "include": ["src/**/*"],

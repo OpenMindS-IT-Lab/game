@@ -28,14 +28,9 @@ import { handleResize } from './ui/event-listeners'
 
 try {
   Telegram.WebApp.ready()
-} catch (error) {
-  throw error
-}
-
-try {
   if (!Telegram.WebApp.isFullscreen) Telegram.WebApp.requestFullscreen()
 } catch (error) {
-  console.info(error)
+  console.error(error)
 }
 
 // enableCameraDrag()
@@ -75,6 +70,7 @@ tiles.forEach(tile => (tile.receiveShadow = true))
 
 const spawner = new EnemySpawner()
 const game = new Game(spawner, tower)
+game.initStorage()
 // game.start()
 
 // Call updateGameInfoTable periodically to refresh the data

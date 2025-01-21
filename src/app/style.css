@@ -277,23 +277,21 @@ body {
 
 .counters > div[id$='counter'] {
   padding: 10px;
-  background: #ff0000;
-  color: white;
-  border-radius: 5px;
-  font-size: 0.8em;
-  pointer-events: auto; /* To ensure it is clickable, if necessary */
-}
-
-#coin-counter {
-  font-weight: 500;
-}
-
-#score-counter {
-  padding: 10px;
-  background: #00ff00;
   color: white;
   border-radius: 5px;
   font-size: 0.8em;
   font-weight: bold;
   pointer-events: auto; /* To ensure it is clickable, if necessary */
+}
+
+#coin-counter {
+  background: #690000;
+}
+
+#score-counter {
+  background: #006900;
+}
+
+#highscore-counter {
+  background: #000069;
 }

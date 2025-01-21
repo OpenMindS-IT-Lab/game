@@ -4,10 +4,10 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "netlify dev",
+    "build": "netlify build",
     "preview": "vite preview",
-    "start": "vite build --watch && vite preview",
+    "start": "netlify build && vite preview",
     "bot:build": "tsc src/bot --outDir dist/bot",
     "bot:dev": "ts-node src/bot",
     "bot": "node dist/bot",

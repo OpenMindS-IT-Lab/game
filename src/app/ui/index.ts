@@ -29,6 +29,7 @@ export const gameInfoTableBody = document.querySelector('#game-info-table tbody'
 
 export const coinCounter = document.getElementById('coin-counter') as HTMLDivElement
 export const scoreCounter = document.getElementById('score-counter') as HTMLDivElement
+export const highscoreCounter = document.getElementById('highscore-counter') as HTMLDivElement
 
 export function toggleMenu() {
   sideMenu.classList.toggle('hidden') // Відкриваємо/закриваємо меню

@@ -1,8 +1,8 @@
-import { values } from 'lodash'
+import { entries, snakeCase, values } from 'lodash'
 import { Ally, AllyType } from './canvas/allies'
 import EnemySpawner from './canvas/enemies'
 import Tower from './canvas/tower'
-import { bottomButtons, bottomInfo, coinCounter, levelDisplay, scoreCounter, timer } from './ui'
+import { bottomButtons, bottomInfo, coinCounter, highscoreCounter, levelDisplay, scoreCounter, timer } from './ui'
 // import renderInfoTable from './ui/info-table'
 
 // function errorBoundary() {
@@ -17,13 +17,30 @@ import { bottomButtons, bottomInfo, coinCounter, levelDisplay, scoreCounter, tim
 //       }
 //   }
 // }
+export type TelegramUser = {
+  id: number
+  first_name: string
+  last_name: string
+  username: string
+  language_code: string
+  allows_write_to_pm: boolean
+  photo_url: string
+}
 
-// TODO: Розділити процес гри на два окремі етапи: проходження рівня та покупка апгрейдів
+export type WebAppInitData = {
+  chat_instance: string
+  chat_type: string
+  start_param: string
+  auth_date: string
+  signature: string
+  hash: string
+}
 
 export default class Game {
   // _coins: number = 10000
   _coins: number = 0
   _score: number = 0
+  _highscore: number = 0
   _totalUpgrades: number = 0
   level: number
   spawner: EnemySpawner
@@ -39,7 +56,7 @@ export default class Game {
   set coins(amount: number) {
     this._coins = amount
 
-    coinCounter.innerHTML = `Coins: ${amount}`
+    coinCounter.innerHTML = `Coins: ${this.coins}`
   }
 
   get score() {
@@ -49,6 +66,22 @@ export default class Game {
     this._score = value
 
     scoreCounter.innerHTML = `Score: ${this.score}`
+  }
+
+  get highscore() {
+    return this._highscore
+  }
+  set highscore(value: number) {
+    Telegram.WebApp.CloudStorage.setItem('highscore', `${value}`, (error, _success) => {
+      if (error) console.error(error)
+      else {
+        // this.highscore = this.score
+        console.log('new highscore: ' + value)
+        this._highscore = value
+        highscoreCounter.innerHTML = `Highscore: ${value}`
+        Telegram.WebApp.showAlert('New highscore:\r\n' + value)
+      }
+    })
   }
 
   get totalUpgrades() {
@@ -69,6 +102,68 @@ export default class Game {
 
     this.spawner.collectDrop = this.spawner.collectDrop.bind(this)
     this.spawner.addScore = this.spawner.addScore.bind(this)
+
+    this.tower.endGame = this.tower.endGame.bind(this)
+  }
+
+  session: string | null = null
+  userId: string | null = null
+  initStorage() {
+    const data = new URLSearchParams(decodeURIComponent(Telegram.WebApp.initData))
+    const webAppInitData = Object.fromEntries(
+      data
+        .entries()
+        .filter(([key]) => key !== 'user')
+        .map(([key, value]) => {
+          switch (key) {
+            case 'auth_date':
+              return [key, new Date(+value * 1000).toLocaleString()]
+            default:
+              return [key, value]
+          }
+        })
+    )
+    const userData: TelegramUser = JSON.parse(Object.fromEntries(data.entries().filter(([key]) => key === 'user')).user)
+
+    console.log('WebApp init data:')
+    console.table(webAppInitData)
+    console.log('User data:')
+    console.table(userData)
+
+    Telegram.WebApp.CloudStorage.getKeys((error, keys) => {
+      if (error) throw error
+      if (keys.length === 0) {
+        for (let [key, value] of entries(userData)) {
+          Telegram.WebApp.CloudStorage.setItem(snakeCase(key), value.toString(), (error, _value) => {
+            if (error) throw error
+            console.log(`User data saved: ${key}`)
+          })
+        }
+        Telegram.WebApp.CloudStorage.setItem('highscore', `${0}`, (error, _success) => {
+          if (error) throw error
+        })
+      } else {
+        Telegram.WebApp.CloudStorage.getItem('active_session', (error, session) => {
+          if (error) throw error
+          if (session && session !== '') throw new Error('Active session found!')
+        })
+          .setItem('active_session', webAppInitData.hash, (error, _success) => {
+            if (error) throw error
+            this.session = webAppInitData.hash
+          })
+          .getItem('id', (error, id) => {
+            if (error) throw error
+            this.userId = id
+          })
+          .getItem('highscore', (error, highscore) => {
+            if (error) throw error
+            if (highscore && !Number.isNaN(parseInt(highscore))) {
+              this._highscore = parseInt(highscore)
+              highscoreCounter.innerHTML = `Highscore: ${this.highscore}`
+            }
+          })
+      }
+    })
   }
 
   public levelUp(allyTower: Tower | Ally) {
@@ -163,6 +258,10 @@ export default class Game {
           this.isRunning = false
           this.isUpgrading = true
 
+          if (this.score > this.highscore) {
+            this.highscore = this.score
+          }
+
           clearInterval(finish)
         }
       }, 1000)
@@ -198,18 +297,12 @@ export default class Game {
   }
 
   public end() {
-    try {
-      // this.spawner.stop()
-      this.tower.stopShooting()
-    } catch (error) {
-      console.error(error)
-      return
-    }
+    if (this.score > this.highscore) this.highscore = this.score
 
     this.isRunning = false
     this.isPaused = false
+    this.isUpgrading = false
     this.isOver = true
-
     // console.log(`Total coins: ${this.coins}`)
   }
 }

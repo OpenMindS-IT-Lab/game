@@ -1,6 +1,7 @@
 import { entries, values } from 'lodash'
 import * as THREE from 'three'
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils'
+import Game from '../game'
 import { showDamageText, Timeout } from '../utils'
 import { Ally, AllyType } from './allies'
 import { Colors } from './constants'
@@ -168,6 +169,9 @@ class Tower extends THREE.Mesh {
     }
   }
 
+  endGame() {
+    ;(this as unknown as Game).end()
+  }
   public takeDamage(damage: number, spawner: EnemySpawner) {
     this.health -= damage
 
@@ -176,6 +180,7 @@ class Tower extends THREE.Mesh {
     if (this.health <= 0) {
       this.stopShooting()
       spawner.stop()
+      this.endGame()
       // console.log(spawner.enemies)
       scene.remove(this)
     }
