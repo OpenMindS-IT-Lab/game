@@ -129,7 +129,7 @@ export default class Game {
   userId: string | null = null
 
   validateData() {
-    api.validate(Telegram.WebApp.initData).then(data => this.initStorage(data))
+    api.validate(Telegram.WebApp.initData).then(data => this.initStorage(data), handleMinorError)
   }
   private initStorage(initData: WebAppInitData) {
     try {
