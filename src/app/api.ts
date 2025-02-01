@@ -1,6 +1,7 @@
 // import { WebAppInitData } from 'telegram-webapps'
 
 import { WebAppInitData } from 'telegram-webapps'
+import { handleMinorError } from './utils';
 
 export default {
   // validate(initData: Omit<WebAppInitData, 'user'> & { user: string }) {
@@ -34,15 +35,12 @@ export default {
       const data = await res.json()
 
       if (res.status === 401) {
-        Telegram.WebApp.showConfirm(data.message, okPressed => {
-          if (okPressed) window.location.reload()
-          else Telegram.WebApp.close()
-        })
+        handleMinorError(data.message)
       }
 
       return data.data
     } catch (error) {
-      console.error(error)
+      handleMinorError(error)
     }
   },
 }

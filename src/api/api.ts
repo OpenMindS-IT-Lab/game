@@ -9,14 +9,23 @@ api.use(express.urlencoded({ extended: true }))
 const router = Router()
 
 router.get('/hello', (_req, res) => {
-  res.send('Hello World!')
+  try {
+    res.send('Hello World!')
+  } catch (error) {
+    logErrorToStdout(error, 'hello')
+    res.status(500).send()
+  }
 })
 
 router.get('/bot-token', (_, res) => {
-  const token = process.env.TELEGRAM_BOT_TOKEN
-
-  if (!token) res.status(500).send(JSON.stringify({ message: 'No TELEGRAM_BOT_TOKEN was found!' }))
-  else res.status(200).send(JSON.stringify({ message: 'TELEGRAM_BOT_TOKEN', token }))
+  try {
+    const token = process.env.TELEGRAM_BOT_TOKEN
+    if (!token) res.status(500).json({ message: 'No TELEGRAM_BOT_TOKEN was found!' })
+    else res.status(200).json({ message: 'TELEGRAM_BOT_TOKEN', token })
+  } catch (error) {
+    logErrorToStdout(error, 'bot-token')
+    res.status(500).json({ message: 'Server error during obtaining bot token', error })
+  }
 })
 
 const validateHandler: RequestHandler = async (req, res) => {
@@ -85,17 +94,25 @@ const validateHandler: RequestHandler = async (req, res) => {
     })
     return
   } catch (error) {
-    // process.stdout.write('Validation error: ' + error + '\n')
+    logErrorToStdout(error, 'validate')
     res.status(500).json({ message: 'Server error during validation.', error: (error as any).message })
     return
   }
 }
 
 const logHandler: RequestHandler = async (req, res) => {
-  const { body } = req
-  process.stdout.write(body)
-  res.status(200).send()
+  try {
+    const { body } = req
+    process.stdout.write(body)
+    res.status(200).send()
+    return
+  } catch (error) {
+    logErrorToStdout(error, 'log')
+    res.status(500).json({ message: 'Server error during logging', error: (error as any).message })
+    return
+  }
 }
+
 router.post('/log', logHandler)
 
 router.post('/validate', validateHandler)
@@ -103,3 +120,9 @@ router.post('/validate', validateHandler)
 api.use('/api/', router)
 
 export const handler = serverless(api)
+
+function logErrorToStdout(error: any, endpoint: string) {
+  process.stdout.write(`\nError in \`/${endpoint}\` endpoint:\n`)
+  process.stdout.write(error)
+  process.stdout.write('\n')
+}
