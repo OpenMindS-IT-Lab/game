@@ -23,7 +23,7 @@ export default defineConfig({
     nodePolyfills(),
   ],
   appType: 'spa',
-  assetsInclude: ['src/**/assets/*'],
+  assetsInclude: ['src/**/assets/*', 'src/**/assets/**/*'],
   optimizeDeps: {
     include: ['src/app/**/*.ts', 'src/app/*.ts'],
   },
