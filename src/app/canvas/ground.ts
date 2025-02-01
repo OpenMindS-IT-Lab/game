@@ -1,4 +1,9 @@
 import * as THREE from 'three'
+import textureAmbientOcclusion from '../assets/ground-texture/AmbientOcclusion.jpg'
+import textureColor from '../assets/ground-texture/Color.jpg'
+import textureDisplacement from '../assets/ground-texture/Displacement.jpg'
+import textureNormalGL from '../assets/ground-texture/NormalGL.jpg'
+import textureRoughness from '../assets/ground-texture/Roughness.jpg'
 import { scene } from './scene'
 
 const createGround = (renderer: THREE.WebGLRenderer) => {
@@ -9,11 +14,11 @@ const createGround = (renderer: THREE.WebGLRenderer) => {
 
   const textureLoader = new THREE.TextureLoader()
 
-  const colorTexture = textureLoader.load('/src/app/assets/ground-texture/Color.jpg')
-  const normalTexture = textureLoader.load('/src/app/assets/ground-texture/NormalGL.jpg')
-  const roughnessTexture = textureLoader.load('/src/app/assets/ground-texture/Roughness.jpg')
-  const aoTexture = textureLoader.load('/src/app/assets/ground-texture/AmbientOcclusion.jpg')
-  const displacementTexture = textureLoader.load('/src/app/assets/ground-texture/Displacement.jpg')
+  const colorTexture = textureLoader.load(textureColor)
+  const normalTexture = textureLoader.load(textureNormalGL)
+  const roughnessTexture = textureLoader.load(textureRoughness)
+  const aoTexture = textureLoader.load(textureAmbientOcclusion)
+  const displacementTexture = textureLoader.load(textureDisplacement)
 
   const maxAnisotropy = renderer.capabilities.getMaxAnisotropy()
   colorTexture.anisotropy = maxAnisotropy
