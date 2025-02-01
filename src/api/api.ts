@@ -30,14 +30,13 @@ router.get('/bot-token', (_, res) => {
 
 const validateHandler: RequestHandler = async (req, res) => {
   try {
-    const { body } = req
-
     const botToken = process.env.TELEGRAM_BOT_TOKEN
     if (!botToken) {
       res.status(500).json({ message: 'No TELEGRAM_BOT_TOKEN was found!' })
       return
     }
 
+    const { body } = req
     // process.stdout.write('\nBot Token: ' + botToken + '\n')
     // process.stdout.write('\nBody: ' + body + '\n')
 
@@ -103,7 +102,9 @@ const validateHandler: RequestHandler = async (req, res) => {
 const logHandler: RequestHandler = async (req, res) => {
   try {
     const { body } = req
-    process.stdout.write(body)
+    // Ensure body is a string
+    const data = typeof body === 'string' ? body : JSON.stringify(body)
+    process.stdout.write(data)
     res.status(200).send()
     return
   } catch (error) {
@@ -123,6 +124,6 @@ export const handler = serverless(api)
 
 function logErrorToStdout(error: any, endpoint: string) {
   process.stdout.write(`\nError in \`/${endpoint}\` endpoint:\n`)
-  process.stdout.write(error)
+  process.stdout.write(error instanceof Uint8Array ? error : typeof error === 'string' ? error : JSON.stringify(error))
   process.stdout.write('\n')
 }
