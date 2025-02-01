@@ -88,7 +88,7 @@ const validateHandler: RequestHandler = async (req, res) => {
     res.status(200).json({
       message: 'Data is valid and verified.',
       data: Object.fromEntries(
-        query.entries().map(([key, value]) => [key, key === 'user' ? JSON.parse(value) : value])
+        Array.from(query.entries()).map(([key, value]) => [key, key === 'user' ? JSON.parse(value) : value])
       ),
     })
     return
