@@ -2,6 +2,7 @@ import { compact, values } from 'lodash'
 import * as THREE from 'three'
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry'
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader'
+import api from './api'
 import { Ally } from './canvas'
 import camera, { resetCamera } from './canvas/camera'
 import { Colors } from './canvas/constants'
@@ -222,6 +223,8 @@ export function handleMinorError(errorMessage?: unknown) {
     if (okPressed) window.location.reload()
     else Telegram.WebApp.close()
   })
+
+  api.log(JSON.stringify(errorMessage))
 }
 
 export function captureImage(mesh: Tower | Ally, fileName: string, gridHelper: THREE.GridHelper, plane: THREE.Mesh) {

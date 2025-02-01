@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import { Ally } from '../canvas'
 import camera from '../canvas/camera'
 import Tower from '../canvas/tower'
-import { captureImage /* , hoverObject */, handleMinorError } from '../utils'
+import { captureImage, handleMinorError } from '../utils'
 import { hideTowerInfo } from './tower-info'
 
 // Event Listeners
@@ -13,39 +13,39 @@ export const handleResize = (renderer: THREE.WebGLRenderer) => (_event: Event) =
   renderer.setSize(window.innerWidth, window.innerHeight)
 }
 
-export const handleMouseClick =
-  (mouse: THREE.Vector2, raycaster: THREE.Raycaster, tower: Tower) => (event: MouseEvent) => {
-    try {
-      // Обчислення нормалізованих координат миші
-      mouse.x = (event.clientX / window.innerWidth) * 2 - 1
-      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+// export const handleMouseClick =
+//   (mouse: THREE.Vector2, raycaster: THREE.Raycaster, tower: Tower) => (event: MouseEvent) => {
+//     try {
+//       // Обчислення нормалізованих координат миші
+//       mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+//       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
 
-      raycaster.setFromCamera(mouse, camera)
+//       raycaster.setFromCamera(mouse, camera)
 
-      // Перевірка натискання на Tower
-      const allies = compact(values(tower.allies))
-      const alliesIntersects = raycaster.intersectObjects([tower, ...allies])
+//       // Перевірка натискання на Tower
+//       const allies = compact(values(tower.allies))
+//       const alliesIntersects = raycaster.intersectObjects([tower, ...allies])
 
-      if (alliesIntersects.length > 0) {
-        const { object } = alliesIntersects[0] as THREE.Intersection & { object: Tower | Ally }
-        if (object.isSelected) {
-          object.unselect()
-        } else {
-          object.select()
-        }
-      } else if (
-        (event.target as EventTarget & { nodeName: string }).nodeName === 'CANVAS' ||
-        // (event.target as Element).id.endsWith('button')
-        (event.target as Element).id === 'start-level-button'
-      ) {
-        tower.unselectAllies()
-        tower.unselect()
-        hideTowerInfo()
-      }
-    } catch (error) {
-      handleMinorError(error)
-    }
-  }
+//       if (alliesIntersects.length > 0) {
+//         const { object } = alliesIntersects[0] as THREE.Intersection & { object: Tower | Ally }
+//         if (object.isSelected) {
+//           object.unselect()
+//         } else {
+//           object.select()
+//         }
+//       } else if (
+//         (event.target as EventTarget & { nodeName: string }).nodeName === 'CANVAS' ||
+//         // (event.target as Element).id.endsWith('button')
+//         (event.target as Element).id === 'start-level-button'
+//       ) {
+//         tower.unselectAllies()
+//         tower.unselect()
+//         hideTowerInfo()
+//       }
+//     } catch (error) {
+//       handleMinorError(error)
+//     }
+//   }
 
 export const handlePointerEvent =
   (pointer: THREE.Vector2, raycaster: THREE.Raycaster, tower: Tower) => (event: MouseEvent | TouchEvent) => {
@@ -95,7 +95,7 @@ export const handlePointerEvent =
         hideTowerInfo()
       }
     } catch (error) {
-      Telegram.WebApp.showAlert(error as string)
+      handleMinorError(error)
     }
   }
 

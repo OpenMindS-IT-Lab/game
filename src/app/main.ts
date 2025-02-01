@@ -34,8 +34,6 @@ const tower = new Tower(1.25)
 const raycaster = new THREE.Raycaster()
 const pointer = new THREE.Vector2()
 
-// window.addEventListener('click', handleMouseClick(mouse, raycaster, tower))
-// window.addEventListener('touchend', handleTouchEnd(mouse, raycaster, tower))
 window.addEventListener('click', handlePointerEvent(pointer, raycaster, tower))
 window.addEventListener('touchstart', handlePointerEvent(pointer, raycaster, tower))
 window.addEventListener('dblclick', handleDoubleClick(pointer, raycaster, tower, gridHelper, plane))

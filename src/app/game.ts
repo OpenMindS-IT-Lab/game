@@ -180,9 +180,7 @@ export default class Game {
       if (Telegram.WebApp.isVerticalSwipesEnabled) Telegram.WebApp.disableVerticalSwipes()
       Telegram.WebApp.ready()
     } catch (error) {
-      console.error(error)
       handleMinorError(error)
-      return
     }
   }
 
