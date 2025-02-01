@@ -1,11 +1,14 @@
+import { compact, values } from 'lodash'
 import * as THREE from 'three'
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry'
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader'
+import { Ally } from './canvas'
 import camera, { resetCamera } from './canvas/camera'
 import { Colors } from './canvas/constants'
 import renderer from './canvas/renderer'
 import { scene } from './canvas/scene'
 import { tiles } from './canvas/tiles'
+import Tower from './canvas/tower'
 
 // Utility: Switch Cube State
 export const switchObjectSelectionState = (object: THREE.Mesh, selected: boolean) => {
@@ -219,6 +222,37 @@ export function handleMinorError(errorMessage?: unknown) {
     if (okPressed) window.location.reload()
     else Telegram.WebApp.close()
   })
+}
+
+export function captureImage(mesh: Tower | Ally, fileName: string, gridHelper: THREE.GridHelper, plane: THREE.Mesh) {
+  const mainTower = scene.getObjectByName('Tower') as Tower
+  const allies = compact(values(mainTower.allies)) as Ally[]
+  const objectsToHide = [...tiles, gridHelper, plane, mainTower, ...allies].filter(obj => {
+    if ('title' in obj) return obj.title !== mesh.title
+    return true
+  })
+  objectsToHide.forEach(obj => (obj.visible = false))
+
+  // Center the camera on the mesh
+  const boundingBox = new THREE.Box3().setFromObject(mesh)
+  const center = boundingBox.getCenter(new THREE.Vector3())
+
+  camera.position.set(mesh.position.x + 2.5, 2, 16.5)
+  camera.lookAt(center)
+
+  renderer.render(scene, camera)
+
+  // Capture the image
+  const dataURL = renderer.domElement.toDataURL('image/png')
+
+  // Download the image
+  const link = document.createElement('a')
+  link.download = `${fileName}.png`
+  link.href = dataURL
+  link.click()
+
+  objectsToHide.forEach(obj => (obj.visible = true))
+  resetCamera()
 }
 
 export type Timeout = NodeJS.Timeout | 0

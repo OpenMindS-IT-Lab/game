@@ -168,3 +168,13 @@ nearest enemy for `Y seconds`. This tower's icy grip ensures no enemy escapes it
 #### Живучий та швидкий, але слабкий
 
 Рухається зі швидкістю `X клітинок/сек`, має `Y здоров'я` та наносить `Z пошкоджень`;
+
+### Adding particle effects can bring an extra layer of immersion:
+
+|> Water Tower: Add gentle bubbles rising around it.
+
+|> Fire Tower: Implement flickering embers or sparks.
+
+|> Earth Tower: Have small rocks orbiting or dust particles floating.
+
+|> Air Tower: Include swirls of mist or drifting particles.

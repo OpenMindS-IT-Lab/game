@@ -1,4 +1,7 @@
 import * as THREE from 'three'
+// import { BloomPass } from 'three/examples/jsm/postprocessing/BloomPass'
+// import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
+// import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
 import { gameContainer, uiContainer } from '../ui'
 import camera, { resetCamera } from './camera'
 import { scene } from './scene'
@@ -20,35 +23,29 @@ export const updateSize = (override?: { w: number; h: number }) => {
 
   renderer.setViewport(currentViewPort)
   renderer.setSize(viewPortWidth, viewPortHeight, true)
+  // renderer.setSize(1920, 1080)
+  renderer.setPixelRatio(window.devicePixelRatio * 2) // For high-DPI devices
 
   resetCamera()
 }
 
-// export const updateSafeArea = () => {
-//   const contentSafeArea = Telegram.WebApp.contentSafeAreaInset
-
-//   uiContainer.style.margin = `${contentSafeArea.top}px ${contentSafeArea.right}px ${contentSafeArea.bottom}px ${contentSafeArea.left}px`
-// }
-
-// export const updateContentSafeArea = () => {
-//   const safeArea = Telegram.WebApp.safeAreaInset
-
-//   gameContainer.style.padding = `${safeArea.top}px ${safeArea.right}px ${safeArea.bottom}px ${safeArea.left}px`
-// }
-
 updateSize({ w: initialWidth, h: initialHeight })
-// updateSafeArea()
-// updateContentSafeArea()
 
 renderer.shadowMap.enabled = true // Увімкнення тіней на рівні рендера
 renderer.shadowMap.type = THREE.PCFSoftShadowMap // М'які тіні
 
 gameContainer.appendChild(renderer.domElement)
 
+// Composer setup
+// const composer = new EffectComposer(renderer)
+// composer.addPass(new RenderPass(scene, camera))
+// composer.addPass(new BloomPass(1.25))
+
 // Rendering Loop
 export const render = () => {
   renderer.render(scene, camera)
   requestAnimationFrame(render)
+  // composer.render()
 }
 
 export default renderer

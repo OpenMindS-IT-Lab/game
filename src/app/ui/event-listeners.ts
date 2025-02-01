@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import { Ally } from '../canvas'
 import camera from '../canvas/camera'
 import Tower from '../canvas/tower'
-import { hoverObject /* , switchObjectSelectionState */ } from '../utils'
+import { captureImage /* , hoverObject */ } from '../utils'
 import { hideTowerInfo } from './tower-info'
 
 // Event Listeners
@@ -61,10 +61,33 @@ export const handleMouseMove =
     document.body.style.cursor = intersects.length > 0 ? 'pointer' : 'default'
 
     if (intersects.length > 0) {
-      allies.forEach(ally => {
-        hoverObject(ally, intersects)
-      })
+      // allies.forEach(ally => {
+      // hoverObject(ally, intersects)
+      // })
     } else {
       allies.forEach(ally => ((ally.material as THREE.MeshStandardMaterial).opacity = 1))
+    }
+  }
+
+export const handleDoubleClick =
+  (mouse: THREE.Vector2, raycaster: THREE.Raycaster, tower: Tower, gridHelper: THREE.GridHelper, plane: THREE.Mesh) =>
+  (event: MouseEvent) => {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+
+    raycaster.setFromCamera(mouse, camera)
+
+    // Об'єкти для перевірки ховера
+    const allies = [tower, ...compact(values(tower.allies))]
+    const intersects = raycaster.intersectObjects(allies)
+
+    if (intersects.length > 0) {
+      const target = intersects[0].object
+
+      if (!target) return
+
+      const name = (target instanceof Ally ? target.allyTowerType : 'main') + '-tower'
+
+      captureImage(target as Tower | Ally, name, gridHelper, plane)
     }
   }

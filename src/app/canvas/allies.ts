@@ -49,7 +49,11 @@ export class Ally extends THREE.Mesh {
 
   private static materialMap = {
     [AllyType.WATER]: { color: 0x4277ff, transparent: true, opacity: 0.8, roughness: 0.5, metalness: 0.3 },
-    [AllyType.FIRE]: { color: 0xff4444, transparent: true, opacity: 1, emissiveIntensity: 0.5 },
+    [AllyType.FIRE]: {
+      color: 0xff4444,
+      transparent: true,
+      opacity: 1 /* emissive: 0xff4444, emissiveIntensity: 0.25 */,
+    },
     [AllyType.EARTH]: { color: 0x423333, transparent: true, opacity: 1, roughness: 1, metalness: 0 },
     [AllyType.AIR]: { color: 0x42ffff, transparent: true, opacity: 0.7, roughness: 0.2, metalness: 0.5 },
   }
@@ -152,6 +156,7 @@ export class Ally extends THREE.Mesh {
 
     this.castShadow = true
     this.receiveShadow = true
+
     this.userData = {
       isPersistant: false,
       isSelected: false,

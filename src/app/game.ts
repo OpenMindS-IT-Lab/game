@@ -103,7 +103,7 @@ export default class Game {
     this.isUpgrading = true
     this.level = 0
 
-    this.coins += 100
+    this.coins += 1000
 
     this.spawner.__game = this
     this.tower.__game = this

@@ -15,7 +15,7 @@ import Tower from './canvas/tower'
 import Game from './game'
 import './ui'
 import { startLevelButton, updateBottomButtons } from './ui/bottom-menu'
-import { handleMouseClick, handleMouseMove, handleResize } from './ui/event-listeners'
+import { handleDoubleClick, handleMouseClick, handleMouseMove, handleResize } from './ui/event-listeners'
 // import { enableCameraDrag, enableMouseWheelTilt } from './utils'
 
 try {
@@ -27,7 +27,7 @@ try {
 // enableMouseWheelTilt()
 
 // Ground and Grid
-const { gridHelper: _gridHelper, plane } = createGround()
+const { gridHelper, plane } = createGround()
 
 // Tiles
 const tiles = createTiles(2)
@@ -40,6 +40,7 @@ const raycaster = new THREE.Raycaster()
 const mouse = new THREE.Vector2()
 
 window.addEventListener('click', handleMouseClick(mouse, raycaster, tower))
+window.addEventListener('dblclick', handleDoubleClick(mouse, raycaster, tower, gridHelper, plane))
 window.addEventListener('mousemove', handleMouseMove(mouse, raycaster, tower))
 
 // Lighting

@@ -64,8 +64,10 @@
 #tower-info-image img {
   display: block;
   margin: 0 auto;
-  width: 200px;
+  width: 100%;
   height: 100%;
+  margin-top: -13.5%;
+  position: relative;
 }
 
 /* Health Bar Styling */

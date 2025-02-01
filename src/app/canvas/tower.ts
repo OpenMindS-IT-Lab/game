@@ -1,6 +1,7 @@
 import { compact, entries, values } from 'lodash'
 import * as THREE from 'three'
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils'
+import mainTowerImg from '../assets/main-tower.png'
 import Game from '../game'
 import { toggleTowerInfo } from '../ui/tower-info'
 import { showDamageText, Timeout } from '../utils'
@@ -8,7 +9,6 @@ import { Ally, AllyType } from './allies'
 import { Colors } from './constants'
 import EnemySpawner, { Enemy } from './enemies'
 import { scene } from './scene'
-import mainTowerImg from '../assets/main-tower.png'
 
 class Tower extends THREE.Mesh {
   __game?: Game
@@ -55,12 +55,15 @@ class Tower extends THREE.Mesh {
     this.title = 'Main Tower'
     this.description =
       'Unleash the precision of the Main Tower as it methodically targets the nearest enemy, firing with deadly accuracy and inflicting massive damage. This reliable sentinel stands as the cornerstone of your defenses.'
-      this.image = mainTowerImg
+    this.image = mainTowerImg
 
     this.level = 0
 
     this.levelUp()
     this.shooting = 0
+
+    this.receiveShadow = true
+    this.castShadow = true
 
     // Встановлюємо позицію та userData
     this.position.set(0, 0, 14)
@@ -260,8 +263,6 @@ export class Projectile extends THREE.Mesh {
     super(geometry, material)
 
     this.position.copy(position).setY(0.5) // Початкова позиція — позиція башти
-    this.castShadow = true
-    this.receiveShadow = true
     this.initialPosition = position
     this.damage = damage
     this.speed = speed
