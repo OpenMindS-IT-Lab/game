@@ -92,11 +92,15 @@ export function moveAndFlip(
 }
 
 export function flickerLight(pointLight: THREE.PointLight) {
+  let stop = true
   let lightIntensity = 20
+
   pointLight.intensity = lightIntensity
 
   function animate() {
-    lightIntensity = (Math.sin(Date.now() * 0.0025) + 1.25) / 2 // Значення між 0 і 1
+    if (stop) return
+
+    lightIntensity = (Math.sin(Date.now() * 0.0025) + 1) / 2 // Значення між 0 і 1
 
     pointLight.intensity = lightIntensity * 20 // Масштабуємо до бажаного рівня
 
@@ -104,6 +108,19 @@ export function flickerLight(pointLight: THREE.PointLight) {
   }
 
   animate()
+
+  return {
+    pause() {
+      stop = true
+      pointLight.color.set(0x00ff00)
+      pointLight.intensity = 0.2
+    },
+    resume() {
+      stop = false
+      pointLight.color.set(0xff0000)
+      animate()
+    },
+  }
 }
 
 export function moveLinear(

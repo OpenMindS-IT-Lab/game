@@ -2,9 +2,10 @@ import * as THREE from 'three'
 import { scene } from './scene'
 
 export const createAmbientLight = () => {
-  const ambientLight = new THREE.AmbientLight(0xffffff, 1) // Soft white light
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.75) // Soft white light
 
   ambientLight.userData = { isPersistant: true }
+  // ambientLight.castShadow = true
 
   scene.add(ambientLight)
 
@@ -12,7 +13,7 @@ export const createAmbientLight = () => {
 }
 
 export const createDirectionalLight = () => {
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 2.5)
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.75)
 
   directionalLight.position.set(0, 20, -5)
 
@@ -55,9 +56,9 @@ export const createSpotLight = (target: THREE.Mesh) => {
 }
 
 export const createPointLight = () => {
-  const pointLight = new THREE.PointLight(0xffaa00, 1, 20, 0.75) // Колір, інтенсивність, відстань, згасання
+  const pointLight = new THREE.PointLight(0x00ff00, 1, 20, 0.2) // Колір, інтенсивність, відстань, згасання
 
-  pointLight.position.set(0, 15, -5)
+  pointLight.position.set(0, 15, -14)
 
   // Увімкнемо тіні
   pointLight.castShadow = true
@@ -71,7 +72,7 @@ export const createPointLight = () => {
   // Додаємо невеликий шар як джерело світла для візуалізації
   const lightSphere = new THREE.Mesh(
     new THREE.SphereGeometry(0.75, 16, 16),
-    new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0 })
+    new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0 })
   )
 
   lightSphere.position.copy(pointLight.position.clone())
@@ -84,7 +85,7 @@ export const createPointLight = () => {
 }
 
 export const createHemisphereLight = () => {
-  const hemisphereLight = new THREE.HemisphereLight(0x87ceeb, 0x222222, 1) // Небо, земля, інтенсивність
+  const hemisphereLight = new THREE.HemisphereLight(0x172869, 0x696969, 0.75) // Небо, земля, інтенсивність
 
   hemisphereLight.userData = { isPersistant: true }
 

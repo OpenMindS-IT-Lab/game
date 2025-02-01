@@ -24,7 +24,7 @@ export const updateSize = (override?: { w: number; h: number }) => {
   renderer.setViewport(currentViewPort)
   renderer.setSize(viewPortWidth, viewPortHeight, true)
   // renderer.setSize(1920, 1080)
-  renderer.setPixelRatio(window.devicePixelRatio * 2) // For high-DPI devices
+  // renderer.setPixelRatio(window.devicePixelRatio * 2) // For high-DPI devices
 
   resetCamera()
 }

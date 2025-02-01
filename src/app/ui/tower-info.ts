@@ -9,8 +9,7 @@ const towerInfo = towerInfoContainer.children.namedItem('content') as HTMLElemen
 const towerTitle = towerInfo.children.namedItem('title') as HTMLHeadingElement
 const towerInfoContent = towerInfo.children.namedItem('content') as HTMLDivElement
 //
-const towerImageContainer = towerInfoContent.children.namedItem('image') as HTMLDivElement
-const towerImageElement = towerImageContainer.querySelector('img') as HTMLImageElement
+const towerImage = towerInfoContent.children.namedItem('image') as HTMLDivElement
 //
 const towerHealthBar = towerInfoContent.children.namedItem('health-bar') as HTMLDivElement
 const healthBar = towerHealthBar.querySelector('progress') as HTMLProgressElement
@@ -39,7 +38,7 @@ const closeButton = towerInfo.children.namedItem('close-button') as HTMLButtonEl
 
 const updateTable = (tower: Tower | Ally) => {
   const game = tower.__game!
-  const { title, description, level, health, speed, damage, cooldown, upgradeCost } = tower
+  const { title, description, image, level, health, maxHealth, speed, damage, cooldown, upgradeCost } = tower
 
   towerTitle.innerText = title
   towerDescription.innerText = description
@@ -59,15 +58,16 @@ const updateTable = (tower: Tower | Ally) => {
 
   towerUpgradeCost.innerHTML = `<strong>Upgrade Cost: </strong>${upgradeCost} Coins`
 
-  healthBar.max = tower.maxHealth
-  healthBar.value = tower.health
-  healthValue.innerText = `${tower.health} / ${tower.maxHealth}`
+  healthBar.max = maxHealth
+  healthBar.value = health
+  healthValue.innerText = `${health} / ${maxHealth}`
 
-  towerImageElement.src = tower.image
-  towerImageElement.alt = tower.title
+  towerImage.style.backgroundImage = 'url(' + image + ')'
 
+  statsTable.classList.replace('purchase', 'upgrade')
   statsTable.querySelectorAll('td:last-of-type').forEach(td => td.classList.remove('hidden'))
   statsTable.querySelectorAll('th:last-of-type').forEach(th => th.classList.remove('hidden'))
+  ;(statsTable.querySelector('th:nth-of-type(2)') as HTMLTableCellElement).innerText = 'CURRENT'
 
   if (!game.isUpgrading) upgradeTowerButton.disabled = true
   else upgradeTowerButton.disabled = false
@@ -102,14 +102,15 @@ export function hideTowerInfo() {
   healthBar.value = 0
   healthValue.innerText = ''
 
-  towerImageElement.src = '#'
-  towerImageElement.alt = 'Tower'
+  towerImage.style.backgroundImage = 'none'
 
   upgradeTowerButton.innerText = 'Upgrade'
   upgradeTowerButton.onclick = () => void 0
 
+  statsTable.classList.replace('purchase', 'upgrade')
   statsTable.querySelectorAll('td:last-of-type').forEach(td => td.classList.remove('hidden'))
   statsTable.querySelectorAll('th:last-of-type').forEach(th => th.classList.remove('hidden'))
+  ;(statsTable.querySelector('th:nth-of-type(2)') as HTMLTableCellElement).innerText = 'CURRENT'
 
   closeButton.onclick = () => void 0
 }
@@ -120,7 +121,6 @@ export function toggleTowerInfo(tower?: Tower | Ally | AllyType) {
     if (towerInfoContainer.classList.contains('hidden')) towerInfoContainer.classList.replace('hidden', 'visible')
     updateTable(tower)
   } else if (!!tower) {
-    if (towerInfoContainer.classList.contains('hidden')) towerInfoContainer.classList.replace('hidden', 'visible')
     const mainTower = scene.getObjectByName('Tower') as Tower
     const game = mainTower.__game!
 
@@ -128,10 +128,14 @@ export function toggleTowerInfo(tower?: Tower | Ally | AllyType) {
     const level = 1
     const health = Ally.calcHealth(0, level)
 
+    mainTower.unselect()
+    mainTower.unselectAllies()
+
+    if (towerInfoContainer.classList.contains('hidden')) towerInfoContainer.classList.replace('hidden', 'visible')
+
     towerTitle.innerText = title
     towerDescription.innerText = Ally.descriptionMap[tower]
-    towerImageElement.src = Ally.imageMap[tower]
-    towerImageElement.alt = title
+    towerImage.style.backgroundImage = 'url(' + Ally.imageMap[tower] + ')'
 
     healthBar.max = health
     healthBar.value = health
@@ -145,8 +149,10 @@ export function toggleTowerInfo(tower?: Tower | Ally | AllyType) {
 
     towerUpgradeCost.innerHTML = `<strong>Purchase Cost: </strong>${Ally.priceMap[tower][0]} Coins`
 
+    statsTable.classList.replace('upgrade', 'purchase')
     statsTable.querySelectorAll('td:last-of-type').forEach(td => td.classList.add('hidden'))
     statsTable.querySelectorAll('th:last-of-type').forEach(th => th.classList.add('hidden'))
+    ;(statsTable.querySelector('th:nth-of-type(2)') as HTMLTableCellElement).innerText = 'VALUE'
 
     if (!game.isUpgrading) upgradeTowerButton.disabled = true
     else upgradeTowerButton.disabled = false
@@ -155,7 +161,7 @@ export function toggleTowerInfo(tower?: Tower | Ally | AllyType) {
       const newTower = game!.purchase(tower)
 
       if (newTower) {
-        newTower.startCasting(game.spawner.enemies)
+        // newTower.startCasting(game.spawner.enemies)
         newTower.select()
         updateTable(newTower)
       }

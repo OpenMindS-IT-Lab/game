@@ -17,7 +17,7 @@
   position: relative;
   margin: auto;
   width: var(--width);
-  max-width: calc(100% - var(--padding) * 2);
+  max-width: calc(100% - var(--padding) * 4);
   background-color: rgba(0, 0, 0, 0.85);
   padding: 10px 20px 20px;
   border-radius: 10px;
@@ -27,7 +27,7 @@
 
 #tower-info .content button#close-tower-info-button {
   position: absolute;
-  top: 35px;
+  top: 25px;
   right: 20px;
   color: #ff0000;
   background-color: transparent;
@@ -50,31 +50,37 @@
 /* Title Styling */
 #tower-info h1 {
   text-align: center;
-  margin-bottom: 10px;
   font-size: 24px;
   text-shadow: 0 0 5px #00ff00;
+  margin: 10px 0 10px;
 }
 
 /* Tower Image */
 #tower-info-image {
   overflow: hidden;
-  max-height: 150px;
+  height: 20vh;
+  max-height: 130px;
+  padding: 0;
+  margin: 0;
+  background: url('/src/app/assets/main-tower.PNG');
+  background-size: auto 180%;
+  background-position: 50% -55px;
+  background-repeat: no-repeat;
+  background-origin: center center;
 }
 
 #tower-info-image img {
   display: block;
-  margin: 0 auto;
+  margin: -13.5% auto 0;
   width: 100%;
-  height: 100%;
-  margin-top: -13.5%;
-  position: relative;
 }
 
 /* Health Bar Styling */
 .health-bar {
   width: 100%;
-  margin: 15px 0;
+  margin: 0;
   position: relative;
+  padding: 0;
 }
 
 .health-bar label {
@@ -88,6 +94,7 @@
   height: 20px;
   -webkit-appearance: none;
   appearance: none;
+  margin: 0;
 }
 
 .health-bar progress::-webkit-progress-bar {
@@ -113,7 +120,7 @@
 #tower-description {
   text-align: center;
   font-style: italic;
-  margin-bottom: 20px;
+  margin: 10px 0;
   color: #ccc;
 }
 
@@ -125,7 +132,7 @@
 
 #tower-info-stats th,
 #tower-info-stats td {
-  padding: 10px;
+  padding: 5px;
   text-align: left;
   border-bottom: 1px solid #555;
 }
@@ -138,6 +145,12 @@
 
 #tower-info-stats td {
   background-color: #222;
+  font-size: 14px;
+}
+
+#tower-info-stats .upgrade td:nth-of-type(2),
+#tower-info-stats .upgrade th:nth-of-type(2) {
+  text-align: right;
 }
 
 #tower-info-stats td.hidden,
@@ -152,14 +165,14 @@
 /* Icon Styling in Table */
 #tower-info-stats img {
   vertical-align: middle;
-  margin-right: 8px;
-  width: 20px;
-  height: 20px;
+  margin-right: 4px;
+  width: 16px;
+  height: 16px;
 }
 
 /* Upgrade Cost Styling */
 #upgrade-cost {
-  margin-top: 15px;
+  margin-top: 10px;
   text-align: right;
   font-size: 16px;
 }
@@ -172,13 +185,13 @@
 #upgrade-tower-button {
   display: block;
   width: 100%;
-  margin-top: 20px;
-  padding: 15px;
+  margin-top: 10px;
+  padding: 15px 10px;
   background-color: #007bff;
   color: white;
   border: none;
   border-radius: 5px;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.3s ease;

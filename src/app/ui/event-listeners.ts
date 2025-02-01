@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import { Ally } from '../canvas'
 import camera from '../canvas/camera'
 import Tower from '../canvas/tower'
-import { captureImage /* , hoverObject */ } from '../utils'
+import { captureImage /* , hoverObject */, handleMinorError } from '../utils'
 import { hideTowerInfo } from './tower-info'
 
 // Event Listeners
@@ -15,33 +15,87 @@ export const handleResize = (renderer: THREE.WebGLRenderer) => (_event: Event) =
 
 export const handleMouseClick =
   (mouse: THREE.Vector2, raycaster: THREE.Raycaster, tower: Tower) => (event: MouseEvent) => {
+    try {
+      // Обчислення нормалізованих координат миші
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+
+      raycaster.setFromCamera(mouse, camera)
+
+      // Перевірка натискання на Tower
+      const allies = compact(values(tower.allies))
+      const alliesIntersects = raycaster.intersectObjects([tower, ...allies])
+
+      if (alliesIntersects.length > 0) {
+        const { object } = alliesIntersects[0] as THREE.Intersection & { object: Tower | Ally }
+        if (object.isSelected) {
+          object.unselect()
+        } else {
+          object.select()
+        }
+      } else if (
+        (event.target as EventTarget & { nodeName: string }).nodeName === 'CANVAS' ||
+        // (event.target as Element).id.endsWith('button')
+        (event.target as Element).id === 'start-level-button'
+      ) {
+        tower.unselectAllies()
+        tower.unselect()
+        hideTowerInfo()
+      }
+    } catch (error) {
+      handleMinorError(error)
+    }
+  }
+
+export const handlePointerEvent =
+  (pointer: THREE.Vector2, raycaster: THREE.Raycaster, tower: Tower) => (event: MouseEvent | TouchEvent) => {
     // if (animationHandler.currentState) return // Блокування під час анімації
 
-    // Обчислення нормалізованих координат миші
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+    event.preventDefault() // Prevent default behavior (e.g., scrolling)
 
-    raycaster.setFromCamera(mouse, camera)
+    try {
+      let clientX: number, clientY: number
 
-    // Перевірка натискання на Tower
-    const allies = compact(values(tower.allies))
-    const alliesIntersects = raycaster.intersectObjects([tower, ...allies])
-
-    if (alliesIntersects.length > 0) {
-      const { object } = alliesIntersects[0] as THREE.Intersection & { object: Tower | Ally }
-      if (object.isSelected) {
-        object.unselect()
+      if (event instanceof TouchEvent) {
+        // Touch event
+        clientX = event.touches[0].clientX
+        clientY = event.touches[0].clientY
+        // Telegram.WebApp.showAlert('touch')
       } else {
-        object.select()
+        // Mouse event
+        clientX = event.clientX
+        clientY = event.clientY
       }
-    } else if (
-      (event.target as EventTarget & { nodeName: string }).nodeName === 'CANVAS' ||
-      // (event.target as Element).id.endsWith('button')
-      (event.target as Element).id === 'start-level-button'
-    ) {
-      tower.unselectAllies()
-      tower.unselect()
-      hideTowerInfo()
+
+      // Calculate normalized device coordinates
+      pointer.x = (clientX / window.innerWidth) * 2 - 1
+      pointer.y = -(clientY / window.innerHeight) * 2 + 1
+
+      raycaster.setFromCamera(pointer, camera)
+
+      // Check for intersections with Tower or Allies
+      const allies = compact(values(tower.allies))
+      const alliesIntersects = raycaster.intersectObjects([tower, ...allies])
+
+      if (alliesIntersects.length > 0) {
+        const { object } = alliesIntersects[0] as THREE.Intersection & {
+          object: Tower | Ally
+        }
+        if (object.isSelected) {
+          object.unselect()
+        } else {
+          object.select()
+        }
+      } else if (
+        (event.target as EventTarget & { nodeName: string }).nodeName === 'CANVAS' ||
+        (event.target as Element).id === 'start-level-button'
+      ) {
+        tower.unselectAllies()
+        tower.unselect()
+        hideTowerInfo()
+      }
+    } catch (error) {
+      Telegram.WebApp.showAlert(error as string)
     }
   }
 

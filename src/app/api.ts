@@ -5,17 +5,24 @@ import { WebAppInitData } from 'telegram-webapps'
 export default {
   // validate(initData: Omit<WebAppInitData, 'user'> & { user: string }) {
   validate(initData: string): Promise<WebAppInitData> {
-    return this.post(initData, {
+    return this.post('validate', initData, {
       headers: {
         'Content-Type': 'text/plain',
       },
     }) as Promise<WebAppInitData>
   },
-  async post(body: any, options: { headers?: HeadersInit } = {}) {
+  log(data: string) {
+    return this.post('log', data, {
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+    }) as Promise<WebAppInitData>
+  },
+  async post(endpoint: string, body: any, options: { headers?: HeadersInit } = {}) {
     const { headers = {} } = options
 
     try {
-      const res = await fetch('/api/validate', {
+      const res = await fetch('/api/' + endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

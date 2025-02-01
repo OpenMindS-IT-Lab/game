@@ -15,19 +15,14 @@ import Tower from './canvas/tower'
 import Game from './game'
 import './ui'
 import { startLevelButton, updateBottomButtons } from './ui/bottom-menu'
-import { handleDoubleClick, handleMouseClick, handleMouseMove, handleResize } from './ui/event-listeners'
+import { handleDoubleClick, handleMouseMove, handlePointerEvent, handleResize } from './ui/event-listeners'
 // import { enableCameraDrag, enableMouseWheelTilt } from './utils'
-
-try {
-} catch (error) {
-  console.error(error)
-}
 
 // enableCameraDrag()
 // enableMouseWheelTilt()
 
 // Ground and Grid
-const { gridHelper, plane } = createGround()
+const { gridHelper, plane } = createGround(renderer)
 
 // Tiles
 const tiles = createTiles(2)
@@ -37,11 +32,14 @@ const tower = new Tower(1.25)
 
 // Raycaster
 const raycaster = new THREE.Raycaster()
-const mouse = new THREE.Vector2()
+const pointer = new THREE.Vector2()
 
-window.addEventListener('click', handleMouseClick(mouse, raycaster, tower))
-window.addEventListener('dblclick', handleDoubleClick(mouse, raycaster, tower, gridHelper, plane))
-window.addEventListener('mousemove', handleMouseMove(mouse, raycaster, tower))
+// window.addEventListener('click', handleMouseClick(mouse, raycaster, tower))
+// window.addEventListener('touchend', handleTouchEnd(mouse, raycaster, tower))
+window.addEventListener('click', handlePointerEvent(pointer, raycaster, tower))
+window.addEventListener('touchstart', handlePointerEvent(pointer, raycaster, tower))
+window.addEventListener('dblclick', handleDoubleClick(pointer, raycaster, tower, gridHelper, plane))
+window.addEventListener('mousemove', handleMouseMove(pointer, raycaster, tower))
 
 // Lighting
 createAmbientLight()
@@ -49,19 +47,20 @@ createDirectionalLight()
 createSpotLight(tower)
 const { lightSphere: _lightSphere, pointLight } = createPointLight()
 createHemisphereLight()
-flickerLight(pointLight)
+const { pause: pauseLightFlickering, resume: resumeLightFlickering } = flickerLight(pointLight)
 
 // Animation Handlers
 // const isTowerAnimating = new AnimationHandler(false)
 
 // Об'єкти
-tower.castShadow = true
 plane.receiveShadow = true
-tiles.forEach(tile => (tile.receiveShadow = true))
+// tiles.forEach(tile => (tile.receiveShadow = true))
 
 const spawner = new EnemySpawner()
 const game = new Game(spawner, tower)
 game.validateData()
+game.onLevelStart = resumeLightFlickering
+game.onLevelComplete = pauseLightFlickering
 updateBottomButtons(game)
 // game.start()
 
@@ -81,6 +80,7 @@ startLevelButton.addEventListener('click', () => {
   game.start()
   const imageURL = renderer.domElement.toDataURL('image/png')
   console.log(imageURL)
+  resumeLightFlickering()
 })
 
 // pauseButton.addEventListener('click', () => {

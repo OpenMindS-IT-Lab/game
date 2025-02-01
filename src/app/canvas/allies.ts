@@ -35,6 +35,11 @@ export class Ally extends THREE.Mesh {
   cooldown: number = 0
   upgradeCost: number = 0
 
+  particles?: {
+    pause(): void
+    resume(): void
+  }
+
   allyTowerType: AllyType
   isSelected: boolean = false
   height: number
@@ -48,14 +53,42 @@ export class Ally extends THREE.Mesh {
   }
 
   private static materialMap = {
-    [AllyType.WATER]: { color: 0x4277ff, transparent: true, opacity: 0.8, roughness: 0.5, metalness: 0.3 },
+    [AllyType.WATER]: {
+      color: 0x4277ff,
+      transparent: true,
+      opacity: 0.8,
+      roughness: 0.5,
+      metalness: 0,
+      emissive: 0x4277ff,
+      emissiveIntensity: 0.25,
+    },
     [AllyType.FIRE]: {
       color: 0xff4444,
       transparent: true,
-      opacity: 1 /* emissive: 0xff4444, emissiveIntensity: 0.25 */,
+      opacity: 1,
+      roughness: 0.1,
+      metalness: 0,
+      emissive: 0xff4444,
+      emissiveIntensity: 0.1,
     },
-    [AllyType.EARTH]: { color: 0x423333, transparent: true, opacity: 1, roughness: 1, metalness: 0 },
-    [AllyType.AIR]: { color: 0x42ffff, transparent: true, opacity: 0.7, roughness: 0.2, metalness: 0.5 },
+    [AllyType.EARTH]: {
+      color: 0x423333,
+      transparent: true,
+      opacity: 1,
+      roughness: 1,
+      metalness: 0,
+      emissive: 0x424242,
+      emissiveIntensity: 0.25,
+    },
+    [AllyType.AIR]: {
+      color: 0x42ffff,
+      transparent: true,
+      opacity: 0.7,
+      roughness: 0.2,
+      metalness: 0,
+      emissive: 0x42ffff,
+      emissiveIntensity: 0.25,
+    },
   }
 
   private static heightMap = {
@@ -63,6 +96,280 @@ export class Ally extends THREE.Mesh {
     [AllyType.FIRE]: 1.8,
     [AllyType.EARTH]: 1.25,
     [AllyType.AIR]: 1.8,
+  }
+
+  private static embers() {
+    const ally = this as unknown as Ally
+    const emberCount = 200
+    const emberGeometry = new THREE.BufferGeometry()
+    const emberPositions = new Float32Array(emberCount * 3)
+
+    for (let i = 0; i < emberCount; i++) {
+      emberPositions[i * 3] = (Math.random() - 0.5) * 1.25 // x
+      emberPositions[i * 3 + 1] = (Math.random() - 0.5) * ally.height // y
+      emberPositions[i * 3 + 2] = (Math.random() - 0.5) * 1.25 // z
+    }
+
+    emberGeometry.setAttribute('position', new THREE.BufferAttribute(emberPositions, 3))
+
+    const emberMaterial = new THREE.PointsMaterial({
+      color: 0xff4500,
+      size: 0.07,
+      transparent: true,
+      opacity: 0.8,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    })
+
+    const embers = new THREE.Points(emberGeometry, emberMaterial)
+    embers.position.copy(ally.position)
+    embers.visible = false
+    scene.add(embers)
+
+    const animateEmbers = () => {
+      const animate = () => {
+        if (!embers.visible) return
+
+        const positions = emberGeometry.attributes.position.array
+
+        for (let i = 0; i < emberCount; i++) {
+          positions[i * 3 + 1] += 0.02 // Move upward
+
+          // Reset ember position
+          if (positions[i * 3 + 1] > 2) {
+            positions[i * 3 + 1] = 0
+          }
+        }
+
+        emberGeometry.attributes.position.needsUpdate = true
+
+        requestAnimationFrame(animate)
+      }
+
+      animate()
+
+      return {
+        pause() {
+          embers.visible = false
+        },
+        resume() {
+          embers.visible = true
+          animate()
+        },
+      }
+    }
+
+    return animateEmbers()
+  }
+
+  private static droplets() {
+    const ally = this as unknown as Ally
+    const dropletCount = 150
+    const dropletGeometry = new THREE.BufferGeometry()
+    const dropletPositions = new Float32Array(dropletCount * 3)
+
+    for (let i = 0; i < dropletCount; i++) {
+      dropletPositions[i * 3] = (Math.random() - 0.5) * 1.25 // x
+      dropletPositions[i * 3 + 1] = Math.random() * 1.25 + ally.height // y
+      dropletPositions[i * 3 + 2] = (Math.random() - 0.5) * 1.25 // z
+    }
+
+    dropletGeometry.setAttribute('position', new THREE.BufferAttribute(dropletPositions, 3))
+
+    const dropletMaterial = new THREE.PointsMaterial({
+      color: 0x00bfff,
+      size: 0.05,
+      transparent: true,
+      opacity: 0.6,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    })
+
+    const droplets = new THREE.Points(dropletGeometry, dropletMaterial)
+    droplets.position.copy(ally.position)
+    droplets.visible = false
+    scene.add(droplets)
+
+    const animateDroplets = () => {
+      const animate = () => {
+        if (!droplets.visible) return
+
+        const positions = dropletGeometry.attributes.position.array
+
+        for (let i = 0; i < dropletCount; i++) {
+          positions[i * 3 + 1] -= 0.03 // Move downward
+
+          // Reset droplet position
+          if (positions[i * 3 + 1] < 0) {
+            positions[i * 3 + 1] = Math.random() * 2 + 2
+          }
+        }
+        dropletGeometry.attributes.position.needsUpdate = true
+
+        requestAnimationFrame(animate)
+      }
+
+      animate()
+
+      return {
+        pause() {
+          droplets.visible = false
+        },
+        resume() {
+          droplets.visible = true
+          animate()
+        },
+      }
+    }
+
+    return animateDroplets()
+  }
+
+  private static dust() {
+    const ally = this as unknown as Ally
+    const dustCount = 200
+    const dustGeometry = new THREE.BufferGeometry()
+    const dustPositions = new Float32Array(dustCount * 3)
+
+    for (let i = 0; i < dustCount; i++) {
+      dustPositions[i * 3] = (Math.random() - 0.5) * 1.25 // x
+      dustPositions[i * 3 + 1] = Math.random() * ally.height + 0.5 // y
+      dustPositions[i * 3 + 2] = (Math.random() - 0.5) * 1.25 // z
+    }
+
+    dustGeometry.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3))
+
+    const dustMaterial = new THREE.PointsMaterial({
+      color: 0x1e0e01,
+      size: 0.1,
+      transparent: true,
+      opacity: 0.9,
+      depthWrite: false,
+    })
+
+    const dust = new THREE.Points(dustGeometry, dustMaterial)
+    dust.position.copy(ally.position)
+    dust.visible = false
+    scene.add(dust)
+
+    const jiggle = (position: number) => {
+      const addition = (Math.random() - 0.5) * 0.025
+      const sum = position + addition
+      return Math.abs(sum) >= 1 ? 0 : sum
+    }
+
+    const animateDust = () => {
+      const animate = () => {
+        if (!dust.visible) return
+
+        const positions = dustGeometry.attributes.position.array
+
+        for (let i = 0; i < dustCount; i++) {
+          positions[i * 3] = jiggle(positions[i * 3]) // x
+          positions[i * 3 + 1] = jiggle(positions[i * 3 + 1]) // y
+          positions[i * 3 + 2] = jiggle(positions[i * 3 + 2]) // z
+        }
+        dustGeometry.attributes.position.needsUpdate = true
+
+        requestAnimationFrame(animate)
+      }
+
+      animate()
+
+      return {
+        pause() {
+          dust.visible = false
+        },
+        resume() {
+          dust.visible = true
+          animate()
+        },
+      }
+    }
+
+    return animateDust()
+  }
+
+  private static swirlies() {
+    const ally = this as unknown as Ally
+    const airCount = 150
+    const airGeometry = new THREE.BufferGeometry()
+    const airPositions = new Float32Array(airCount * 3)
+
+    for (let i = 0; i < airCount; i++) {
+      const angle = Math.random() * Math.PI * 2
+      const radius = Math.random()
+      airPositions[i * 3] = Math.cos(angle) * radius // x
+      airPositions[i * 3 + 1] = Math.random() * (ally.height / 2) - 1 // y
+      airPositions[i * 3 + 2] = Math.sin(angle) * radius // z
+    }
+
+    airGeometry.setAttribute('position', new THREE.BufferAttribute(airPositions, 3))
+
+    const airMaterial = new THREE.PointsMaterial({
+      color: 0xffffff,
+      size: 0.05,
+      transparent: true,
+      opacity: 0.7,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    })
+
+    const swirlies = new THREE.Points(airGeometry, airMaterial)
+    swirlies.position.copy(ally.position)
+    swirlies.visible = false
+    scene.add(swirlies)
+
+    const animateDroplets = () => {
+      const animate = () => {
+        if (!swirlies.visible) return
+
+        const positions = airGeometry.attributes.position.array
+        const speed = 0.25 // Adjust speed as needed
+
+        for (let i = 0; i < airCount; i++) {
+          const angle = Math.atan2(positions[i * 3 + 2], positions[i * 3])
+          const radius = Math.sqrt(positions[i * 3] * positions[i * 3] + positions[i * 3 + 2] * positions[i * 3 + 2])
+
+          // Increment the angle for circular motion
+          const newAngle = angle + speed
+
+          positions[i * 3] = Math.cos(newAngle) * radius // x
+          positions[i * 3 + 1] += 0.01 // Move upward
+          positions[i * 3 + 2] = Math.sin(newAngle) * radius // z
+
+          // Reset particle if it goes too high
+          if (positions[i * 3 + 1] >= ally.height / 2) {
+            positions[i * 3 + 1] = 0
+          }
+        }
+
+        airGeometry.attributes.position.needsUpdate = true
+
+        requestAnimationFrame(animate)
+      }
+
+      animate()
+
+      return {
+        pause() {
+          swirlies.visible = false
+        },
+        resume() {
+          swirlies.visible = true
+          animate()
+        },
+      }
+    }
+
+    return animateDroplets()
+  }
+
+  private static particlesMap = {
+    [AllyType.AIR]: Ally.swirlies,
+    [AllyType.WATER]: Ally.droplets,
+    [AllyType.EARTH]: Ally.dust,
+    [AllyType.FIRE]: Ally.embers,
   }
 
   static priceMap = {
@@ -130,7 +437,7 @@ export class Ally extends THREE.Mesh {
 
   constructor(type: AllyType) {
     const geometry = Ally.geometryMap[type]()
-    const material = new THREE.MeshStandardMaterial({ metalness: 0.3, roughness: 0.7, ...Ally.materialMap[type] })
+    const material = new THREE.MeshStandardMaterial(Ally.materialMap[type])
 
     super(geometry, material)
 
@@ -159,14 +466,11 @@ export class Ally extends THREE.Mesh {
 
     this.userData = {
       isPersistant: false,
-      isSelected: false,
       boundingBox: new THREE.Box3(),
       initialColor: material.color,
-      damage: this.damage,
-      speed: this.speed,
-      health: this.health,
-      skillCooldown: this.cooldown,
     }
+
+    this.particles = Ally.particlesMap[type].bind(this)()
 
     scene.add(this)
   }
@@ -206,12 +510,15 @@ export class Ally extends THREE.Mesh {
     tower.unselectAllies()
     tower.unselect()
     ;(this.material as THREE.MeshStandardMaterial).color.set(Colors.SELECTED_TOWER.color)
+    ;(this.material as THREE.MeshStandardMaterial).emissiveIntensity = 0
     this.isSelected = true
     toggleTowerInfo(this)
   }
 
   unselect() {
     ;(this.material as THREE.MeshStandardMaterial).color.set(Ally.materialMap[this.allyTowerType].color)
+    ;(this.material as THREE.MeshStandardMaterial).emissiveIntensity =
+      Ally.materialMap[this.allyTowerType].emissiveIntensity
     this.isSelected = false
     toggleTowerInfo()
   }
@@ -356,15 +663,13 @@ export class Ally extends THREE.Mesh {
     }
     const skill = skillMap[this.allyTowerType]
 
-    if (this.casting) {
-      this.stopCasting()
-    }
-
     this.casting = setInterval(() => skill(enemies), this.cooldown)
+    if (this.particles) this.particles.resume()
   }
 
   public stopCasting() {
     clearInterval(this.casting)
+    this.particles?.pause()
     this.casting = 0
   }
 }

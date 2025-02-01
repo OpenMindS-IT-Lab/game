@@ -30,7 +30,7 @@
         <h1 id="tower-title" name="title">Tower Title</h1>
         <div id="tower-info-content" name="content">
           <div id="tower-info-image" name="image">
-            <img src="#" alt="Tower">
+            <!-- <img src="#" alt="Tower"> -->
           </div>
           <div class="health-bar" name="health-bar">
             <label for="health">Health:</label>
@@ -39,11 +39,16 @@
           </div>
           <p id="tower-description" name="description">"Tower description."</p>
           <div id="tower-info-stats" name="stats">
-            <table name="stats-table">
+            <table name="stats-table" class="upgrade">
+              <colgroup>
+                <col span="1">
+                <col span="2">
+                <col span="1">
+              </colgroup>
               <tr>
                 <th>STAT</th>
                 <th>CURRENT</th>
-                <th>AFTER UPGRADE</th>
+                <th>NEXT</th>
               </tr>
               <tr>
                 <td><img src="src/app/assets/level.svg" alt="Level"> Level</td>
@@ -135,7 +140,7 @@
       <tbody>
         ...
     </tbody>
-    </table> --> -->
+    </table> -->
   </div>
 
   <script type="module" src="/src/app/main.ts" charset="utf-8"></script>

@@ -45,6 +45,8 @@ export default class Game {
   _score: number = 0
   _highscore: number = 0
   _totalUpgrades: number = 0
+  _onLevelStart: () => void = () => void 0
+  _onLevelComplete: () => void = () => void 0
   level: number
   spawner: EnemySpawner
   tower: Tower
@@ -87,6 +89,20 @@ export default class Game {
     })
   }
 
+  get onLevelStart() {
+    return this._onLevelStart
+  }
+  set onLevelStart(value: () => void) {
+    this._onLevelStart = value
+  }
+
+  get onLevelComplete() {
+    return this._onLevelStart
+  }
+  set onLevelComplete(value: () => void) {
+    this._onLevelStart = value
+  }
+
   get totalUpgrades() {
     return this._totalUpgrades
   }
@@ -119,10 +135,10 @@ export default class Game {
     try {
       const { user: userData, ...webAppInitData } = initData
 
-      console.log('WebApp init data:')
-      console.table(webAppInitData)
-      console.log('User data:')
-      console.table(userData)
+      // console.log('WebApp init data:')
+      // console.table(webAppInitData)
+      // console.log('User data:')
+      // console.table(userData)
 
       Telegram.WebApp.CloudStorage.getKeys((error, keys) => {
         if (error) throw error
@@ -174,11 +190,11 @@ export default class Game {
     if (!this.isUpgrading) return
 
     if (this.coins - allyTower.upgradeCost >= 0) {
-      if (allyTower instanceof Tower) {
-        allyTower.stopShooting()
-      } else {
-        allyTower.stopCasting()
-      }
+      // if (allyTower instanceof Tower) {
+      //   allyTower.stopShooting()
+      // } else {
+      //   allyTower.stopCasting()
+      // }
 
       this.coins -= allyTower.upgradeCost
       this.totalUpgrades += 1
@@ -186,10 +202,10 @@ export default class Game {
       allyTower.levelUp()
 
       if (allyTower instanceof Tower) {
-        allyTower.startShooting(this.spawner.enemies)
+        // allyTower.startShooting(this.spawner.enemies)
       } else {
         this.tower.updateAlliesPriceMap(this.score, this.totalUpgrades)
-        allyTower.startCasting(this.spawner.enemies)
+        // allyTower.startCasting(this.spawner.enemies)
       }
     } else throw new Error('Not enough coins')
   }
@@ -227,6 +243,7 @@ export default class Game {
 
       this.isUpgrading = false
       this.isRunning = true
+      this.onLevelStart()
 
       let level = setInterval(() => {
         if (levelDuration) {
@@ -268,6 +285,7 @@ export default class Game {
             this.highscore = this.score
           }
 
+          this.onLevelComplete()
           updateBottomButtons(this)
           clearInterval(finish)
         }

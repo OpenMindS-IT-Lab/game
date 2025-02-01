@@ -91,6 +91,13 @@ const validateHandler: RequestHandler = async (req, res) => {
   }
 }
 
+const logHandler: RequestHandler = async (req, res) => {
+  const { body } = req
+  process.stdout.write(body)
+  res.status(200).send()
+}
+router.post('/log', logHandler)
+
 router.post('/validate', validateHandler)
 
 api.use('/api/', router)

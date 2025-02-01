@@ -47,7 +47,13 @@ class Tower extends THREE.Mesh {
     const combinedGeometry = BufferGeometryUtils.mergeGeometries([baseGeometry, middleGeometry, topGeometry])
 
     // Створюємо матеріал
-    const material = new THREE.MeshStandardMaterial(Colors.TOWER)
+    const material = new THREE.MeshStandardMaterial({
+      ...Colors.TOWER,
+      emissive: Colors.TOWER.color,
+      emissiveIntensity: 0.25,
+      metalness: 0,
+      roughness: 1,
+    })
 
     // Створюємо Mesh із комбінованою геометрією
     super(combinedGeometry, material)
@@ -90,12 +96,14 @@ class Tower extends THREE.Mesh {
   select() {
     this.unselectAllies()
     ;(this.material as THREE.MeshStandardMaterial).color.set(Colors.SELECTED_TOWER.color)
+    ;(this.material as THREE.MeshStandardMaterial).emissiveIntensity = 0
     this.isSelected = true
     toggleTowerInfo(this)
   }
 
   unselect() {
     ;(this.material as THREE.MeshStandardMaterial).color.set(Colors.TOWER.color)
+    ;(this.material as THREE.MeshStandardMaterial).emissiveIntensity = 0.25
     this.isSelected = false
     toggleTowerInfo()
   }
@@ -192,10 +200,6 @@ class Tower extends THREE.Mesh {
   }
 
   public startShooting(enemies: Enemy[]): void {
-    if (this.shooting) {
-      this.stopShooting()
-    }
-
     this.shooting = setInterval(() => this.shootAtNearestEnemy(enemies), this.cooldown)
   }
 
@@ -272,24 +276,51 @@ export class Projectile extends THREE.Mesh {
       boundingBox: new THREE.Box3(),
     }
 
+    const shockwaveGeometry = new THREE.RingGeometry(0.15, 0.25, 32)
+    const shockwaveMaterial = new THREE.MeshBasicMaterial({
+      color: Colors.TOWER.color,
+      transparent: true,
+      opacity: 1,
+      side: THREE.DoubleSide,
+    })
+
+    const shockwave = new THREE.Mesh(shockwaveGeometry, shockwaveMaterial)
+    shockwave.rotation.x = -Math.PI / 2
+    shockwave.position.copy(this.position).setY(0.1)
+    scene.add(shockwave)
+
+    // Shockwave Animation
+    function animateShockwave() {
+      shockwave.scale.x += 0.1
+      shockwave.scale.y += 0.1
+      shockwave.material.opacity -= 0.02
+
+      if (shockwave.material.opacity <= 0) {
+        scene.remove(shockwave)
+        return
+      } else {
+        requestAnimationFrame(animateShockwave)
+      }
+    }
+    animateShockwave()
+
     scene.add(this)
   }
 
   // Анімація руху снаряда
   shoot() {
-    const interval = setInterval(() => {
-      // Рухаємо снаряд у напрямку ворога
+    const animateBullet = () => {
       this.position.addScaledVector(this.direction, this.speed)
 
       // Якщо снаряд виходить за межі сцени (додатковий захист від "завислих" снарядів)
       if (this.position.distanceTo(this.initialPosition) > 50) {
         scene.remove(this)
-        clearInterval(interval)
+        return
       }
 
-      return () => {
-        clearInterval(interval)
-      }
-    }, 1000 / 60)
+      requestAnimationFrame(animateBullet)
+    }
+
+    animateBullet()
   }
 }

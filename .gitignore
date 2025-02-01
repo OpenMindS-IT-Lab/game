@@ -5,3 +5,5 @@
 *.env
 *.env.production
 *.env.development
+*redundant*
+*redundant/*
