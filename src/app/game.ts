@@ -1,8 +1,12 @@
 import { entries, snakeCase, values } from 'lodash'
+import { WebAppInitData } from 'telegram-webapps'
+import api from './api'
 import { Ally, AllyType } from './canvas/allies'
 import EnemySpawner from './canvas/enemies'
 import Tower from './canvas/tower'
-import { bottomButtons, bottomInfo, coinCounter, highscoreCounter, levelDisplay, scoreCounter, timer } from './ui'
+import { coinCounter, highscoreCounter, scoreCounter } from './ui'
+import { bottomButtons, bottomInfo, levelDisplay, timer, updateBottomButtons } from './ui/bottom-menu'
+import { handleMinorError } from './utils'
 // import renderInfoTable from './ui/info-table'
 
 // function errorBoundary() {
@@ -27,17 +31,16 @@ export type TelegramUser = {
   photo_url: string
 }
 
-export type WebAppInitData = {
-  chat_instance: string
-  chat_type: string
-  start_param: string
-  auth_date: string
-  signature: string
-  hash: string
-}
+// export type WebAppInitData = {
+//   chat_instance: string
+//   chat_type: string
+//   start_param: string
+//   auth_date: string
+//   signature: string
+//   hash: string
+// }
 
 export default class Game {
-  // _coins: number = 10000
   _coins: number = 0
   _score: number = 0
   _highscore: number = 0
@@ -56,7 +59,7 @@ export default class Game {
   set coins(amount: number) {
     this._coins = amount
 
-    coinCounter.innerHTML = `Coins: ${this.coins}`
+    coinCounter.innerText = `Coins: ${this.coins}`
   }
 
   get score() {
@@ -65,7 +68,7 @@ export default class Game {
   set score(value: number) {
     this._score = value
 
-    scoreCounter.innerHTML = `Score: ${this.score}`
+    scoreCounter.innerText = `Score: ${this.score}`
   }
 
   get highscore() {
@@ -97,73 +100,74 @@ export default class Game {
     this.isRunning = false
     this.isPaused = false
     this.isOver = false
-    this.isUpgrading = false
+    this.isUpgrading = true
     this.level = 0
 
-    this.spawner.collectDrop = this.spawner.collectDrop.bind(this)
-    this.spawner.addScore = this.spawner.addScore.bind(this)
+    this.coins += 100
 
-    this.tower.endGame = this.tower.endGame.bind(this)
+    this.spawner.__game = this
+    this.tower.__game = this
   }
 
   session: string | null = null
   userId: string | null = null
-  initStorage() {
-    const data = new URLSearchParams(decodeURIComponent(Telegram.WebApp.initData))
-    const webAppInitData = Object.fromEntries(
-      data
-        .entries()
-        .filter(([key]) => key !== 'user')
-        .map(([key, value]) => {
-          switch (key) {
-            case 'auth_date':
-              return [key, new Date(+value * 1000).toLocaleString()]
-            default:
-              return [key, value]
+
+  validateData() {
+    api.validate(Telegram.WebApp.initData).then(data => this.initStorage(data))
+  }
+  private initStorage(initData: WebAppInitData) {
+    try {
+      const { user: userData, ...webAppInitData } = initData
+
+      console.log('WebApp init data:')
+      console.table(webAppInitData)
+      console.log('User data:')
+      console.table(userData)
+
+      Telegram.WebApp.CloudStorage.getKeys((error, keys) => {
+        if (error) throw error
+        if (keys.length === 0) {
+          for (let [key, value] of entries(userData)) {
+            Telegram.WebApp.CloudStorage.setItem(snakeCase(key), value.toString(), (error, _value) => {
+              if (error) throw error
+              console.log(`User data saved: ${key}`)
+            })
           }
-        })
-    )
-    const userData: TelegramUser = JSON.parse(Object.fromEntries(data.entries().filter(([key]) => key === 'user')).user)
-
-    console.log('WebApp init data:')
-    console.table(webAppInitData)
-    console.log('User data:')
-    console.table(userData)
-
-    Telegram.WebApp.CloudStorage.getKeys((error, keys) => {
-      if (error) throw error
-      if (keys.length === 0) {
-        for (let [key, value] of entries(userData)) {
-          Telegram.WebApp.CloudStorage.setItem(snakeCase(key), value.toString(), (error, _value) => {
+          Telegram.WebApp.CloudStorage.setItem('highscore', `${0}`, (error, _success) => {
             if (error) throw error
-            console.log(`User data saved: ${key}`)
           })
+        } else {
+          Telegram.WebApp.CloudStorage.getItem('active_session', (error, session) => {
+            if (error) throw error
+            if (session && session !== '') throw new Error('Active session found!')
+          })
+            .setItem('active_session', webAppInitData.hash, (error, _success) => {
+              if (error) throw error
+              this.session = webAppInitData.hash
+            })
+            .getItem('id', (error, id) => {
+              if (error) throw error
+              this.userId = id
+            })
+            .getItem('highscore', (error, highscore) => {
+              if (error) throw error
+              if (highscore && !Number.isNaN(parseInt(highscore))) {
+                this._highscore = parseInt(highscore)
+                highscoreCounter.innerHTML = `Highscore: ${this.highscore}`
+              }
+            })
         }
-        Telegram.WebApp.CloudStorage.setItem('highscore', `${0}`, (error, _success) => {
-          if (error) throw error
-        })
-      } else {
-        Telegram.WebApp.CloudStorage.getItem('active_session', (error, session) => {
-          if (error) throw error
-          if (session && session !== '') throw new Error('Active session found!')
-        })
-          .setItem('active_session', webAppInitData.hash, (error, _success) => {
-            if (error) throw error
-            this.session = webAppInitData.hash
-          })
-          .getItem('id', (error, id) => {
-            if (error) throw error
-            this.userId = id
-          })
-          .getItem('highscore', (error, highscore) => {
-            if (error) throw error
-            if (highscore && !Number.isNaN(parseInt(highscore))) {
-              this._highscore = parseInt(highscore)
-              highscoreCounter.innerHTML = `Highscore: ${this.highscore}`
-            }
-          })
-      }
-    })
+      })
+      if (!Telegram.WebApp.isFullscreen) Telegram.WebApp.requestFullscreen()
+      if (!Telegram.WebApp.isOrientationLocked) Telegram.WebApp.lockOrientation()
+      if (!Telegram.WebApp.isClosingConfirmationEnabled) Telegram.WebApp.enableClosingConfirmation()
+      if (Telegram.WebApp.isVerticalSwipesEnabled) Telegram.WebApp.disableVerticalSwipes()
+      Telegram.WebApp.ready()
+    } catch (error) {
+      console.error(error)
+      handleMinorError(error)
+      return
+    }
   }
 
   public levelUp(allyTower: Tower | Ally) {
@@ -191,6 +195,8 @@ export default class Game {
   }
 
   public purchase(allyType: AllyType) {
+    if (!this.isUpgrading) return
+
     const cost = Ally.priceMap[allyType][0]
 
     if (this.coins - cost >= 0) {
@@ -262,6 +268,7 @@ export default class Game {
             this.highscore = this.score
           }
 
+          updateBottomButtons(this)
           clearInterval(finish)
         }
       }, 1000)

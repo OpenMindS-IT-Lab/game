@@ -4,7 +4,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "netlify dev",
+    "prestart": "npx -y kill-port --port 5173",
+    "dev": "npm run prestart && netlify dev",
     "build": "netlify build",
     "preview": "vite preview",
     "start": "netlify build && vite preview",

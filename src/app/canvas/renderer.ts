@@ -40,6 +40,9 @@ updateSize({ w: initialWidth, h: initialHeight })
 // updateSafeArea()
 // updateContentSafeArea()
 
+renderer.shadowMap.enabled = true // Увімкнення тіней на рівні рендера
+renderer.shadowMap.type = THREE.PCFSoftShadowMap // М'які тіні
+
 gameContainer.appendChild(renderer.domElement)
 
 // Rendering Loop

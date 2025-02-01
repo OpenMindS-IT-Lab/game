@@ -4,27 +4,83 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="charset" content="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Tower Defence</title>
   <link rel="stylesheet" href="/src/app/style.css" type="text/css" />
   <script src="https://telegram.org/js/telegram-web-app.js?56" charset="utf-8" type="application/javascript"></script>
 </head>
 
 <body>
-  <div id="game-container"></div>
+  <div id="game-container" name="game-container"></div>
 
   <!-- Інтерфейс -->
   <div id="ui-container">
     <!-- Нижні кнопки (основний ігровий інтерфейс користувача для взаємодії зі сценою) -->
     <nav id="bottom-buttons" class="active">
-      <button id="upgrade-main-tower" type="button" class="ui-button" data-title="">main</button>
-      <button id="upgrade-water-tower" type="button" class="ui-button" data-title="">water</button>
-      <button id="upgrade-air-tower" type="button" class="ui-button" data-title="">air</button>
-      <button id="upgrade-earth-tower" type="button" class="ui-button" data-title="">earth</button>
-      <button id="upgrade-fire-tower" type="button" class="ui-button" data-title="">fire</button>
+      <button disabled="false" id="purchase-water-tower" type="button" class="ui-button">water</button>
+      <button disabled id="purchase-air-tower" type="button" class="ui-button">air</button>
+      <button disabled id="purchase-earth-tower" type="button" class="ui-button">earth</button>
+      <button disabled id="purchase-fire-tower" type="button" class="ui-button">fire</button>
 
       <button id="start-level-button" type="button" class="ui-button">start</button>
     </nav>
+
+    <section id="tower-info" class="hidden">
+      <div class="content" name="content">
+        <h1 id="tower-title" name="title">Tower Title</h1>
+        <div id="tower-info-content" name="content">
+          <div id="tower-info-image" name="image">
+            <img src="#" alt="Tower">
+          </div>
+          <div class="health-bar" name="health-bar">
+            <label for="health">Health:</label>
+            <progress id="health" value="100" max="120">100 / 120</progress>
+            <span>100 / 120</span>
+          </div>
+          <p id="tower-description" name="description">"Tower description."</p>
+          <div id="tower-info-stats" name="stats">
+            <table name="stats-table">
+              <tr>
+                <th>STAT</th>
+                <th>CURRENT</th>
+                <th>AFTER UPGRADE</th>
+              </tr>
+              <tr>
+                <td><img src="level-icon.png" alt="Level"> Level</td>
+                <td name="level"></td>
+                <td name="next-level" style="color: green;"></td>
+              </tr>
+              <tr>
+                <td><img src="health-icon.png" alt="Health"> Health</td>
+                <td name="health"></td>
+                <td name="next-health" style="color: green;"></td>
+              </tr>
+              <tr>
+                <td><img src="attack-speed-icon.png" alt="Attack Speed"> Attack Speed</td>
+                <td name="attack-speed"></td>
+                <td name="next-attack-speed" style="color: green;"></td>
+              </tr>
+              <tr>
+                <td><img src="damage-icon.png" alt="Damage"> Damage</td>
+                <td name="damage"></td>
+                <td name="next-damage" style="color: green;"></td>
+              </tr>
+              <tr>
+                <td><img src="cooldown-icon.png" alt="Cooldown"> Cooldown</td>
+                <td name="cooldown"></td>
+                <td name="next-cooldown" style="color: green;"></td>
+              </tr>
+            </table>
+            <div id="upgrade-cost" name="upgrade-cost">
+              <strong>Upgrade Cost:</strong> 50 Coins
+            </div>
+          </div>
+        </div>
+        <button id="upgrade-tower-button" name="upgrade-button" type="button" class="ui-button">UPGRADE</button>
+        <button id="close-tower-info-button" name="close-button" type="button">X</button>
+      </div>
+    </section>
+
 
     <div id="bottom-info" class="">
       <h1 id="level-display">Level 1

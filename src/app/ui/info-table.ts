@@ -22,9 +22,9 @@ function updateGameInfoTable(tower: Tower, spawner: EnemySpawner) {
     <td>Tower</td>
     <td>${tower.health}</td>
     <td>${tower.level}</td>
-    <td>${tower.bulletDamage}</td>
-    <td>${tower.bulletSpeed}</td>
-    <td>${tower.bulletCooldown}</td>
+    <td>${tower.damage}</td>
+    <td>${tower.speed}</td>
+    <td>${tower.cooldown}</td>
   `
   gameInfoTableBody.appendChild(alliesHeading)
   alliesHeading.after(towerRow)
@@ -38,7 +38,7 @@ function updateGameInfoTable(tower: Tower, spawner: EnemySpawner) {
       <td>${ally?.level}</td>
       <td>${ally?.damage}</td>
       <td>${ally?.speed}</td>
-      <td>${ally?.skillCooldown}</td>
+      <td>${ally?.cooldown}</td>
       `
 
       gameInfoTableBody.appendChild(allyRow)

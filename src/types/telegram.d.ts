@@ -1,26 +1,7 @@
-// @ts-expect-error
-import { TelegramWebApps } from 'telegram-webapps'
+import 'telegram-webapps'
 
-declare global {
-  type Utils = {
-    [key: symbol]: {
-      (...params: unknown[]): unknown
-    }
+declare module 'telegram-webapps' {
+  export interface WebAppInitData extends TelegramWebApps.WebAppInitData {
+    signature: string
   }
-
-  type WebView = {
-    [key: symbol]: {
-      (...params: unknown[]): unknown
-    }
-  }
-
-  type WebApp = TelegramWebApps.WebApp
-
-  interface Telegram {
-    Utils: Utils
-    WebView: WebView
-    WebApp: WebApp
-  }
-
-  const Telegram: Telegram
 }

@@ -12,19 +12,6 @@ export const spawnFastButton = document.getElementById('spawn-fast') as HTMLButt
 export const spawnRegularButton = document.getElementById('spawn-regular') as HTMLButtonElement
 export const spawnStrongButton = document.getElementById('spawn-strong') as HTMLButtonElement
 
-export const upgradeMainTowerButton = document.getElementById('upgrade-main-tower') as HTMLButtonElement
-
-export const bottomButtons = document.getElementById('bottom-buttons') as HTMLElement
-export const upgradeWaterTowerButton = document.getElementById('upgrade-water-tower') as HTMLButtonElement
-export const upgradeFireTowerButton = document.getElementById('upgrade-fire-tower') as HTMLButtonElement
-export const upgradeEarthTowerButton = document.getElementById('upgrade-earth-tower') as HTMLButtonElement
-export const upgradeAirTowerButton = document.getElementById('upgrade-air-tower') as HTMLButtonElement
-export const startLevelButton = document.getElementById('start-level-button') as HTMLButtonElement
-
-export const bottomInfo = document.getElementById('bottom-info') as HTMLDivElement
-export const levelDisplay = document.getElementById('level-display') as HTMLHeadingElement
-export const timer = document.getElementById('timer') as HTMLSpanElement
-
 export const gameInfoTableBody = document.querySelector('#game-info-table tbody') as HTMLTableSectionElement
 
 export const coinCounter = document.getElementById('coin-counter') as HTMLDivElement

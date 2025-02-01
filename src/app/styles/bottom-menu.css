@@ -1,0 +1,63 @@
+/* Нижні кнопки */
+#bottom-buttons {
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  display: none;
+  justify-content: center;
+  gap: 10px;
+  pointer-events: auto;
+  padding: 0 0 20px 0;
+}
+
+#bottom-buttons.active {
+  display: flex;
+}
+
+#bottom-buttons button.ui-button {
+  text-transform: uppercase;
+}
+
+#bottom-buttons button.ui-button:disabled {
+  display: none;
+}
+
+#start-level-button {
+  background-color: green;
+  font-weight: bold;
+  box-shadow: 0 0 10px 2px green;
+}
+
+#bottom-info {
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  display: none;
+  justify-content: center;
+  /* justify-items: center; */
+  /* align-items: center; */
+  /* align-content: center; */
+  gap: 0;
+  pointer-events: auto;
+  flex-wrap: wrap;
+}
+
+#bottom-info.active {
+  display: flex;
+}
+
+#level-display {
+  color: green;
+  text-shadow: 0 0 3.5px #00ff00;
+  flex-basis: 100%;
+  text-align: center;
+  padding: 0;
+  margin: 0;
+}
+
+#timer {
+  color: white;
+  text-shadow: 0 0 3.5px #00ff00;
+  font-weight: bold;
+  font-size: 1.5em;
+}

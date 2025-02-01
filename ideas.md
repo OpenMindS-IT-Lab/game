@@ -109,6 +109,34 @@
 
 Заморожує найближчого ворога `X раз/сек` на `Y сек`;
 
+#### Descriptions
+
+##### Main Tower:
+
+"Unleash the precision of the Main Tower as it methodically targets the nearest enemy, firing `X times/sec` with deadly
+accuracy and inflicting `Y damage`. This reliable sentinel stands as the cornerstone of your defenses."
+
+##### Air Tower:
+
+"Command the skies with the Air Tower, sending a powerful gust that knocks all enemies back `X times/sec`, displacing
+them by `Y tiles`. This tower ensures you control the battlefield, disrupting enemy formations with each pulse."
+
+##### Fire Tower:
+
+"Set the battlefield ablaze with the Fire Tower, igniting all enemies within range `X times/sec` and dealing `Y damage`
+with searing flames. Watch as foes are engulfed in fire, their ranks left smoldering in the tower's wake."
+
+##### Earth Tower:
+
+"Invoke the might of the Earth Tower as it hurls the nearest enemy into the air `X times/sec`, causing them to crash
+back down with a force that deals `Y damage`. This tower's raw power will shake the very ground beneath your enemies'
+feet."
+
+##### Water Tower:
+
+"Freeze your foes in their tracks with the Water Tower, launching chilling blasts `X times/sec` that immobilize the
+nearest enemy for `Y seconds`. This tower's icy grip ensures no enemy escapes its frosty hold."
+
 ## Вороги
 
 ### Швидкі

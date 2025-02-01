@@ -212,4 +212,13 @@ export function showDamageText(damage: number, position: THREE.Vector3, color?: 
   })
 }
 
+export function handleMinorError(errorMessage?: unknown) {
+  const message = (errorMessage ?? 'Error!') + '\nTry reloading the app?'
+
+  Telegram.WebApp.showConfirm(message, okPressed => {
+    if (okPressed) window.location.reload()
+    else Telegram.WebApp.close()
+  })
+}
+
 export type Timeout = NodeJS.Timeout | 0

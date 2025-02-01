@@ -7,6 +7,7 @@ import { Colors } from './constants'
 import { scene } from './scene'
 import { tiles } from './tiles'
 import Tower, { Projectile } from './tower'
+import Game from '../game';
 
 // Функція для створення випадкового кольору
 function getRandomColor() {
@@ -306,8 +307,9 @@ export class Enemy extends THREE.Mesh {
 
 // Функція для створення геометрії
 export default class EnemySpawner {
-  private _enemies: Enemy[] = []
+  __game?: Game
 
+  private _enemies: Enemy[] = []
   public get enemies() {
     return this._enemies
   }
@@ -328,11 +330,11 @@ export default class EnemySpawner {
   }
 
   public collectDrop(coins: number) {
-    if ('coins' in this) (this.coins as number) += coins
+    this.__game!.coins += coins
   }
 
   public addScore(score: number) {
-    if ('score' in this) (this.score as number) += score
+    this.__game!.score += score
   }
 
   spawnEnemy(type?: EnemyType) {

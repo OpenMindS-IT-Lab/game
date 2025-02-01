@@ -1,7 +1,14 @@
 import { capitalize } from 'lodash'
 import * as THREE from 'three'
+import airTowerImg from '../assets/air-tower.png'
+import earthTowerImg from '../assets/earth-tower.png'
+import fireTowerImg from '../assets/fire-tower.png'
+import waterTowerImg from '../assets/water-tower.png'
+import Game from '../game'
+import { toggleTowerInfo } from '../ui/tower-info'
 import { showDamageText, Timeout } from '../utils'
 import { moveAndFlip, moveLinear } from './animations'
+import { Colors } from './constants'
 import EnemySpawner, { Enemy } from './enemies'
 import { scene } from './scene'
 import { tiles } from './tiles'
@@ -15,15 +22,23 @@ export const enum AllyType {
 }
 
 export class Ally extends THREE.Mesh {
-  allyTowerType: AllyType
+  __game?: Game
+
+  title: string
+  description: string
+  image: string
   level: number = 0
   health: number = 0
+  maxHealth: number = 0
   damage: number = 0
   speed: number = 0
-  height: number
-  skillCooldown: number = 0
-  casting: Timeout
+  cooldown: number = 0
   upgradeCost: number = 0
+
+  allyTowerType: AllyType
+  isSelected: boolean = false
+  height: number
+  casting: Timeout
 
   private static geometryMap = {
     [AllyType.WATER]: () => new THREE.SphereGeometry(0.75, 16, 16),
@@ -33,10 +48,10 @@ export class Ally extends THREE.Mesh {
   }
 
   private static materialMap = {
-    [AllyType.WATER]: { color: 0x4277ff, transparent: true, opacity: 1 },
-    [AllyType.FIRE]: { color: 0xff4444, transparent: true, opacity: 1 },
-    [AllyType.EARTH]: { color: 0x423333, transparent: true, opacity: 1 },
-    [AllyType.AIR]: { color: 0x42ffff, transparent: true, opacity: 1 },
+    [AllyType.WATER]: { color: 0x4277ff, transparent: true, opacity: 0.8, roughness: 0.5, metalness: 0.3 },
+    [AllyType.FIRE]: { color: 0xff4444, transparent: true, opacity: 1, emissiveIntensity: 0.5 },
+    [AllyType.EARTH]: { color: 0x423333, transparent: true, opacity: 1, roughness: 1, metalness: 0 },
+    [AllyType.AIR]: { color: 0x42ffff, transparent: true, opacity: 0.7, roughness: 0.2, metalness: 0.5 },
   }
 
   private static heightMap = {
@@ -51,6 +66,24 @@ export class Ally extends THREE.Mesh {
     [AllyType.WATER]: [15, 30, 150, 300, 1500, 3000, 15000, 30000, 100000, 200000, 1000000, 2000000],
     [AllyType.EARTH]: [20, 40, 200, 400, 2000, 4000, 20000, 40000, 150000, 300000, 1000000, 2000000],
     [AllyType.FIRE]: [25, 50, 250, 500, 2500, 5000, 25000, 50000, 200000, 400000, 1000000, 2000000],
+  }
+
+  static descriptionMap = {
+    [AllyType.AIR]:
+      'Command the skies with the Air Tower, sending a powerful gust that knocks all enemies back, displacing them. This tower ensures you control the battlefield, disrupting enemy formations with each pulse.',
+    [AllyType.WATER]:
+      "Freeze your foes in their tracks with the Water Tower, launching chilling blasts that immobilize the nearest enemy. This tower's icy grip ensures no enemy escapes its frosty hold.",
+    [AllyType.EARTH]:
+      "Invoke the might of the Earth Tower as it hurls the nearest enemy into the air, causing them to crash back down with a force that deals damage. This tower's raw power will shake the very ground beneath your enemies' feet.",
+    [AllyType.FIRE]:
+      "Set the battlefield ablaze with the Fire Tower, igniting all enemies within range and dealing damage with searing flames. Watch as foes are engulfed in fire, their ranks left smoldering in the tower's wake.",
+  }
+
+  static imageMap = {
+    [AllyType.WATER]: waterTowerImg,
+    [AllyType.FIRE]: fireTowerImg,
+    [AllyType.EARTH]: earthTowerImg,
+    [AllyType.AIR]: airTowerImg,
   }
 
   private static getRandomPosition() {
@@ -76,63 +109,19 @@ export class Ally extends THREE.Mesh {
     return targetTile.position.clone().setY(0)
   }
 
-  private static calcDamage(level: number) {
+  static calcDamage(level: number) {
     return level / 2 + 0.5 * level
   }
 
-  private static calcSpeed(level: number) {
+  static calcSpeed(level: number) {
     return parseFloat((level / 4).toFixed(4))
   }
-  private static calcSkillCooldown(level: number) {
+  static calcSkillCooldown(level: number) {
     return parseFloat((2000 / level).toFixed(2))
   }
 
-  private calcHealth(level: number) {
-    return this.health + (level - 1 || 1) * 10
-  }
-
-  updatePrice(priceMap: typeof Ally.priceMap = Ally.priceMap) {
-    this.upgradeCost = priceMap[this.allyTowerType][this.level]
-  }
-
-  levelUp() {
-    this.level += 1
-    this.health = this.calcHealth(this.level)
-    this.damage = Ally.calcDamage(this.level)
-    this.speed = Ally.calcSpeed(this.level)
-    this.skillCooldown = Ally.calcSkillCooldown(this.level)
-  }
-
-  previewUpgrade() {
-    const name = capitalize(this.allyTowerType) + ' Tower'
-    const nextLevel = this.level + 1
-
-    return `${name}
-
-      COST: ${this.upgradeCost}
-      
-      Level: ${this.level} (+1)
-      Health: ${this.health} (+${this.calcHealth(nextLevel) - this.health})
-      Damage: ${this.damage} (+${Ally.calcDamage(nextLevel) - this.damage})
-      Speed: ${this.speed} (+${Ally.calcSpeed(nextLevel) - this.speed})
-      SkillCooldown: ${this.skillCooldown} (${Ally.calcSkillCooldown(nextLevel) - this.skillCooldown})
-    `
-  }
-
-  static previewUpgrade(type: AllyType, level?: number) {
-    const name = capitalize(type) + ' Tower'
-    const nextLevel = level || 1
-
-    return `${name}
-
-      COST: ${this.priceMap[type][level || 0]}
-      
-      Level: ${1}
-      Health: ${10}
-      Damage: ${Ally.calcDamage(nextLevel)}
-      Speed: ${Ally.calcSpeed(nextLevel)}
-      SkillCooldown: ${Ally.calcSkillCooldown(nextLevel)}
-      `
+  static calcHealth(health: number, level: number) {
+    return health + (level - 1 || 1) * 10
   }
 
   constructor(type: AllyType) {
@@ -141,8 +130,12 @@ export class Ally extends THREE.Mesh {
 
     super(geometry, material)
 
+    this.title = capitalize(type) + ' Tower'
+    this.description = Ally.descriptionMap[type]
+    this.image = Ally.imageMap[type]
+
     this.allyTowerType = type
-    this.height = Ally.heightMap[this.allyTowerType]
+    this.height = Ally.heightMap[type]
 
     this.level = 0
     this.levelUp()
@@ -167,10 +160,55 @@ export class Ally extends THREE.Mesh {
       damage: this.damage,
       speed: this.speed,
       health: this.health,
-      skillCooldown: this.skillCooldown,
+      skillCooldown: this.cooldown,
     }
 
     scene.add(this)
+  }
+
+  updatePrice(priceMap: typeof Ally.priceMap = Ally.priceMap) {
+    this.upgradeCost = priceMap[this.allyTowerType][this.level]
+  }
+
+  levelUp() {
+    this.level += 1
+    this.health = Ally.calcHealth(this.health, this.level)
+    this.maxHealth = this.health
+    this.damage = Ally.calcDamage(this.level)
+    this.speed = Ally.calcSpeed(this.level)
+    this.cooldown = Ally.calcSkillCooldown(this.level)
+  }
+
+  previewUpgrade() {
+    const level = this.level + 1
+    const health = Ally.calcHealth(this.health, this.level + 1)
+    const damage = Ally.calcDamage(this.level + 1)
+    const speed = Ally.calcSpeed(this.level + 1)
+    const cooldown = Ally.calcSkillCooldown(this.level + 1)
+
+    return {
+      level,
+      health,
+      damage,
+      speed,
+      cooldown,
+    }
+  }
+
+  select() {
+    const tower = scene.getObjectByName('Tower') as Tower
+    // if (tower.isSelected) tower.unselect()
+    tower.unselectAllies()
+    tower.unselect()
+    ;(this.material as THREE.MeshStandardMaterial).color.set(Colors.SELECTED_TOWER.color)
+    this.isSelected = true
+    toggleTowerInfo(this)
+  }
+
+  unselect() {
+    ;(this.material as THREE.MeshStandardMaterial).color.set(Ally.materialMap[this.allyTowerType].color)
+    this.isSelected = false
+    toggleTowerInfo()
   }
 
   private getNearestEnemy(enemies: Enemy[]) {
@@ -259,7 +297,7 @@ export class Ally extends THREE.Mesh {
           setTimeout(() => {
             if (!enemy.userData.isDestroyed)
               enemy.takeDamage(parseFloat((fireDamage / (i + 1)).toFixed(2)), this.allyTowerType, true)
-          }, this.skillCooldown * (i + 1))
+          }, this.cooldown * (i + 1))
         }
       })
   }
@@ -317,7 +355,7 @@ export class Ally extends THREE.Mesh {
       this.stopCasting()
     }
 
-    this.casting = setInterval(() => skill(enemies), this.skillCooldown)
+    this.casting = setInterval(() => skill(enemies), this.cooldown)
   }
 
   public stopCasting() {

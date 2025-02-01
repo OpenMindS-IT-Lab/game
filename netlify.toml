@@ -3,8 +3,10 @@
 [build]
   command = 'vite build'
 [functions]
-  external_node_modules = ["express"]
   node_bundler = "esbuild"
+  external_node_modules = ["express"]
+[functions.node_version]
+  node_version = "18.x"
 [[redirects]]
   force = true
   from = "/api/*"

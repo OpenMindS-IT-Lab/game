@@ -1,5 +1,5 @@
 // import legacy from '@vitejs/plugin-legacy'
-// import TurboConsole from 'unplugin-turbo-console/vite'
+import TurboConsole from 'unplugin-turbo-console/vite'
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
@@ -11,15 +11,15 @@ export default defineConfig({
     qrcode({
       filter: url => url.startsWith('http://192.168'),
     }),
-    // TurboConsole({
-    //   specifiedEditor: 'code',
-    //   extendedPathFileNames: ['index'],
-    //   prefix: `\\r\\n[${new Date().toLocaleString()}]`,
-    //   suffix: '\\r\\n',
-    //   disablePassLogs: true,
-    //   disableHighlight: true,
-    // silent: true,
-    // }),
+    TurboConsole({
+      specifiedEditor: 'code',
+      extendedPathFileNames: ['index'],
+      prefix: `\\r\\n[${new Date().toLocaleString()}]`,
+      suffix: '\\r\\n',
+      // disablePassLogs: true,
+      // disableHighlight: true,
+      // silent: true,
+    }),
     nodePolyfills(),
   ],
   appType: 'spa',
@@ -73,9 +73,12 @@ export default defineConfig({
     host: true,
     port: 5173,
     strictPort: true,
+    open: false,
   },
   preview: {
     host: true,
-    open: true,
+    open: false,
+    port: 5173,
+    strictPort: true,
   },
 } satisfies UserConfig)
