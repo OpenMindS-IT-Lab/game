@@ -1,0 +1,5 @@
+export { default as color } from './Color.jpg'
+export { default as displacement } from './Displacement.jpg'
+export { default as metaliness } from './Metalness.jpg'
+export { default as normalGL } from './NormalGL.jpg'
+export { default as roughness } from './Roughness.jpg'

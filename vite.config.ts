@@ -16,7 +16,7 @@ export default defineConfig({
       extendedPathFileNames: ['index'],
       prefix: `\\r\\n[${new Date().toLocaleString()}]`,
       suffix: '\\r\\n',
-      // disablePassLogs: true,
+      disablePassLogs: true,
       // disableHighlight: true,
       // silent: true,
     }),
@@ -50,7 +50,7 @@ export default defineConfig({
     ],
     emptyOutDir: true,
     minify: true,
-    assetsDir: '.',
+    assetsDir: './assests/',
     rollupOptions: {
       external: ['node_modules'],
       input: {
@@ -60,9 +60,9 @@ export default defineConfig({
       output: {
         esModule: 'if-default-prop',
         entryFileNames: '[name]/index-[hash].js',
-        // manualChunks: {
-        //   three: ['three'],
-        // },
+        manualChunks: {
+          three: ['three'],
+        },
       },
     },
     copyPublicDir: true,

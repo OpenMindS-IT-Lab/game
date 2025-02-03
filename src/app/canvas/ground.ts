@@ -1,9 +1,5 @@
 import * as THREE from 'three'
-import textureAmbientOcclusion from '../assets/ground-texture/AmbientOcclusion.jpg'
-import textureColor from '../assets/ground-texture/Color.jpg'
-import textureDisplacement from '../assets/ground-texture/Displacement.jpg'
-import textureNormalGL from '../assets/ground-texture/NormalGL.jpg'
-import textureRoughness from '../assets/ground-texture/Roughness.jpg'
+import { ground as texture } from '../textures'
 import { scene } from './scene'
 
 const createGround = (renderer: THREE.WebGLRenderer) => {
@@ -14,11 +10,11 @@ const createGround = (renderer: THREE.WebGLRenderer) => {
 
   const textureLoader = new THREE.TextureLoader()
 
-  const colorTexture = textureLoader.load(textureColor)
-  const normalTexture = textureLoader.load(textureNormalGL)
-  const roughnessTexture = textureLoader.load(textureRoughness)
-  const aoTexture = textureLoader.load(textureAmbientOcclusion)
-  const displacementTexture = textureLoader.load(textureDisplacement)
+  const colorTexture = textureLoader.load(texture.color)
+  const normalTexture = textureLoader.load(texture.normalGL)
+  const roughnessTexture = textureLoader.load(texture.roughness)
+  const aoTexture = textureLoader.load(texture.ambientOcclusion)
+  const displacementTexture = textureLoader.load(texture.displacement)
 
   const maxAnisotropy = renderer.capabilities.getMaxAnisotropy()
   colorTexture.anisotropy = maxAnisotropy
@@ -57,6 +53,7 @@ const createGround = (renderer: THREE.WebGLRenderer) => {
     aoMap: aoTexture,
     displacementMap: displacementTexture,
     displacementScale: 0.15, // Adjust this value to control the intensity
+    //? normalScale:
   })
 
   const plane = new THREE.Mesh(planeGeometry, planeMaterial)

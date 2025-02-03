@@ -1,15 +1,16 @@
-import { capitalize } from 'lodash'
+import { capitalize, values } from 'lodash'
 import * as THREE from 'three'
 import airTowerImg from '../assets/air-tower.png'
 import earthTowerImg from '../assets/earth-tower.png'
 import fireTowerImg from '../assets/fire-tower.png'
 import waterTowerImg from '../assets/water-tower.png'
 import Game from '../game'
+import * as textures from '../textures'
 import { toggleTowerInfo } from '../ui/tower-info'
 import { showDamageText, Timeout } from '../utils'
 import { moveAndFlip, moveLinear } from './animations'
-import { Colors } from './constants'
 import EnemySpawner, { Enemy } from './enemies'
+import renderer from './renderer'
 import { scene } from './scene'
 import { tiles } from './tiles'
 import Tower from './tower'
@@ -45,6 +46,99 @@ export class Ally extends THREE.Mesh {
   height: number
   casting: Timeout
 
+  private static loadTexture<T extends AllyType>(
+    type: T,
+    settingsCB?: (texture: textures.Texture<T>) => textures.Texture<T>
+  ): textures.Texture<T> | {} {
+    if (type in textures) {
+      const loader = new THREE.TextureLoader()
+      const textureData = textures[type] as textures.TextureData<T extends AllyType.FIRE ? T : undefined>
+
+      const colorTexture = loader.load(textureData.color)
+      const normalTexture = loader.load(textureData.normalGL)
+      const roughnessTexture = loader.load(textureData.roughness)
+      const displacementTexture = loader.load(textureData.displacement)
+      const aoTexture =
+        type !== AllyType.FIRE ? loader.load((textureData as textures.TextureData).ambientOcclusion) : undefined
+      const metalinessTexture =
+        type === AllyType.FIRE
+          ? loader.load((textureData as textures.TextureData<AllyType.FIRE>).metaliness)
+          : undefined
+
+      try {
+        const maxAnisotropy = renderer.capabilities.getMaxAnisotropy()
+        colorTexture.anisotropy = maxAnisotropy
+      } catch (error) {
+        console.warn(error)
+      }
+      colorTexture.premultiplyAlpha = false
+
+      colorTexture.wrapS = THREE.RepeatWrapping
+      colorTexture.wrapT = THREE.RepeatWrapping
+      colorTexture.repeat.set(7.5, 4.5)
+
+      normalTexture.wrapS = THREE.RepeatWrapping
+      normalTexture.wrapT = THREE.RepeatWrapping
+      normalTexture.repeat.set(7.5, 4.5)
+      normalTexture.format = THREE.RGBAFormat
+      normalTexture.flipY = false
+      normalTexture.premultiplyAlpha = false
+
+      roughnessTexture.wrapS = THREE.RepeatWrapping
+      roughnessTexture.wrapT = THREE.RepeatWrapping
+      roughnessTexture.repeat.set(7.5, 4.5)
+
+      if (aoTexture) {
+        aoTexture.wrapS = THREE.RepeatWrapping
+        aoTexture.wrapT = THREE.RepeatWrapping
+        aoTexture.repeat.set(7.5, 4.5)
+      }
+
+      if (metalinessTexture) {
+        metalinessTexture.wrapS = THREE.RepeatWrapping
+        metalinessTexture.wrapT = THREE.RepeatWrapping
+        metalinessTexture.repeat.set(7.5, 4.5)
+      }
+
+      displacementTexture.wrapS = THREE.RepeatWrapping
+      displacementTexture.wrapT = THREE.RepeatWrapping
+      displacementTexture.repeat.set(7.5, 4.5)
+
+      const texture = {
+        map: colorTexture,
+        normalMap: normalTexture,
+        roughnessMap: roughnessTexture,
+        displacementMap: displacementTexture,
+      }
+
+      if (aoTexture) Object.assign(texture, { aoMap: aoTexture })
+      if (metalinessTexture) Object.assign(texture, { metalinessMap: metalinessTexture })
+
+      return typeof settingsCB === 'function' ? settingsCB(texture as textures.Texture<T>) : texture
+    }
+
+    return {}
+  }
+
+  private static textureMap = {
+    [AllyType.WATER]: Ally.loadTexture<AllyType.WATER>(AllyType.WATER, texture => {
+      values(texture).forEach(({ repeat }) => repeat.set(2, 0.5))
+      return texture
+    }),
+    [AllyType.FIRE]: Ally.loadTexture<AllyType.FIRE>(AllyType.FIRE, texture => {
+      values(texture).forEach(({ repeat }) => repeat.set(2.5, 1.5))
+      return texture
+    }),
+    [AllyType.EARTH]: Ally.loadTexture<AllyType.EARTH>(AllyType.EARTH, texture => {
+      values(texture).forEach(({ repeat }) => repeat.set(0.75, 0.75))
+      return texture
+    }),
+    [AllyType.AIR]: Ally.loadTexture<AllyType.AIR>(AllyType.AIR, texture => {
+      values(texture).forEach(({ repeat }) => repeat.set(5, 1))
+      return texture
+    }),
+  }
+
   private static geometryMap = {
     [AllyType.WATER]: () => new THREE.SphereGeometry(0.75, 16, 16),
     [AllyType.FIRE]: () => new THREE.OctahedronGeometry(0.9).rotateY(Math.PI / 4),
@@ -54,40 +148,48 @@ export class Ally extends THREE.Mesh {
 
   private static materialMap = {
     [AllyType.WATER]: {
-      color: 0x4277ff,
-      transparent: true,
-      opacity: 0.8,
-      roughness: 0.5,
-      metalness: 0,
-      emissive: 0x4277ff,
-      emissiveIntensity: 0.25,
+      // color: 0x4277ff,
+      // transparent: true,
+      // opacity: 0.8,
+      // roughness: 0.5,
+      // metalness: 0,
+      // emissive: 0x4277ff,
+      // emissiveIntensity: 0.25,
+      displacementScale: 0.01,
+      normalScale: new THREE.Vector2(10, 10),
     },
     [AllyType.FIRE]: {
-      color: 0xff4444,
-      transparent: true,
-      opacity: 1,
-      roughness: 0.1,
-      metalness: 0,
-      emissive: 0xff4444,
-      emissiveIntensity: 0.1,
+      // color: 0xff4444,
+      // transparent: true,
+      // opacity: 1,
+      // roughness: 0.1,
+      // metalness: 0,
+      // emissive: 0xff4444,
+      // emissiveIntensity: 0.1,
+      displacementScale: 0.01,
+      normalScale: new THREE.Vector2(10, 10),
     },
     [AllyType.EARTH]: {
-      color: 0x423333,
-      transparent: true,
-      opacity: 1,
-      roughness: 1,
-      metalness: 0,
-      emissive: 0x424242,
-      emissiveIntensity: 0.25,
+      // color: 0x423333,
+      // transparent: true,
+      // opacity: 1,
+      // roughness: 1,
+      // metalness: 0,
+      // emissive: 0x424242,
+      // emissiveIntensity: 0.25,
+      displacementScale: 0.01,
+      normalScale: new THREE.Vector2(10, 10),
     },
     [AllyType.AIR]: {
-      color: 0x42ffff,
-      transparent: true,
-      opacity: 0.7,
-      roughness: 0.2,
-      metalness: 0,
-      emissive: 0x42ffff,
-      emissiveIntensity: 0.25,
+      // color: 0x42ffff,
+      // transparent: true,
+      // opacity: 0.7,
+      // roughness: 0.2,
+      // metalness: 0,
+      // emissive: 0x42ffff,
+      // emissiveIntensity: 0.25,
+      displacementScale: 0,
+      normalScale: new THREE.Vector2(10, 10),
     },
   }
 
@@ -133,7 +235,7 @@ export class Ally extends THREE.Mesh {
         const positions = emberGeometry.attributes.position.array
 
         for (let i = 0; i < emberCount; i++) {
-          positions[i * 3 + 1] += 0.02 // Move upward
+          positions[i * 3 + 1] += ally.damage / 60 // Move upward
 
           // Reset ember position
           if (positions[i * 3 + 1] > 2) {
@@ -197,7 +299,7 @@ export class Ally extends THREE.Mesh {
         const positions = dropletGeometry.attributes.position.array
 
         for (let i = 0; i < dropletCount; i++) {
-          positions[i * 3 + 1] -= 0.03 // Move downward
+          positions[i * 3 + 1] -= ally.damage / 20 // Move downward
 
           // Reset droplet position
           if (positions[i * 3 + 1] < 0) {
@@ -253,7 +355,7 @@ export class Ally extends THREE.Mesh {
     scene.add(dust)
 
     const jiggle = (position: number) => {
-      const addition = (Math.random() - 0.5) * 0.025
+      const addition = ((Math.random() - 0.5) * ally.speed) / 20
       const sum = position + addition
       return Math.abs(sum) >= 1 ? 0 : sum
     }
@@ -320,12 +422,12 @@ export class Ally extends THREE.Mesh {
     swirlies.visible = false
     scene.add(swirlies)
 
-    const animateDroplets = () => {
+    const animateSwirlies = () => {
       const animate = () => {
         if (!swirlies.visible) return
 
         const positions = airGeometry.attributes.position.array
-        const speed = 0.25 // Adjust speed as needed
+        const speed = ally.speed / 20 // Adjust speed as needed
 
         for (let i = 0; i < airCount; i++) {
           const angle = Math.atan2(positions[i * 3 + 2], positions[i * 3])
@@ -362,7 +464,7 @@ export class Ally extends THREE.Mesh {
       }
     }
 
-    return animateDroplets()
+    return animateSwirlies()
   }
 
   private static particlesMap = {
@@ -420,8 +522,17 @@ export class Ally extends THREE.Mesh {
     return targetTile.position.clone().setY(0)
   }
 
-  static calcDamage(level: number) {
-    return level / 2 + 0.5 * level
+  static calcDamage(level: number, type?: AllyType) {
+    const basicDamage = level / 2 + 0.5 * level
+    switch (type) {
+      case AllyType.EARTH:
+        return basicDamage * 3
+      case AllyType.WATER:
+      case AllyType.AIR:
+        return basicDamage / 3
+      default:
+        return basicDamage
+    }
   }
 
   static calcSpeed(level: number) {
@@ -437,7 +548,16 @@ export class Ally extends THREE.Mesh {
 
   constructor(type: AllyType) {
     const geometry = Ally.geometryMap[type]()
-    const material = new THREE.MeshStandardMaterial(Ally.materialMap[type])
+    const material = new THREE.MeshStandardMaterial({
+      ...Ally.materialMap[type],
+      ...Ally.textureMap[type],
+    })
+
+    try {
+      if (material.map) material.map.anisotropy = renderer.capabilities.getMaxAnisotropy()
+    } catch (error) {
+      console.warn(error)
+    }
 
     super(geometry, material)
 
@@ -483,7 +603,7 @@ export class Ally extends THREE.Mesh {
     this.level += 1
     this.health = Ally.calcHealth(this.health, this.level)
     this.maxHealth = this.health
-    this.damage = Ally.calcDamage(this.level)
+    this.damage = Ally.calcDamage(this.level, this.allyTowerType)
     this.speed = Ally.calcSpeed(this.level)
     this.cooldown = Ally.calcSkillCooldown(this.level)
   }
@@ -491,7 +611,7 @@ export class Ally extends THREE.Mesh {
   previewUpgrade() {
     const level = this.level + 1
     const health = Ally.calcHealth(this.health, this.level + 1)
-    const damage = Ally.calcDamage(this.level + 1)
+    const damage = Ally.calcDamage(this.level + 1, this.allyTowerType)
     const speed = Ally.calcSpeed(this.level + 1)
     const cooldown = Ally.calcSkillCooldown(this.level + 1)
 
@@ -509,16 +629,18 @@ export class Ally extends THREE.Mesh {
     // if (tower.isSelected) tower.unselect()
     tower.unselectAllies()
     tower.unselect()
-    ;(this.material as THREE.MeshStandardMaterial).color.set(Colors.SELECTED_TOWER.color)
-    ;(this.material as THREE.MeshStandardMaterial).emissiveIntensity = 0
+    if (this.particles) this.particles.resume()
+    // ;(this.material as THREE.MeshStandardMaterial).color.set(Colors.SELECTED_TOWER.color)
+    // ;(this.material as THREE.MeshStandardMaterial).emissiveIntensity = 0
     this.isSelected = true
     toggleTowerInfo(this)
   }
 
   unselect() {
-    ;(this.material as THREE.MeshStandardMaterial).color.set(Ally.materialMap[this.allyTowerType].color)
-    ;(this.material as THREE.MeshStandardMaterial).emissiveIntensity =
-      Ally.materialMap[this.allyTowerType].emissiveIntensity
+    // ;(this.material as THREE.MeshStandardMaterial).color.set(Ally.materialMap[this.allyTowerType].color)
+    // ;(this.material as THREE.MeshStandardMaterial).emissiveIntensity =
+    // Ally.materialMap[this.allyTowerType].emissiveIntensity
+    if (this.particles) this.particles.pause()
     this.isSelected = false
     toggleTowerInfo()
   }
@@ -546,7 +668,6 @@ export class Ally extends THREE.Mesh {
     )
 
     if (!nearestEnemy) return
-    // const waterDamage = this.damage
 
     nearestEnemy.userData.isAnimating.switchState(true)
     nearestEnemy.stop()
@@ -556,11 +677,10 @@ export class Ally extends THREE.Mesh {
         clearTimeout(freezed)
         return
       }
-      // nearestEnemy.takeDamage(waterDamage, this.allyTowerType)
       nearestEnemy.userData.isAnimating.switchState(false)
       nearestEnemy.spawner.purgeDestroyedEnemies()
       nearestEnemy.moving = nearestEnemy.move()
-    }, (this.damage / 3) * 1000)
+    }, this.damage * 1000)
   }
 
   public takeDamage(damage: number, spawner: EnemySpawner) {
@@ -618,7 +738,7 @@ export class Ally extends THREE.Mesh {
     const nearestEnemy = this.getNearestEnemy(enemies)
 
     if (!nearestEnemy) return
-    const earthDamage = this.damage * 3
+    const earthDamage = this.damage
 
     nearestEnemy.stop()
     moveAndFlip(nearestEnemy, nearestEnemy.position.clone(), nearestEnemy.userData.isAnimating, undefined, () => {
@@ -669,7 +789,7 @@ export class Ally extends THREE.Mesh {
 
   public stopCasting() {
     clearInterval(this.casting)
-    this.particles?.pause()
+    if (this.particles) this.particles.pause()
     this.casting = 0
   }
 }
