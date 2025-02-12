@@ -1,7 +1,7 @@
 import { capitalize } from 'lodash'
 import { Ally, AllyType, scene } from '../canvas'
 import Tower from '../canvas/tower'
-import { updateBottomButtons } from './bottom-menu'
+import { shop, toggleShop } from './bottom-menu'
 
 const towerInfoContainer = document.getElementById('tower-info') as HTMLElement
 const towerInfo = towerInfoContainer.children.namedItem('content') as HTMLElement
@@ -16,6 +16,7 @@ const healthBar = towerHealthBar.querySelector('progress') as HTMLProgressElemen
 const healthValue = towerHealthBar.querySelector('span') as HTMLSpanElement
 //
 const towerDescription = towerInfoContent.children.namedItem('description') as HTMLParagraphElement
+const showMoreButton = towerInfo.querySelector('#show-more') as HTMLSpanElement
 //
 const towerStats = towerInfoContent.children.namedItem('stats') as HTMLDivElement
 const statsTable = towerStats.children.namedItem('stats-table') as HTMLTableElement
@@ -33,8 +34,14 @@ const nextTowerCooldown = statsTable.querySelector('[name="next-cooldown"]') as 
 
 const towerUpgradeCost = towerStats.children.namedItem('upgrade-cost') as HTMLSpanElement
 //
-const upgradeTowerButton = towerInfo.children.namedItem('upgrade-button') as HTMLButtonElement
+export const upgradeTowerButton = towerInfo.children.namedItem('upgrade-button') as HTMLButtonElement
 const closeButton = towerInfo.children.namedItem('close-button') as HTMLButtonElement
+const backButton = towerInfo.children.namedItem('back-to-shop-button') as HTMLButtonElement
+
+showMoreButton.onclick = () => {
+  towerDescription.classList.toggle('extended')
+  showMoreButton.innerText = towerDescription.classList.contains('extended') ? 'Show less...' : 'Show more...'
+}
 
 const updateTable = (tower: Tower | Ally) => {
   const game = tower.__game!
@@ -42,6 +49,7 @@ const updateTable = (tower: Tower | Ally) => {
 
   towerTitle.innerText = title
   towerDescription.innerText = description
+  towerDescription.title = description
   towerLevel.innerText = level.toString()
   towerHealth.innerText = health.toString()
   towerAttackSpeed.innerText = speed + 's'
@@ -70,7 +78,7 @@ const updateTable = (tower: Tower | Ally) => {
   ;(statsTable.querySelector('th:nth-of-type(2)') as HTMLTableCellElement).innerText = 'CURRENT'
 
   if (!game.isUpgrading) upgradeTowerButton.disabled = true
-  else upgradeTowerButton.disabled = false
+  else upgradeTowerButton.disabled = game.coins < tower.upgradeCost
   upgradeTowerButton.innerText = 'Upgrade'
   upgradeTowerButton.onclick = () => {
     game.levelUp(tower)
@@ -80,9 +88,18 @@ const updateTable = (tower: Tower | Ally) => {
   closeButton.onclick = () => {
     tower.unselect()
     hideTowerInfo()
+    if (!shop.classList.contains('hidden')) toggleShop()
   }
 
-  updateBottomButtons(game)
+  backButton.onclick = () => {
+    tower.unselect()
+    hideTowerInfo()
+    if (shop.classList.contains('hidden')) toggleShop()
+  }
+
+  if (!shop.classList.contains('hidden')) toggleShop()
+  if (!tower.isSelected) tower.isSelected = true
+  if (tower instanceof Ally && 'particles' in tower && tower.particles) tower.particles.resume()
 }
 
 export function hideTowerInfo() {
@@ -90,6 +107,10 @@ export function hideTowerInfo() {
 
   towerTitle.innerText = ''
   towerDescription.innerText = ''
+  if (towerDescription.classList.contains('extended')) {
+    towerDescription.classList.remove('extended')
+    showMoreButton.innerText = 'Show more...'
+  }
   towerLevel.innerText = ''
   towerHealth.innerText = ''
   towerAttackSpeed.innerText = ''
@@ -113,14 +134,18 @@ export function hideTowerInfo() {
   ;(statsTable.querySelector('th:nth-of-type(2)') as HTMLTableCellElement).innerText = 'CURRENT'
 
   closeButton.onclick = () => void 0
+  backButton.onclick = () => void 0
 }
 
 export function toggleTowerInfo(tower?: Tower | Ally | AllyType) {
   if (!tower && towerInfoContainer.classList.contains('visible')) hideTowerInfo()
   if (tower instanceof Tower || tower instanceof Ally) {
-    if (towerInfoContainer.classList.contains('hidden')) towerInfoContainer.classList.replace('hidden', 'visible')
+    if (towerInfoContainer.classList.contains('hidden')) {
+      towerInfoContainer.classList.replace('hidden', 'visible')
+    }
     updateTable(tower)
   } else if (!!tower) {
+    if (!shop.classList.contains('hidden')) toggleShop()
     const mainTower = scene.getObjectByName('Tower') as Tower
     const game = mainTower.__game!
 
@@ -169,6 +194,12 @@ export function toggleTowerInfo(tower?: Tower | Ally | AllyType) {
 
     closeButton.onclick = () => {
       hideTowerInfo()
+      if (!shop.classList.contains('hidden')) toggleShop()
+    }
+
+    backButton.onclick = () => {
+      hideTowerInfo()
+      if (shop.classList.contains('hidden')) toggleShop()
     }
   }
 }

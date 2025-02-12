@@ -7,7 +7,7 @@ import waterTowerImg from '../assets/water-tower.png'
 import Game from '../game'
 import * as textures from '../textures'
 import { toggleTowerInfo } from '../ui/tower-info'
-import { showDamageText, Timeout } from '../utils'
+import { float, showDamageText, Timeout } from '../utils'
 import { moveAndFlip, moveLinear } from './animations'
 import EnemySpawner, { Enemy } from './enemies'
 import renderer from './renderer'
@@ -523,23 +523,23 @@ export class Ally extends THREE.Mesh {
   }
 
   static calcDamage(level: number, type?: AllyType) {
-    const basicDamage = level / 2 + 0.5 * level
+    const basicDamage = float(level / 2 + 0.5 * level)
     switch (type) {
       case AllyType.EARTH:
-        return basicDamage * 3
+        return float(basicDamage * 3)
       case AllyType.WATER:
       case AllyType.AIR:
-        return basicDamage / 3
+        return float(basicDamage / 3)
       default:
         return basicDamage
     }
   }
 
   static calcSpeed(level: number) {
-    return parseFloat((level / 4).toFixed(4))
+    return float(level / 4)
   }
   static calcSkillCooldown(level: number) {
-    return parseFloat((2000 / level).toFixed(2))
+    return float(2000 / level)
   }
 
   static calcHealth(health: number, level: number) {
@@ -640,7 +640,7 @@ export class Ally extends THREE.Mesh {
     // ;(this.material as THREE.MeshStandardMaterial).color.set(Ally.materialMap[this.allyTowerType].color)
     // ;(this.material as THREE.MeshStandardMaterial).emissiveIntensity =
     // Ally.materialMap[this.allyTowerType].emissiveIntensity
-    if (this.particles) this.particles.pause()
+    if (this.particles && this.__game?.isUpgrading) this.particles.pause()
     this.isSelected = false
     toggleTowerInfo()
   }
@@ -727,8 +727,7 @@ export class Ally extends THREE.Mesh {
 
         for (let i = 0; i <= this.level; i++) {
           setTimeout(() => {
-            if (!enemy.userData.isDestroyed)
-              enemy.takeDamage(parseFloat((fireDamage / (i + 1)).toFixed(2)), this.allyTowerType, true)
+            if (!enemy.userData.isDestroyed) enemy.takeDamage(float(fireDamage / (i + 1)), this.allyTowerType, true)
           }, this.cooldown * (i + 1))
         }
       })
@@ -760,7 +759,7 @@ export class Ally extends THREE.Mesh {
       .forEach(enemy => {
         enemy.stop()
         enemy.userData.isAnimating.switchState(true)
-        const enemyPostion = enemy.position.clone().setZ(enemy.position.z - this.damage / 3)
+        const enemyPostion = enemy.position.clone().setZ(enemy.position.z - this.damage)
         moveLinear(
           enemy,
           enemyPostion,
@@ -768,7 +767,7 @@ export class Ally extends THREE.Mesh {
           () => {
             enemy.move()
           },
-          Math.max(1, 3 / this.damage)
+          Math.max(1, 1 / this.damage)
         )
       })
   }

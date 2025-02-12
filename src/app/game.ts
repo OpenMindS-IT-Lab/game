@@ -1,11 +1,13 @@
 import { entries, snakeCase, values } from 'lodash'
 import { WebAppInitData } from 'telegram-webapps'
 import api from './api'
+import { scene } from './canvas'
 import { Ally, AllyType } from './canvas/allies'
 import EnemySpawner from './canvas/enemies'
 import Tower from './canvas/tower'
 import { coinCounter, highscoreCounter, scoreCounter } from './ui'
-import { bottomButtons, bottomInfo, levelDisplay, timer, updateBottomButtons } from './ui/bottom-menu'
+import { bottomButtons, bottomInfo, levelDisplay, timer } from './ui/bottom-menu'
+import { upgradeTowerButton } from './ui/tower-info'
 import { handleMinorError } from './utils'
 // import renderInfoTable from './ui/info-table'
 
@@ -119,7 +121,7 @@ export default class Game {
     this.isUpgrading = true
     this.level = 0
 
-    this.coins += 1000
+    // this.coins += 1000000
 
     this.spawner.__game = this
     this.tower.__game = this
@@ -188,23 +190,16 @@ export default class Game {
     if (!this.isUpgrading) return
 
     if (this.coins - allyTower.upgradeCost >= 0) {
-      // if (allyTower instanceof Tower) {
-      //   allyTower.stopShooting()
-      // } else {
-      //   allyTower.stopCasting()
-      // }
-
       this.coins -= allyTower.upgradeCost
       this.totalUpgrades += 1
 
       allyTower.levelUp()
 
-      if (allyTower instanceof Tower) {
-        // allyTower.startShooting(this.spawner.enemies)
-      } else {
-        this.tower.updateAlliesPriceMap(this.score, this.totalUpgrades)
-        // allyTower.startCasting(this.spawner.enemies)
-      }
+      if (!(allyTower instanceof Tower)) this.tower.updateAlliesPriceMap(this.score, this.totalUpgrades)
+
+      upgradeTowerButton.disabled = this.coins < allyTower.upgradeCost
+
+      // updateShop(this)
     } else throw new Error('Not enough coins')
   }
 
@@ -220,6 +215,9 @@ export default class Game {
       const newAlly = this.tower.spawnAlly(allyType)
       this.tower.updateAlliesPriceMap(this.score, this.totalUpgrades)
 
+      upgradeTowerButton.disabled = this.coins < newAlly.upgradeCost
+
+      // updateShop(this)
       return newAlly
     } else throw new Error('Not enough coins')
   }
@@ -284,7 +282,7 @@ export default class Game {
           }
 
           this.onLevelComplete()
-          updateBottomButtons(this)
+          // updateShop(this)
           clearInterval(finish)
         }
       }, 1000)
@@ -326,6 +324,29 @@ export default class Game {
     this.isPaused = false
     this.isUpgrading = false
     this.isOver = true
+
+    Telegram.WebApp.showAlert('GAME OVER!', () => {
+      this.reset()
+    })
     // console.log(`Total coins: ${this.coins}`)
+  }
+
+  reset() {
+    this.coins = 0
+    this.score = 0
+    this.totalUpgrades = 0
+    this.level = 0
+    this.spawner.enemies.forEach(enemy => enemy.destroy())
+    this.tower.level = 1
+
+    values(this.tower.allies).forEach(ally => {
+      if (!!ally) scene.remove(ally)
+    })
+    this.tower.allies.water = undefined
+    this.tower.allies.air = undefined
+    this.tower.allies.fire = undefined
+    this.tower.allies.earth = undefined
+
+    scene.add(this.tower)
   }
 }

@@ -14,7 +14,7 @@ import createTiles from './canvas/tiles'
 import Tower from './canvas/tower'
 import Game from './game'
 import './ui'
-import { startLevelButton, updateBottomButtons } from './ui/bottom-menu'
+import { shop, startLevelButton, toggleShop } from './ui/bottom-menu'
 import { handleDoubleClick, handleMouseMove, handlePointerEvent, handleResize } from './ui/event-listeners'
 // import { enableCameraDrag, enableMouseWheelTilt } from './utils'
 
@@ -25,7 +25,7 @@ import { handleDoubleClick, handleMouseMove, handlePointerEvent, handleResize } 
 const { gridHelper, plane } = createGround(renderer)
 
 // Tiles
-const tiles = createTiles(2)
+createTiles(2)
 
 // Tower
 const tower = new Tower(1.25)
@@ -59,7 +59,7 @@ const game = new Game(spawner, tower)
 game.validateData()
 game.onLevelStart = resumeLightFlickering
 game.onLevelComplete = pauseLightFlickering
-updateBottomButtons(game)
+// updateShop(game)
 // game.start()
 
 // Call updateGameInfoTable periodically to refresh the data
@@ -76,9 +76,8 @@ window.addEventListener('resize', handleResize(renderer))
 
 startLevelButton.addEventListener('click', () => {
   game.start()
-  const imageURL = renderer.domElement.toDataURL('image/png')
-  console.log(imageURL)
   resumeLightFlickering()
+  if (!shop.classList.contains('hidden')) toggleShop()
 })
 
 // pauseButton.addEventListener('click', () => {
@@ -87,5 +86,12 @@ startLevelButton.addEventListener('click', () => {
 // resumeButton.addEventListener('click', () => {
 //   game.resume()
 // })
+
+// const airTower = createAirTower()
+// const mainTower = createMainTower()
+// const waterTower = createWaterTower()
+// const fireTower = createFireTower()
+// const earthTower = createEarthTower()
+// scene.add(earthTower)
 
 render()

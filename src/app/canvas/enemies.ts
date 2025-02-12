@@ -1,13 +1,13 @@
 import { compact, entries, minBy, pull, remove, without } from 'lodash'
 import * as THREE from 'three'
-import { checkCollisionsAll, showDamageText, Timeout } from '../utils'
+import Game from '../game'
+import { checkCollisionsAll, float, showDamageText, Timeout } from '../utils'
 import { Ally, AllyType } from './allies'
 import { AnimationHandler, moveLinear } from './animations'
 import { Colors } from './constants'
 import { scene } from './scene'
 import { tiles } from './tiles'
 import Tower, { Projectile } from './tower'
-import Game from '../game';
 
 // Функція для створення випадкового кольору
 function getRandomColor() {
@@ -100,7 +100,7 @@ export class Enemy extends THREE.Mesh {
     this.level = spawner.level
     this.health = health * this.level + (this.level > 4 ? this.level % 4 : 0)
     this.damage = Math.ceil((this.level / 2) * damage + 0.5)
-    this.speed = parseFloat((speed * (0.875 + this.level / 8)).toFixed(5))
+    this.speed = float(speed * (0.875 + this.level / 8))
     this.height = height / 2 - 0.05
     this.moving = 0
     this.watchingCollisions = 0
@@ -153,8 +153,6 @@ export class Enemy extends THREE.Mesh {
   public move() {
     const spawnPosition = this.spawnPostion
     const tower = scene.children.find(child => child.name === 'Tower') as Tower
-
-    if (!tower) throw new Error('Tower not found!')
 
     const towerPosition = tower.position.clone()
     const alliesPositions = compact(entries(tower.allies).map(([, ally]) => (ally ? ally.position.clone() : null)))
@@ -228,11 +226,7 @@ export class Enemy extends THREE.Mesh {
             this.stop()
 
             if (this.position.z >= -12 && collision.position.z >= -12)
-              collision.takeDamage(
-                parseFloat((0.1 * this.damage).toFixed(2)),
-                AllyType.WATER,
-                this.spawner.enemies.length > 25
-              )
+              collision.takeDamage(float(0.1 * this.damage), AllyType.WATER, this.spawner.enemies.length > 25)
 
             const towerPosition = (scene.getObjectByName('Tower') as Tower).position.clone()
             const distanceToTower = this.position.clone().distanceTo(towerPosition)

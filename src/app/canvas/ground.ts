@@ -17,31 +17,33 @@ const createGround = (renderer: THREE.WebGLRenderer) => {
   const displacementTexture = textureLoader.load(texture.displacement)
 
   const maxAnisotropy = renderer.capabilities.getMaxAnisotropy()
+  const repeat = new THREE.Vector2(30, 18)
+
   colorTexture.anisotropy = maxAnisotropy
   colorTexture.premultiplyAlpha = false
 
   colorTexture.wrapS = THREE.RepeatWrapping
   colorTexture.wrapT = THREE.RepeatWrapping
-  colorTexture.repeat.set(7.5, 4.5)
+  colorTexture.repeat.set(repeat.x, repeat.y)
 
   normalTexture.wrapS = THREE.RepeatWrapping
   normalTexture.wrapT = THREE.RepeatWrapping
-  normalTexture.repeat.set(7.5, 4.5)
+  normalTexture.repeat.set(repeat.x, repeat.y)
   normalTexture.format = THREE.RGBAFormat
   normalTexture.flipY = false
   normalTexture.premultiplyAlpha = false
 
   roughnessTexture.wrapS = THREE.RepeatWrapping
   roughnessTexture.wrapT = THREE.RepeatWrapping
-  roughnessTexture.repeat.set(7.5, 4.5)
+  roughnessTexture.repeat.set(repeat.x, repeat.y)
 
   aoTexture.wrapS = THREE.RepeatWrapping
   aoTexture.wrapT = THREE.RepeatWrapping
-  aoTexture.repeat.set(7.5, 4.5)
+  aoTexture.repeat.set(repeat.x, repeat.y)
 
   displacementTexture.wrapS = THREE.RepeatWrapping
   displacementTexture.wrapT = THREE.RepeatWrapping
-  displacementTexture.repeat.set(7.5, 4.5)
+  displacementTexture.repeat.set(repeat.x, repeat.y)
 
   const planeGeometry = new THREE.PlaneGeometry(120, 80, 240, 160)
   planeGeometry.setAttribute('uv2', new THREE.BufferAttribute(planeGeometry.attributes.uv.array, 2))
@@ -52,8 +54,8 @@ const createGround = (renderer: THREE.WebGLRenderer) => {
     roughnessMap: roughnessTexture,
     aoMap: aoTexture,
     displacementMap: displacementTexture,
-    displacementScale: 0.15, // Adjust this value to control the intensity
-    //? normalScale:
+    displacementScale: 0.2, // Adjust this value to control the intensity
+    normalScale: repeat.divideScalar(1.5),
   })
 
   const plane = new THREE.Mesh(planeGeometry, planeMaterial)

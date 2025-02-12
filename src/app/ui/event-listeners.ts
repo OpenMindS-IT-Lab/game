@@ -4,6 +4,7 @@ import { Ally } from '../canvas'
 import camera from '../canvas/camera'
 import Tower from '../canvas/tower'
 import { captureImage, handleMinorError } from '../utils'
+import { shop, toggleShop } from './bottom-menu'
 import { hideTowerInfo } from './tower-info'
 
 // Event Listeners
@@ -93,6 +94,7 @@ export const handlePointerEvent =
         tower.unselectAllies()
         tower.unselect()
         hideTowerInfo()
+        if (!shop.classList.contains('hidden')) toggleShop()
       }
     } catch (error) {
       handleMinorError(error)

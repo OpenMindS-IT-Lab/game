@@ -258,4 +258,8 @@ export function captureImage(mesh: Tower | Ally, fileName: string, gridHelper: T
   resetCamera()
 }
 
+export function float(n: number): number {
+  return parseFloat(n.toFixed(2))
+}
+
 export type Timeout = NodeJS.Timeout | 0

@@ -93,7 +93,7 @@ export function moveAndFlip(
 
 export function flickerLight(pointLight: THREE.PointLight) {
   let stop = true
-  let lightIntensity = 20
+  let lightIntensity = 5
 
   pointLight.intensity = lightIntensity
 
@@ -102,7 +102,7 @@ export function flickerLight(pointLight: THREE.PointLight) {
 
     lightIntensity = (Math.sin(Date.now() * 0.0025) + 1) / 2 // Значення між 0 і 1
 
-    pointLight.intensity = lightIntensity * 20 // Масштабуємо до бажаного рівня
+    pointLight.intensity = lightIntensity * 5 // Масштабуємо до бажаного рівня
 
     requestAnimationFrame(animate)
   }

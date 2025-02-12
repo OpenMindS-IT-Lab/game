@@ -17,20 +17,47 @@
   <div id="ui-container">
     <!-- Нижні кнопки (основний ігровий інтерфейс користувача для взаємодії зі сценою) -->
     <nav id="bottom-buttons" class="active">
-      <button disabled="false" id="purchase-water-tower" type="button" class="ui-button">water</button>
-      <button disabled id="purchase-air-tower" type="button" class="ui-button">air</button>
-      <button disabled id="purchase-earth-tower" type="button" class="ui-button">earth</button>
-      <button disabled id="purchase-fire-tower" type="button" class="ui-button">fire</button>
-
+      <button id="shop-button" type="button" class="ui-button">shop</button>
       <button id="start-level-button" type="button" class="ui-button">start</button>
     </nav>
+
+    <section id="shop" class="hidden">
+      <div class="content">
+        <h1>Shop</h1>
+        <figure class="air">
+          <button disabled id="purchase-main-tower" type="button" class="ui-button">OPEN</button>
+          <figcaption>Main Tower</figcaption>
+          <img id="tower-thumb" src="./src/app/assets/main-tower.PNG" alt="Main Tower">
+        </figure>
+        <figure class="air">
+          <button disabled id="purchase-air-tower" type="button" class="ui-button">OPEN</button>
+          <figcaption>Air Tower</figcaption>
+          <img id="tower-thumb" src="./src/app/assets/air-tower.PNG" alt="Air Tower">
+        </figure>
+        <figure class="water">
+          <button disabled="false" id="purchase-water-tower" type="button" class="ui-button">OPEN</button>
+          <figcaption>Water Tower</figcaption>
+          <img id="tower-thumb" src="./src/app/assets/water-tower.PNG" alt="Water Tower">
+        </figure>
+        <figure class="earth">
+          <button disabled id="purchase-earth-tower" type="button" class="ui-button">OPEN</button>
+          <figcaption>Earth Tower</figcaption>
+          <img id="tower-thumb" src="./src/app/assets/earth-tower.PNG" alt="Earth Tower">
+        </figure>
+        <figure class="fire">
+          <button disabled id="purchase-fire-tower" type="button" class="ui-button">OPEN</button>
+          <figcaption>Fire Tower</figcaption>
+          <img id="tower-thumb" src="./src/app/assets/fire-tower.PNG" alt="Fire Tower">
+        </figure>
+        <button id="close-shop-button" type="button"><span>Close</span> X</button>
+      </div>
+    </section>
 
     <section id="tower-info" class="hidden">
       <div class="content" name="content">
         <h1 id="tower-title" name="title">Tower Title</h1>
         <div id="tower-info-content" name="content">
           <div id="tower-info-image" name="image">
-            <!-- <img src="#" alt="Tower"> -->
           </div>
           <div class="health-bar" name="health-bar">
             <label for="health">Health:</label>
@@ -38,6 +65,7 @@
             <span>100 / 120</span>
           </div>
           <p id="tower-description" name="description">"Tower description."</p>
+          <span id="show-more">Show more...</span>
           <div id="tower-info-stats" name="stats">
             <table name="stats-table" class="upgrade">
               <colgroup>
@@ -81,8 +109,9 @@
             </div>
           </div>
         </div>
+        <button id="back-to-shop-button" name="back-to-shop-button" type="button">← <span>Shop</span></button>
         <button id="upgrade-tower-button" name="upgrade-button" type="button" class="ui-button">UPGRADE</button>
-        <button id="close-tower-info-button" name="close-button" type="button">X</button>
+        <button id="close-tower-info-button" name="close-button" type="button"><span>Close</span> X</button>
       </div>
     </section>
 

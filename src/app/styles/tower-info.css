@@ -10,6 +10,7 @@
   height: 100%;
   display: flex;
   justify-content: center;
+  align-items: flex-start;
   z-index: 100;
 }
 
@@ -27,14 +28,48 @@
 
 #tower-info .content button#close-tower-info-button {
   position: absolute;
-  top: 25px;
+  top: 23px;
   right: 20px;
   color: #ff0000;
   background-color: transparent;
   border: none;
   font-weight: bold;
+  font-size: 20px;
   text-shadow: 0 0 5px #ff0000;
   cursor: pointer;
+
+  display: flex;
+  align-items: center;
+}
+
+#tower-info .content button#close-tower-info-button span {
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0 10px 3px 0;
+  display: inline-block;
+}
+
+#tower-info .content button#back-to-shop-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  color: #fff;
+  background-color: transparent;
+  border: none;
+  font-weight: bolder;
+  font-size: 20px;
+  text-shadow: 0 0 5px #fff;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+}
+
+#tower-info .content button#back-to-shop-button span {
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0 0 0 10px;
+  display: inline-block;
 }
 
 #tower-info.visible {
@@ -119,9 +154,31 @@
 /* Tower Description */
 #tower-description {
   text-align: center;
-  font-style: italic;
-  margin: 10px 0;
+  /* font-style: italic; */
+  margin: 10px 0 0;
   color: #ccc;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+#tower-description.extended {
+  white-space: normal;
+  text-overflow: unset;
+  overflow: visible;
+}
+
+#show-more {
+  /* font-weight: bold; */
+  text-align: right;
+  align-self: flex-end;
+  width: 100%;
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 0 10px 0 0;
+  text-shadow: 0 0 5px #fff;
+  cursor: pointer;
+  font-size: 14px;
 }
 
 /* Table Styling */

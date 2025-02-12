@@ -4,7 +4,7 @@ import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUti
 import mainTowerImg from '../assets/main-tower.png'
 import Game from '../game'
 import { toggleTowerInfo } from '../ui/tower-info'
-import { showDamageText, Timeout } from '../utils'
+import { float, showDamageText, Timeout } from '../utils'
 import { Ally, AllyType } from './allies'
 import { Colors } from './constants'
 import EnemySpawner, { Enemy } from './enemies'
@@ -28,23 +28,89 @@ class Tower extends THREE.Mesh {
   shooting: Timeout
   allies: Record<AllyType, Ally | undefined>
 
-  private priceMap: number[] = [5, 10, 20, 50, 100, 200, 500, 1000, 2000, 4000, 8000, 12000, 16000]
+  private priceMap: number[] = [
+    5, 10, 20, 50, 100, 200, 500, 1000, 2000, 4000, 8000, 12000, 16000, 40000, 80000, 120000, 160000, 400000, 800000,
+    1200000, 1600000,
+  ]
 
   constructor(size: number = 1) {
-    // Base of the tower
-    const baseGeometry = new THREE.BoxGeometry(size, size / 2, size)
-    baseGeometry.translate(0, size / 4, 0) // Піднімаємо базу
+    // // Base of the tower
+    // const baseGeometry = new THREE.BoxGeometry(size, size / 2, size)
+    // baseGeometry.translate(0, size / 4, 0) // Піднімаємо базу
 
-    // Middle section of the tower
-    const middleGeometry = new THREE.CylinderGeometry(size / 2, size / 2, size, 32)
-    middleGeometry.translate(0, size, 0) // Піднімаємо середню секцію
+    // // Middle section of the tower
+    // const middleGeometry = new THREE.CylinderGeometry(size / 2, size / 2, size, 32)
+    // middleGeometry.translate(0, size, 0) // Піднімаємо середню секцію
 
-    // Top of the tower
-    const topGeometry = new THREE.ConeGeometry(size / 2, size, 32)
-    topGeometry.translate(0, size * 1.75, 0) // Піднімаємо верхівку
+    // // Top of the tower
+    // const topGeometry = new THREE.ConeGeometry(size / 2, size, 32)
+    // topGeometry.translate(0, size * 1.75, 0) // Піднімаємо верхівку
 
-    // Об'єднуємо всі геометрії в одну
-    const combinedGeometry = BufferGeometryUtils.mergeGeometries([baseGeometry, middleGeometry, topGeometry])
+    // // Об'єднуємо всі геометрії в одну
+    // const combinedGeometry = BufferGeometryUtils.mergeGeometries([baseGeometry, middleGeometry, topGeometry])
+
+    // Octagonal Prism with Tapering
+    const shape = new THREE.Shape()
+    const radius = size / 2
+    for (let i = 0; i < 8; i++) {
+      const theta = (i / 8) * Math.PI * 2
+      const x = Math.cos(theta) * radius
+      const y = Math.sin(theta) * radius
+      if (i === 0) {
+        shape.moveTo(x, y)
+      } else {
+        shape.lineTo(x, y)
+      }
+    }
+    shape.closePath()
+
+    const extrudeSettings = {
+      steps: 1,
+      depth: 12,
+      bevelEnabled: false,
+      extrudePath: new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(0, 0, size / 2),
+        new THREE.Vector3(0, 0, size),
+      ]),
+    }
+
+    const baseGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings)
+    baseGeometry.translate(0, 0, -size)
+    baseGeometry.rotateX(Math.PI / 2)
+    baseGeometry.rotateY(0)
+    baseGeometry.rotateZ(0)
+
+    // Tapering effect
+    const taperAmount = 0.9 // Adjust for more/less tapering
+    const position = baseGeometry.attributes.position
+    for (let i = 0; i < position.count; i++) {
+      const z = position.getZ(i)
+      const scale = 1 - (1 - taperAmount) * (z / 12)
+      position.setXY(i, position.getX(i) * scale, position.getY(i) * scale)
+    }
+
+    // Circular Ledge
+    const ledgeGeometry = new THREE.TorusGeometry(size / 2, 0.1, 16, 100)
+    ledgeGeometry.translate(0, 0, -size)
+    ledgeGeometry.rotateX(Math.PI / 2)
+
+    // Turret with Conical Barrel
+    const turretGeometry = new THREE.CylinderGeometry(size / 4, size / 4, size, 32)
+    turretGeometry.translate(0, size, 0)
+
+    const barrelGeometry = new THREE.ConeGeometry(size / 6, size, 32)
+    barrelGeometry.translate(0, -size / 6 + 0.75, -size * 2 + size / 2 + 0.25)
+    barrelGeometry.rotateX(Math.PI / 2)
+
+    // Assemble Main Tower
+    const combinedGeometry = BufferGeometryUtils.mergeGeometries([
+      baseGeometry.toNonIndexed(),
+      ledgeGeometry.toNonIndexed(),
+      turretGeometry.toNonIndexed(),
+      barrelGeometry.toNonIndexed(),
+    ])
+    combinedGeometry.rotateY(Math.PI)
 
     // Створюємо матеріал
     const material = new THREE.MeshStandardMaterial({
@@ -134,13 +200,13 @@ class Tower extends THREE.Mesh {
     return this.health + (level || level + 1) * 10
   }
   private calcSpeed(level: number) {
-    return parseFloat(((level - 3 > 0 ? level - 3 : 1) / (level > 6 ? 10 : 6)).toFixed(2))
+    return float((level - 3 > 0 ? level - 3 : 1) / (level > 6 ? 10 : 6))
   }
   private calcDamage(level: number) {
-    return parseFloat((level / 2 + 0.5 * level).toFixed(1))
+    return float(level / 2 + 0.5 * level)
   }
   private calcCooldown(level: number) {
-    return parseFloat((4000 / (level * 2)).toFixed(2))
+    return float(4000 / (level * 2))
   }
 
   levelUp() {
@@ -195,6 +261,10 @@ class Tower extends THREE.Mesh {
       .multiplyScalar(2)
       .setY(0.5)
       .normalize()
+
+    const rotation = this.rotation.clone()
+    this.lookAt(enemyInitialPosition.clone())
+    this.rotation.set(rotation.x, -this.rotation.y, rotation.z)
 
     new Projectile(towerPosition, this.damage, speed, direction).shoot()
   }
