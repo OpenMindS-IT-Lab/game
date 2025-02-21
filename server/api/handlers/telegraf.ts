@@ -1,5 +1,6 @@
 import { Context, Markup } from 'telegraf'
 import { Update } from 'telegraf/types'
+import { Endpoint, log } from '../utils'
 
 export async function startHandler(ctx: Context) {
   const botName = ctx.botInfo.username
@@ -24,8 +25,10 @@ export async function startHandler(ctx: Context) {
   })
 }
 
-export async function messageHandler(ctx: Context) {
-  console.log(ctx.update)
+export async function messageHandler(ctx: Context<Update.MessageUpdate>) {
+  log(Endpoint.SuccessfullPayment)
+  if ('successful_payment' in ctx.message) log(Endpoint.SuccessfullPayment, ctx.message.successful_payment)
+  else console.log(ctx.update)
 }
 
 async function getHighScore(_telegramId: number): Promise<number> {

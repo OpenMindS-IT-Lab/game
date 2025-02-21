@@ -6,13 +6,14 @@ export const enum NewBotMethod {
 }
 
 export const enum Endpoint {
+  Root = 'api',
   Hello = 'hello',
   BotToken = 'bot-token',
   Validate = 'validate',
   CreateInvoiceLink = 'create-invoice-link',
   GetStarTransactions = 'get-star-transactions',
   RefundStarPayment = 'refund-star-payment',
-  Root = 'api',
+  SuccessfullPayment = 'successful-payment',
 }
 
 export function logErrorToStdout(error: unknown, endpoint: Endpoint) {
