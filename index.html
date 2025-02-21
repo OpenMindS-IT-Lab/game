@@ -6,7 +6,7 @@
   <meta name="charset" content="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Tower Defence</title>
-  <link rel="stylesheet" href="/src/app/style.css" type="text/css" />
+  <link rel="stylesheet" href="/app/style.css" type="text/css" />
   <script src="https://telegram.org/js/telegram-web-app.js?56" charset="utf-8" type="application/javascript"></script>
 </head>
 
@@ -27,27 +27,32 @@
         <figure class="air">
           <button disabled id="purchase-main-tower" type="button" class="ui-button">OPEN</button>
           <figcaption>Main Tower</figcaption>
-          <img id="tower-thumb" src="./src/app/assets/main-tower.PNG" alt="Main Tower">
+          <img class="thumb" src="./app/assets/main-tower.PNG" alt="Main Tower" />
         </figure>
         <figure class="air">
           <button disabled id="purchase-air-tower" type="button" class="ui-button">OPEN</button>
           <figcaption>Air Tower</figcaption>
-          <img id="tower-thumb" src="./src/app/assets/air-tower.PNG" alt="Air Tower">
+          <img class="thumb" src="./app/assets/air-tower.PNG" alt="Air Tower" />
         </figure>
         <figure class="water">
           <button disabled="false" id="purchase-water-tower" type="button" class="ui-button">OPEN</button>
           <figcaption>Water Tower</figcaption>
-          <img id="tower-thumb" src="./src/app/assets/water-tower.PNG" alt="Water Tower">
+          <img class="thumb" src="./app/assets/water-tower.PNG" alt="Water Tower" />
         </figure>
         <figure class="earth">
           <button disabled id="purchase-earth-tower" type="button" class="ui-button">OPEN</button>
           <figcaption>Earth Tower</figcaption>
-          <img id="tower-thumb" src="./src/app/assets/earth-tower.PNG" alt="Earth Tower">
+          <img class="thumb" src="./app/assets/earth-tower.PNG" alt="Earth Tower" />
         </figure>
         <figure class="fire">
           <button disabled id="purchase-fire-tower" type="button" class="ui-button">OPEN</button>
           <figcaption>Fire Tower</figcaption>
-          <img id="tower-thumb" src="./src/app/assets/fire-tower.PNG" alt="Fire Tower">
+          <img class="thumb" src="./app/assets/fire-tower.PNG" alt="Fire Tower" />
+        </figure>
+        <figure class="coins">
+          <button id="purchase-coins" type="button" class="ui-button" data-item="cs">BUY</button>
+          <figcaption>Coins</figcaption>
+          <img class="thumb" src="./app/assets/coin.png" alt="Coins" />
         </figure>
         <button id="close-shop-button" type="button"><span>Close</span> X</button>
       </div>
@@ -79,27 +84,27 @@
                 <th>NEXT</th>
               </tr>
               <tr>
-                <td><img src="src/app/assets/level.svg" alt="Level"> Level</td>
+                <td><img src="app/assets/level.svg" alt="Level"> Level</td>
                 <td name="level"></td>
                 <td name="next-level" style="color: green;"></td>
               </tr>
               <tr>
-                <td><img src="src/app/assets/health.svg" alt="Health"> Health</td>
+                <td><img src="app/assets/health.svg" alt="Health"> Health</td>
                 <td name="health"></td>
                 <td name="next-health" style="color: green;"></td>
               </tr>
               <tr>
-                <td><img src="src/app/assets/speed.svg" alt="Attack Speed"> Attack Speed</td>
+                <td><img src="app/assets/speed.svg" alt="Attack Speed"> Attack Speed</td>
                 <td name="attack-speed"></td>
                 <td name="next-attack-speed" style="color: green;"></td>
               </tr>
               <tr>
-                <td><img src="src/app/assets/damage.svg" alt="Damage"> Damage</td>
+                <td><img src="app/assets/damage.svg" alt="Damage"> Damage</td>
                 <td name="damage"></td>
                 <td name="next-damage" style="color: green;"></td>
               </tr>
               <tr>
-                <td><img src="src/app/assets/cooldown.svg" alt="Cooldown"> Cooldown</td>
+                <td><img src="app/assets/cooldown.svg" alt="Cooldown"> Cooldown</td>
                 <td name="cooldown"></td>
                 <td name="next-cooldown" style="color: green;"></td>
               </tr>
@@ -172,7 +177,7 @@
     </table> -->
   </div>
 
-  <script type="module" src="/src/app/main.ts" charset="utf-8"></script>
+  <script type="module" src="/app/main.ts" charset="utf-8"></script>
 </body>
 
 </html>

@@ -1,5 +1,4 @@
 // import legacy from '@vitejs/plugin-legacy'
-import TurboConsole from 'unplugin-turbo-console/vite'
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
@@ -11,21 +10,15 @@ export default defineConfig({
     qrcode({
       filter: url => url.startsWith('http://192.168'),
     }),
-    TurboConsole({
-      specifiedEditor: 'code',
-      extendedPathFileNames: ['index'],
-      prefix: `\\r\\n[${new Date().toLocaleString()}]`,
-      suffix: '\\r\\n',
-      disablePassLogs: true,
-      // disableHighlight: true,
-      // silent: true,
-    }),
     nodePolyfills(),
   ],
   appType: 'spa',
-  assetsInclude: ['src/**/assets/*', 'src/**/assets/**/*'],
+  assetsInclude: ['app/**/assets/*', 'app/**/assets/**/*'],
   optimizeDeps: {
-    include: ['src/app/**/*.ts', 'src/app/*.ts'],
+    force: true,
+    include: ['node-stdlib-browser'],
+    exclude: ['telegraf', 'server/*', 'types/*' /* , 'qs', 'node-stdlib-browser', 'fs/promises' */],
+    holdUntilCrawlEnd: false,
   },
   build: {
     modulePreload: {
@@ -50,19 +43,23 @@ export default defineConfig({
     ],
     emptyOutDir: true,
     minify: true,
-    assetsDir: './assests/',
+    assetsDir: 'assets',
     rollupOptions: {
-      external: ['node_modules'],
-      input: {
-        app: 'index.html',
-        api: 'src/api/api.ts',
-      },
+      external: [
+        'lodash',
+        'three',
+        // 'express',
+        // 'serverless-http',
+        // 'telegraf',
+        // 'qs',
+        // 'node-stdlib-browser',
+        // 'fs/promises',
+      ],
       output: {
         esModule: 'if-default-prop',
-        entryFileNames: '[name]/index-[hash].js',
-        manualChunks: {
-          three: ['three'],
-        },
+        entryFileNames: '[name].js',
+        chunkFileNames: 'lib/[hash].js',
+        assetFileNames: 'assets/[ext]/[hash][extname]',
       },
     },
     copyPublicDir: true,

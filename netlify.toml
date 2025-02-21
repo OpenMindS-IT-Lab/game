@@ -1,14 +1,32 @@
 [dev]
-  command = 'vite'
+# framework = '#custom'
+command = 'vite'
+targetPort = 5173
+# functionsPort = 8443
+autoLaunch = false
+
 [build]
-  command = 'vite build'
+command = 'vite build'
+
 [functions]
-  node_bundler = "esbuild"
-  external_node_modules = ["express"]
+directory = 'server'
+node_bundler = "esbuild"
+external_node_modules = [
+  "express",
+  "telegraf",
+  # "lodash"
+  # "serverless-http",
+  # "qs",
+  # "node-stdlib-browser",
+  # "fs/promises"
+
+]
+
 [functions.node_version]
-  node_version = "18.x"
+node_version = "23.x"
+
 [[redirects]]
-  force = true
-  from = "/api/*"
-  status = 200
-  to = "/.netlify/functions/api/:splat"
+force = true
+from = "/api/*"
+status = 200
+to = "/.netlify/functions/api/:splat"
