@@ -2,16 +2,10 @@
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
-import { qrcode } from 'vite-plugin-qrcode'
 // import removeConsole from 'vite-plugin-remove-console'
 
 export default defineConfig({
-  plugins: [
-    qrcode({
-      filter: url => url.startsWith('http://192.168'),
-    }),
-    nodePolyfills(),
-  ],
+  plugins: [nodePolyfills()],
   appType: 'spa',
   assetsInclude: ['app/**/assets/*', 'app/**/assets/**/*'],
   optimizeDeps: {
