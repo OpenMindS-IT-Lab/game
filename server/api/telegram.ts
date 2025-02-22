@@ -1,9 +1,12 @@
+import { Router } from 'express'
 import { entries } from 'lodash'
 import { Context, Telegraf } from 'telegraf'
 import { Update } from 'telegraf/typings/core/types/typegram'
+import { createInvoiceLinkHandler } from './handlers/express'
+import { hightscoreHandler, messageHandler, preCheckoutHandler, startHandler } from './handlers/telegraf'
 import { Endpoint, logErrorToStdout, NewBotMethod } from './utils'
 
-export function registerBot() {
+export function registerBot(router: Router) {
   try {
     const botToken = process.env.TELEGRAM_BOT_TOKEN
     if (!botToken) {
@@ -68,31 +71,39 @@ export function registerBot() {
 
     process.on('exit', cleanup)
 
-    try {
-      console.log('Starting bot...')
-      bot.stop()
-    } catch {
+    bot.start(startHandler)
+
+    bot.on('message', messageHandler)
+
+    bot.command('highscore', hightscoreHandler)
+
+    bot.on('pre_checkout_query', preCheckoutHandler)
+
+    router.post('/create-invoice-link', createInvoiceLinkHandler(bot))
+    ;(async () => {
       try {
-        bot.launch()
-        console.log('Bot has started successfully.')
+        console.log('Starting bot...')
+        await bot.stop()
+      } catch {
+        try {
+          await bot.launch()
+          console.log('Bot has started successfully.')
+        } catch (error) {
+          console.error('Error launching bot:', error)
+          process.exit(1)
+        }
+      }
+
+      try {
+        await bot.launch()
+        console.log('Bot has restarted successfully.')
       } catch (error) {
-        console.error('Error launching bot:', error)
+        console.error('Error relaunching bot:', error)
         process.exit(1)
       }
-    }
-
-    try {
-      bot.launch()
-      console.log('Bot has restarted successfully.')
-    } catch (error) {
-      console.error('Error relaunching bot:', error)
-      process.exit(1)
-    }
-
-    return bot
+    })()
   } catch (error) {
     logErrorToStdout(error, Endpoint.Root)
-    return null
   }
 }
 
