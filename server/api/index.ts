@@ -17,12 +17,7 @@ const bot = registerBot()
 api.use(express.json())
 api.use(express.urlencoded({ extended: true }))
 
-if (!bot) {
-}
-
 if (bot) {
-  // bot.launch(() => console.log('Bot is running')).catch(error => logErrorToStdout(error, Endpoint.Root))
-
   bot.start(startHandler)
 
   bot.on('message', messageHandler)
@@ -31,10 +26,12 @@ if (bot) {
 
   bot.on('pre_checkout_query', preCheckoutHandler)
 
-  router.get('/get-star-transactions', getStarTransactionsHandler())
-
   router.post('/create-invoice-link', createInvoiceLinkHandler(bot))
+} else {
+  console.error('Bot initialization failed!')
 }
+
+router.get('/get-star-transactions', getStarTransactionsHandler())
 
 router.get('/hello', helloHandler)
 
