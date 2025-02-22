@@ -1,11 +1,11 @@
 // import legacy from '@vitejs/plugin-legacy'
 import type { UserConfig } from 'vite'
 import { defineConfig } from 'vite'
-import { nodePolyfills } from 'vite-plugin-node-polyfills'
+// import { nodePolyfills } from 'vite-plugin-node-polyfills'
 // import removeConsole from 'vite-plugin-remove-console'
 
 export default defineConfig({
-  plugins: [nodePolyfills()],
+  // plugins: [nodePolyfills()],
   appType: 'spa',
   assetsInclude: ['app/**/assets/*', 'app/**/assets/**/*'],
   optimizeDeps: {

@@ -1,13 +1,10 @@
 [dev]
-# framework = '#custom'
 command = 'vite'
 targetPort = 5173
-# functionsPort = 8443
 autoLaunch = false
 
 [build]
 command = 'vite build'
-publish = 'dist/'
 
 [functions]
 directory = 'server'
