@@ -13,9 +13,6 @@
     "start": "netlify build && vite preview",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "engines": {
-    "node": "22"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
