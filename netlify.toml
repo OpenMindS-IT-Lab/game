@@ -7,24 +7,13 @@ autoLaunch = false
 
 [build]
 command = 'vite build'
+publish = 'dist/'
 
 [functions]
 directory = 'server'
 node_bundler = "esbuild"
-external_node_modules = [
-  "express",
-  "telegraf",
-  # "lodash"
-  # "serverless-http",
-  # "qs",
-  # "node-stdlib-browser",
-  # "fs/promises"
+external_node_modules = ["express", "telegraf"]
 
-]
-
-[functions.node_version]
-
-# node_version = "22.x"
 [[redirects]]
 force = true
 from = "/api/*"
