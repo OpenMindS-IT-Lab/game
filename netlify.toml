@@ -23,7 +23,7 @@ external_node_modules = [
 ]
 
 [functions.node_version]
-node_version = "22.x"
+node_version = "22"
 
 [[redirects]]
 force = true
