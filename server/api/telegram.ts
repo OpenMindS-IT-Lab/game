@@ -29,15 +29,6 @@ export function registerBot() {
       console.info(ctx)
     })
 
-    // Enable graceful stop
-    const stop = (sig: string) => {
-      try {
-        bot.stop(sig)
-      } catch (error) {
-        logErrorToStdout(error, Endpoint.Root)
-      }
-    }
-
     const Non0SIG = [
       'SIGHUP',
       'SIGINT',
@@ -62,6 +53,8 @@ export function registerBot() {
         await bot.telegram.logOut()
         await bot.telegram.close()
       }
+
+      bot.stop()
     }
 
     // catching signals and do something before exit
@@ -74,28 +67,27 @@ export function registerBot() {
     })
 
     process.on('exit', cleanup)
-    ;(async () => {
-      console.log('Starting bot...')
-      try {
-        await bot.stop()
-      } catch {
-        try {
-          await bot.launch()
-          console.log('Bot has started successfully.')
-        } catch (error) {
-          console.error('Error launching bot:', error)
-          process.exit(1)
-        }
-      }
 
+    try {
+      console.log('Starting bot...')
+      bot.stop()
+    } catch {
       try {
-        await bot.launch()
-        console.log('Bot has restarted successfully.')
+        bot.launch()
+        console.log('Bot has started successfully.')
       } catch (error) {
-        console.error('Error relaunching bot:', error)
+        console.error('Error launching bot:', error)
         process.exit(1)
       }
-    })()
+    }
+
+    try {
+      bot.launch()
+      console.log('Bot has restarted successfully.')
+    } catch (error) {
+      console.error('Error relaunching bot:', error)
+      process.exit(1)
+    }
 
     return bot
   } catch (error) {
