@@ -232,7 +232,9 @@ export function showDamageText(damage: number, position: THREE.Vector3, color?: 
 }
 
 export function handleMinorError(errorMessage?: unknown) {
-  const message = (errorMessage ?? 'Error!') + '\nTry reloading the app?'
+  const message =
+    ((typeof errorMessage === 'object' ? JSON.stringify(errorMessage) : errorMessage) ?? 'Error!') +
+    '\nTry reloading the app?'
 
   console.warn(message)
 
