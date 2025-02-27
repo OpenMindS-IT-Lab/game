@@ -6,7 +6,7 @@ import { createInvoiceLinkHandler } from './handlers/express'
 import { hightscoreHandler, messageHandler, preCheckoutHandler, startHandler } from './handlers/telegraf'
 import { Endpoint, logErrorToStdout, NewBotMethod } from './utils'
 
-export function registerBot(router: Router) {
+export async function registerBot(router?: Router) {
   try {
     const botToken = process.env.TELEGRAM_BOT_TOKEN
     if (!botToken) {
@@ -71,15 +71,7 @@ export function registerBot(router: Router) {
 
     process.on('exit', cleanup)
 
-    bot.start(startHandler)
-
-    bot.on('message', messageHandler)
-
-    bot.command('highscore', hightscoreHandler)
-
-    bot.on('pre_checkout_query', preCheckoutHandler)
-
-    router.post('/create-invoice-link', createInvoiceLinkHandler(bot))
+    
     ;(async () => {
       try {
         console.log('Starting bot...')

@@ -1,7 +1,9 @@
 import express, { Router } from 'express'
 import serverless from 'serverless-http'
-import { botTokenHandler, getStarTransactionsHandler, helloHandler, validateHandler } from './handlers/express'
+import { botTokenHandler, createInvoiceLinkHandler, getStarTransactionsHandler, helloHandler, validateHandler } from './handlers/express'
 import { registerBot } from './telegram'
+import { bot } from '../deploy-succeeded';
+import { hightscoreHandler, messageHandler, preCheckoutHandler, startHandler } from './handlers/telegraf';
 
 const api = express()
 const router = Router()
@@ -20,6 +22,18 @@ router.get('/bot-token', botTokenHandler)
 router.post('/validate', validateHandler)
 
 api.use('/api/', router)
+
+if (Netlify.env.get('BOT_LAUNCHED') === 'true') {
+  bot.start(startHandler)
+
+  bot.on('message', messageHandler)
+
+  bot.command('highscore', hightscoreHandler)
+
+  bot.on('pre_checkout_query', preCheckoutHandler)
+
+  router.post('/create-invoice-link', createInvoiceLinkHandler(bot))
+}
 
 const handler = serverless(api)
 
