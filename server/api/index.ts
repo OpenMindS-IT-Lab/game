@@ -21,4 +21,6 @@ router.post('/validate', validateHandler)
 
 api.use('/api/', router)
 
-export const handler = serverless(api)
+const handler = serverless(api)
+
+export { handler }

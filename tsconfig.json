@@ -23,5 +23,5 @@
     "typeRoots": ["types", "node_modules/telegram-webapps"],
     "allowUmdGlobalAccess": true
   },
-  "include": ["app/**/*", "app/*", "types", "server"]
+  "include": ["app/**/*", "app/*", "types", "server", "redundant/bot"]
 }
