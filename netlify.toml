@@ -16,3 +16,8 @@ force = true
 from = "/api/*"
 status = 200
 to = "/.netlify/functions/api/:splat"
+
+[[redirects]]
+from = "/bot"
+to = "/.netlify/functions/bot"
+status = 200

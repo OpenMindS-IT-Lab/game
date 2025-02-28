@@ -1,9 +1,15 @@
 import express, { Router } from 'express'
 import serverless from 'serverless-http'
-import { botTokenHandler, createInvoiceLinkHandler, getStarTransactionsHandler, helloHandler, validateHandler } from './handlers/express'
+import {
+  botTokenHandler,
+  createInvoiceLinkHandler,
+  getStarTransactionsHandler,
+  helloHandler,
+  validateHandler,
+} from './handlers/express'
 import { registerBot } from './telegram'
-import { bot } from '../deploy-succeeded';
-import { hightscoreHandler, messageHandler, preCheckoutHandler, startHandler } from './handlers/telegraf';
+// import { hightscoreHandler, messageHandler, preCheckoutHandler, startHandler } from './handlers/telegraf';
+import bot from '../../bot'
 
 const api = express()
 const router = Router()
@@ -21,19 +27,20 @@ router.get('/bot-token', botTokenHandler)
 
 router.post('/validate', validateHandler)
 
+router.post('/create-invoice-link', createInvoiceLinkHandler(bot))
+
 api.use('/api/', router)
 
-if (Netlify.env.get('BOT_LAUNCHED') === 'true') {
-  bot.start(startHandler)
+// if (Netlify.env.get('BOT_LAUNCHED') === 'true') {
+//   bot.start(startHandler)
 
-  bot.on('message', messageHandler)
+//   bot.on('message', messageHandler)
 
-  bot.command('highscore', hightscoreHandler)
+//   bot.command('highscore', hightscoreHandler)
 
-  bot.on('pre_checkout_query', preCheckoutHandler)
+//   bot.on('pre_checkout_query', preCheckoutHandler)
 
-  router.post('/create-invoice-link', createInvoiceLinkHandler(bot))
-}
+// }
 
 const handler = serverless(api)
 

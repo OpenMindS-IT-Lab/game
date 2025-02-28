@@ -1,4 +1,9 @@
 {
   "editor.fontFamily": "'Fira Code', Consolas, 'Courier New', monospace",
-  "editor.fontLigatures": true
+  "editor.fontLigatures": true,
+  "deno.enable": true,
+  "deno.enablePaths": ["netlify/edge-functions"],
+  "deno.unstable": true,
+  "deno.importMap": ".netlify/edge-functions-import-map.json",
+  "deno.path": "C:\\Users\\joncolab\\AppData\\Roaming\\netlify\\Config\\deno-cli\\deno.exe"
 }
