@@ -1,22 +1,24 @@
 import { Handler } from '@netlify/functions'
+import { IncomingMessage } from 'http'
+import { Update } from 'telegraf/types'
 import bot from '../../bot'
 
-const webhookCallback = bot.webhookCallback('/telegram')
+const webhookCallback = bot.webhookCallback('/bot')
 
 export const handler: Handler = async event => {
   if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Метод не дозволений' }
+    return { statusCode: 405, body: '❌ Method not allowed' }
   }
 
   try {
-    const update = JSON.parse(event.body!)
+    const update = JSON.parse(event.body!) as Update | undefined
 
     await new Promise<void>((resolve, _reject) => {
       webhookCallback(
-        { body: update, method: 'POST' } as any,
+        { body: update, method: 'POST' } as IncomingMessage & { body: Update | undefined },
         {
-          end: resolve,
           status: () => ({ end: resolve }),
+          end: resolve,
         } as any
       )
     })

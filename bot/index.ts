@@ -30,7 +30,6 @@ bot.on('pre_checkout_query', preCheckoutHandler)
 
 bot.createWebhook({
   domain: 'https://tower-defence-staging.netlify.app',
-  
 })
 
 export default bot
