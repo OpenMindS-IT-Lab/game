@@ -6,7 +6,7 @@ export async function startHandler(ctx: Context) {
   const botName = ctx.botInfo.username
   // console.log('\r\n' + ctx.botInfo.has_main_web_app + '\r\n')
 
-  const appUrl = `http://192.168.0.107:8888/`
+  const appUrl = `http://192.168.0.107:8877/`
   const chatId = ctx.chat?.id
   const buttonText = 'Play the game'
   const webAppButton = Markup.button.webApp(buttonText, appUrl)

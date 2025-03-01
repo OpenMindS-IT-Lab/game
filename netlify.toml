@@ -2,6 +2,7 @@
 command = 'vite'
 targetPort = 5173
 autoLaunch = false
+port = 8877
 
 [build]
 command = 'vite build'
