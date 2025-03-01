@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express'
-import bot from '../../bot'
 import he from 'he'
+import bot from '../../bot'
 
 export default (async (req, res) => {
   if (req.method !== 'POST') {
@@ -9,11 +9,14 @@ export default (async (req, res) => {
   }
 
   try {
-    // const webHookInfo = await bot.telegram.getWebhookInfo()
     const update = req.body
 
-    // console.log(webHookInfo)
-    // console.log(update)
+    if (process.env.NODE_ENV === 'development') {
+      const webHookInfo = await bot.telegram.getWebhookInfo()
+
+      console.log(webHookInfo)
+      console.log(update)
+    }
 
     await bot.handleUpdate(update)
 

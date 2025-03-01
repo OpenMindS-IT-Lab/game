@@ -1,8 +1,8 @@
 import crypto from 'crypto'
 import { RequestHandler } from 'express'
-import bot from '../../../bot'
-import { tgBotApiRequest } from '../telegram'
-import { Endpoint, log, logErrorToStdout, NewBotMethod } from '../utils'
+import bot from '../../bot'
+import { __RAW__tgBotApiRequest } from './telegram'
+import { Endpoint, log, logErrorToStdout, NewBotMethod } from './utils'
 
 export function helloHandler(...[, res]: Parameters<RequestHandler>) {
   log(Endpoint.Hello)
@@ -160,7 +160,7 @@ export function getStarTransactionsHandler(): RequestHandler {
     log(Endpoint.GetStarTransactions)
     let data = null
     try {
-      await tgBotApiRequest<StarTransactions>(NewBotMethod.getStarTransactions, {
+      await __RAW__tgBotApiRequest<StarTransactions>(NewBotMethod.getStarTransactions, {
         query: {
           offset: 0,
           limit: 10,
