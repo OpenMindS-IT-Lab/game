@@ -48,9 +48,10 @@
     "@types/three": "^0.174.0",
     "concurrently": "^9.1.2",
     "dotenv": "^16.4.7",
+    "node-stdlib-browser": "^1.3.1",
     "rimraf": "^6.0.1",
     "telegram-webapps": "^8.0.3",
-    "typescript": "^5.8.2",
+    "typescript": "^4.9.5",
     "vite": "^6.2.0"
   }
 }
