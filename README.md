@@ -1,14 +1,16 @@
 # 🎮 Game Project
 
-Welcome to the **Game Project**! This repository contains a **modern JavaScript/TypeScript game**, powered by **Vite**, designed for an optimized development experience. The project features **server-side logic**, **real-time interactions**, and a **scalable architecture**.
+[![Netlify Status](https://api.netlify.com/api/v1/badges/92c8f3e8-5593-4bc1-8c80-4a766793dd05/deploy-status)](https://app.netlify.com/sites/tower-defence-staging/deploys)
 
----
+Welcome to the **Game Project**! This repository contains a **modern JavaScript/TypeScript game**, powered by **Vite**,
+designed for an optimized development experience. The project features **server-side logic**, **real-time
+interactions**, and a **scalable architecture**.
 
 ## 🚀 Project Overview
 
-This project is a **strategic tower defense game** with real-time mechanics. Players must build defensive structures, counter enemy attacks, and leverage environmental advantages to succeed. The game is designed to be highly customizable and expandable.
-
----
+This project is a **strategic tower defense game** with real-time mechanics. Players must build defensive structures,
+counter enemy attacks, and leverage environmental advantages to succeed. The game is designed to be highly customizable
+and expandable.
 
 ## 📦 Prerequisites
 
@@ -17,9 +19,7 @@ Before setting up the project, ensure that you have the following installed:
 - **Node.js** (LTS recommended) - [Download here](https://nodejs.org/)
 - **npm** (Comes with Node.js) - Ensure it’s updated: `npm install -g npm`
 - **Git** (Version control system) - [Download here](https://git-scm.com/)
-- **Netlify CLI** (For deployment) - `npm install -g netlify-cli`
-
-Verify installations by running:
+- **Netlify CLI** (For deployment) - `npm install -g netlify-cli` Verify installations by running:
 
 ```sh
 node -v
@@ -27,8 +27,6 @@ npm -v
 git --version
 netlify --version
 ```
-
----
 
 ## ⚙️ Project Setup & Configuration
 
@@ -55,16 +53,43 @@ cp .env.example .env
 
 Then, open `.env` and configure the necessary values.
 
+---
+
 #### 🔍 Environment Variables Explained
 
-- `` – The name of the application, displayed in the UI and metadata.
-- `` – The base URL of the backend API that the game communicates with.
-- `` – The URL where the Telegram Bot sends data updates.
-- `` – Defines the environment mode (`development`, `production`, or `staging`).
-- `` – The unique identifier for the Telegram bot. Obtain from [BotFather](https://t.me/BotFather).
-- `` – The public key for secure Telegram API communications.
-- `` – The authentication token for the Telegram bot, provided by [BotFather](https://t.me/BotFather).
-- `` – A secure key for authorizing API requests.
+This project requires several environment variables for proper functionality. Below is a description of each:
+
+##### 📌 General Variables
+
+- `APP_TITLE` – The game title displayed in the UI.
+- `API_URL` – Backend server URL handling client requests.
+- `API_KEY` – Unique key for authenticating API requests.
+- `SET_WEBHOOK_URL` – Endpoint for setting the Telegram bot webhook.
+- `WEBHOOK_URL` – URL where Telegram sends updates.
+
+##### ⚙️ Node.js Environment
+
+- `NODE_ENV` – Node.js mode (development, production, etc.).
+- `NODE_VERSION` (commented out) – Recommended Node.js version.
+
+##### 🤖 Telegram Integration
+
+- `TELEGRAM_WEB_APP_URL` – URL for the Telegram Web App.
+- `TELEGRAM_BOT_ID` – Unique identifier of the Telegram bot.
+- `TELEGRAM_PUBLIC_KEY` – Public key for verifying Telegram Web App signatures.
+- `TELEGRAM_BOT_TOKEN` – Authentication token for the Telegram bot.
+
+##### 🛠 Local Telegram Bot API (optional)
+
+- `BOT_API_URL` – URL of a self-hosted Telegram Bot API instance.
+- `BOT_API_PORT` – Port for accessing the local API.
+- `BOT_API_ID` – API ID for working with Telegram API.
+- `BOT_API_HASH` – API Hash for authenticating requests.
+- `BOT_API_VERBOSITY` – Logging level (0 – silent mode, 2 – detailed logs).
+
+Ensure these variables are configured before running the project.
+
+---
 
 ### 4️⃣ Authenticate with Netlify
 
@@ -86,9 +111,8 @@ netlify link
 npm run dev
 ```
 
-The project will be available at `http://localhost:`8877. You can change port in `netlify.toml` file.
-
----
+The project will be available at `http://localhost:$PORT`. You can change the value of `PORT` environment variable
+(defaults to `8877`).
 
 ## 📂 Project Structure
 
@@ -115,8 +139,6 @@ The project will be available at `http://localhost:`8877. You can change port in
 │── index.html      # Main HTML entry point
 ```
 
----
-
 ## 🔧 Dependencies & Tooling
 
 This project utilizes the following technologies:
@@ -127,42 +149,34 @@ This project utilizes the following technologies:
 - **TypeScript Support:** Type definitions for Express, Node.js, Three.js
 - **Serverless Deployment:** Netlify Functions, Serverless HTTP
 
----
-
 ## 📖 Game Rules & Mechanics
 
-The game is a **real-time strategic tower defense** experience, where players must build and upgrade defenses to withstand waves of enemy attacks. Players can:
+The game is a **real-time strategic tower defense** experience, where players must build and upgrade defenses to
+withstand waves of enemy attacks. Players can:
 
 - Strategically place different types of defensive structures.
 - Use resources efficiently to enhance their defenses.
 - Adapt to dynamic enemy behavior and environmental conditions.
-- Compete for high scores and achievements.
-
-Each decision affects the outcome, making planning and quick thinking essential.
-
----
+- Compete for high scores and achievements. Each decision affects the outcome, making planning and quick thinking
+  essential.
 
 ## 📜 Scripts (package.json)
 
-| Command                  | Description                                  |
-| ------------------------ | -------------------------------------------- |
-| `npm run dev`            | Starts the dev server via Netlify Dev        |
-| `npm run build`          | Builds the project using Netlify             |
-| `npm run preview`        | Previews the production build                |
-| `npm run deps:install`   | Installs dependencies with a nested strategy |
-| `npm run deps:reinstall` | Cleans and reinstalls dependencies           |
-
----
+Below is a list of available npm scripts for managing the development, dependencies, and deployment of the project. |
+Command | Description | | ------------------------ | ------------------------------------------------ | |
+`npm run prestart` | Kills the process running on port `5173` (Vite App) before starting | | `npm run deps:install` |
+Installs dependencies using a nested strategy, ignoring peer dependency warnings | | `npm run deps:reinstall` | Removes
+`node_modules`, `package-lock.json`, and `dist`, then reinstalls dependencies | | `npm run dev` | Runs `prestart` and
+starts the development server via Netlify Dev | | `npm run dev:bot-api` | Starts the local Telegram Bot API using
+environment variables | | `npm run build` | Builds the project using Netlify | | `npm run preview` | Previews the
+production build using Vite Preview | | `npm run start` | Builds the project and serves it using Vite Preview |
 
 ## 🌍 Deployment (Netlify)
 
 1. Connect the repository to [Netlify](https://www.netlify.com/).
 2. Define required **environment variables**.
-3. Deploy and monitor the build logs.
-
-For alternative deployment options, consider [Vercel](https://vercel.com/) or [self-hosting](https://vercel.com/).
-
----
+3. Deploy and monitor the build logs. For alternative deployment options, consider [Vercel](https://vercel.com/) or
+   [self-hosting](https://vercel.com/).
 
 ## 🤝 Contributing
 
@@ -171,17 +185,11 @@ For alternative deployment options, consider [Vercel](https://vercel.com/) or [s
 3. **Implement changes** following best practices.
 4. **Write clear commit messages:** `git commit -m "Description of change"`
 5. **Push to GitHub:** `git push origin feature-branch`
-6. **Open a Pull Request**.
-
-Code reviews ensure quality improvements before merging.
-
----
+6. **Open a Pull Request**. Code reviews ensure quality improvements before merging.
 
 ## 📜 License
 
 Currently, this project does not have an explicit license. Consider adding a `LICENSE.md` file for clarity.
-
----
 
 ## 💬 Contact & Support
 
@@ -190,5 +198,4 @@ For issues, suggestions, or discussions:
 - **Open an issue** in the repository
 - **Join the community discussions**
 
-🚀 *Happy coding, and enjoy the game!* 🎮
-
+🚀 _Happy coding, and enjoy the game!_ 🎮

@@ -11,10 +11,19 @@
     "dev:bot-api": "dotenv -c development -e ./.env -- zsh -c 'telegram-bot-api --local --http-port=$BOT_API_PORT --api-id=$BOT_API_ID --api-hash=$BOT_API_HASH --verbosity=$BOT_API_VERBOSITY --dir ./.telegram-bot-api'",
     "build": "netlify build",
     "preview": "vite preview",
-    "start": "netlify build && vite preview",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "netlify build && vite preview"
   },
-  "keywords": [],
+  "keywords": [
+    "Telegram",
+    "Mini App",
+    "Web App",
+    "bot",
+    "game",
+    "tower",
+    "defense",
+    "typescript",
+    "Three.js"
+  ],
   "author": "",
   "license": "ISC",
   "description": "",
