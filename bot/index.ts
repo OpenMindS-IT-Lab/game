@@ -15,7 +15,7 @@ const botOptions: tg.BotOptions = {
   },
 }
 
-if (!botToken || !apiUrl || !apiRoot) {
+if (!botToken || !apiUrl) {
   console.log({ botToken, apiUrl, apiRoot, testEnv, botOptions })
 
   if (!botToken) {

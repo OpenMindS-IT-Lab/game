@@ -18,6 +18,7 @@ export default (async (req, res) => {
       console.log(update)
     }
 
+    if ('pre_checkout_query' in update) console.log(update)
     await bot.handleUpdate(update)
 
     res.status(200).send()
