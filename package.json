@@ -51,6 +51,6 @@
     "rimraf": "^6.0.1",
     "telegram-webapps": "^8.0.3",
     "typescript": "^5.8.2",
-    "vite": "^6.0.3"
+    "vite": "^6.2.0"
   }
 }
