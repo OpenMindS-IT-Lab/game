@@ -70,7 +70,7 @@ export default defineConfig({
     },
     copyPublicDir: true,
     chunkSizeWarningLimit: 1000,
-    sourcemap: true,
+    // sourcemap: true,
   },
   server: {
     host: true,
