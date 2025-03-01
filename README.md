@@ -162,14 +162,18 @@ withstand waves of enemy attacks. Players can:
 
 ## 📜 Scripts (package.json)
 
-Below is a list of available npm scripts for managing the development, dependencies, and deployment of the project. |
-Command | Description | | ------------------------ | ------------------------------------------------ | |
-`npm run prestart` | Kills the process running on port `5173` (Vite App) before starting | | `npm run deps:install` |
-Installs dependencies using a nested strategy, ignoring peer dependency warnings | | `npm run deps:reinstall` | Removes
-`node_modules`, `package-lock.json`, and `dist`, then reinstalls dependencies | | `npm run dev` | Runs `prestart` and
-starts the development server via Netlify Dev | | `npm run dev:bot-api` | Starts the local Telegram Bot API using
-environment variables | | `npm run build` | Builds the project using Netlify | | `npm run preview` | Previews the
-production build using Vite Preview | | `npm run start` | Builds the project and serves it using Vite Preview |
+Below is a list of available npm scripts for managing the development, dependencies, and deployment of the project.
+
+| Command                  | Description                                                                           |
+| ------------------------ | ------------------------------------------------------------------------------------- |
+| `npm run prestart`       | Kills the process running on port `5173` (Vite App) before starting                   |
+| `npm run deps:install`   | Installs dependencies using a nested strategy, ignoring peer dependency warnings      |
+| `npm run deps:reinstall` | Removes `node_modules`, `package-lock.json`, and `dist`, then reinstalls dependencies |
+| `npm run dev`            | Runs `prestart` and starts the development server via Netlify Dev                     |
+| `npm run dev:bot-api`    | Starts the local Telegram Bot API using environment variables                         |
+| `npm run build`          | Builds the project using Netlify                                                      |
+| `npm run preview`        | Previews the production build using Vite Preview                                      |
+| `npm run start`          | Builds the project and serves it using Vite Preview                                   |
 
 ## 🌍 Deployment (Netlify)
 
