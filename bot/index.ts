@@ -12,11 +12,18 @@ if (!apiUrl) {
 }
 
 const testEnv = !!process.env.NODE_ENV && process.env.NODE_ENV === 'development'
+const apiRoot =
+  !!process.env.BOT_API_URL && !!process.env.BOT_API_PORT
+    ? process.env.BOT_API_URL + ':' + process.env.BOT_API_PORT
+    : undefined
 const botOptions: tg.BotOptions = {
   telegram: {
     testEnv,
+    ...(!!testEnv && !!apiRoot && { apiRoot }),
   },
 }
+
+// console.log(botOptions, apiRoot, process.env.BOT_API_URL, process.env.BOT_API_PORT)
 
 const bot = new Telegraf(botToken, botOptions)
 

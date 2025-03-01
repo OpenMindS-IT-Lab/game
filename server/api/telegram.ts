@@ -2,11 +2,11 @@ import { Router } from 'express'
 import { entries } from 'lodash'
 import { Context, Telegraf } from 'telegraf'
 import { Update } from 'telegraf/typings/core/types/typegram'
-import { createInvoiceLinkHandler } from './handlers/express'
-import { hightscoreHandler, messageHandler, preCheckoutHandler, startHandler } from './handlers/telegraf'
+// import { createInvoiceLinkHandler } from './handlers/express'
+// import { hightscoreHandler, messageHandler, preCheckoutHandler, startHandler } from './handlers/telegraf'
 import { Endpoint, logErrorToStdout, NewBotMethod } from './utils'
 
-export async function registerBot(router?: Router) {
+export async function registerBot(_router?: Router) {
   try {
     const botToken = process.env.TELEGRAM_BOT_TOKEN
     if (!botToken) {
@@ -70,8 +70,6 @@ export async function registerBot(router?: Router) {
     })
 
     process.on('exit', cleanup)
-
-    
     ;(async () => {
       try {
         console.log('Starting bot...')

@@ -1,31 +1,17 @@
-import { Handler } from '@netlify/functions'
-import { IncomingMessage } from 'http'
-import { Update } from 'telegraf/types'
-import bot from '../../bot'
+import express, { Router } from 'express'
+import serverless from 'serverless-http'
+import setWebhook from './set-webhook'
+import webhookCallback from './webhook-callback'
 
-const webhookCallback = bot.webhookCallback('/bot')
+const botApi = express()
+const router = Router()
 
-export const handler: Handler = async event => {
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: '❌ Method not allowed' }
-  }
+botApi.use(express.json())
+botApi.use(express.urlencoded({ extended: true }))
 
-  try {
-    const update = JSON.parse(event.body!) as Update | undefined
+router.get('/set-webhook', setWebhook)
+router.post('/webhook-callback', webhookCallback)
 
-    await new Promise<void>((resolve, _reject) => {
-      webhookCallback(
-        { body: update, method: 'POST' } as IncomingMessage & { body: Update | undefined },
-        {
-          status: () => ({ end: resolve }),
-          end: resolve,
-        } as any
-      )
-    })
+botApi.use('/bot/', router)
 
-    return { statusCode: 200, body: 'OK' }
-  } catch (error) {
-    console.error('Помилка обробки оновлення:', error)
-    return { statusCode: 500, body: 'Внутрішня помилка сервера' }
-  }
-}
+export const handler = serverless(botApi)

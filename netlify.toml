@@ -19,6 +19,7 @@ status = 200
 to = "/.netlify/functions/api/:splat"
 
 [[redirects]]
-from = "/bot"
-to = "/.netlify/functions/bot"
+force = true
+from = "/bot/*"
+to = "/.netlify/functions/bot/:splat"
 status = 200
