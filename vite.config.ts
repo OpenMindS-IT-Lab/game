@@ -10,8 +10,8 @@ export default defineConfig({
   assetsInclude: ['app/**/assets/*', 'app/**/assets/**/*'],
   optimizeDeps: {
     force: true,
-    include: ['node-stdlib-browser'],
-    exclude: ['telegraf', 'server/*', 'types/*' /* , 'qs', 'node-stdlib-browser', 'fs/promises' */],
+    // include: ['node-stdlib-browser'],
+    exclude: ['telegraf', 'server/*', 'types/*', 'bot/*' /* , 'qs', 'node-stdlib-browser', 'fs/promises' */],
     holdUntilCrawlEnd: false,
   },
   build: {

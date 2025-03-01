@@ -1,32 +1,34 @@
-import { Context, Markup } from "telegraf";
-import { Update } from "telegraf/types";
+import { Context, Markup } from 'telegraf'
+import { Update } from 'telegraf/types'
 
 export async function startHandler(ctx: Context) {
   const botName = ctx.botInfo.username
   // console.log('\r\n' + ctx.botInfo.has_main_web_app + '\r\n')
-  const appUrl = `http://192.168.0.107:8877/`
+  const appUrl = process.env.TELEGRAM_WEB_APP_URL
   const chatId = ctx.chat?.id
-  const buttonText = 'Play the game'
-  const webAppButton = Markup.button.webApp(buttonText, appUrl)
-  const keyboard = Markup.keyboard([[webAppButton]])
-  const inline_keyboard = Markup.inlineKeyboard([[webAppButton]])
 
-  if (!chatId) {
-    console.log({ botName, appUrl, chatId })
-    throw new Error('Smth went wrong')
+  if (!botName || !appUrl || !chatId) {
+    console.error('❌ Failed to find context variables:', { botName, appUrl, chatId })
+    if (chatId) await ctx.telegram.sendMessage(chatId, 'Welcome to the game!')
+    return
+  } else {
+    const buttonText = 'Play the game'
+    const webAppButton = Markup.button.webApp(buttonText, appUrl)
+    const keyboard = Markup.keyboard([[webAppButton]])
+    const inline_keyboard = Markup.inlineKeyboard([[webAppButton]])
+
+    await ctx.telegram.sendMessage(chatId, 'Welcome to the game\\!', {
+      parse_mode: 'MarkdownV2',
+      ...keyboard,
+      ...inline_keyboard,
+    })
   }
-
-  await ctx.telegram.sendMessage(chatId, 'Welcome to the game\\!', {
-    parse_mode: 'MarkdownV2',
-    ...keyboard,
-    ...inline_keyboard,
-  })
 }
 
 export async function messageHandler(ctx: Context<Update.MessageUpdate>) {
   // log(Endpoint.SuccessfullPayment)
   // if ('successful_payment' in ctx.message) log(Endpoint.SuccessfullPayment, ctx.message.successful_payment)
-  // else 
+  // else
   console.log(ctx.update)
 }
 
