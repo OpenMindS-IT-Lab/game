@@ -8,3 +8,4 @@ ideas.md
 *.env.development
 *redundant*
 *redundant/*
+./telegram-bot-api

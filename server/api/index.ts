@@ -7,14 +7,12 @@ import {
   helloHandler,
   validateHandler,
 } from './handlers/express'
-import { registerBot } from './telegram'
 // import { hightscoreHandler, messageHandler, preCheckoutHandler, startHandler } from './handlers/telegraf';
-import bot from '../../bot'
 
 const api = express()
 const router = Router()
 
-registerBot(router)
+// registerBot(router)
 
 api.use(express.json())
 api.use(express.urlencoded({ extended: true }))
@@ -27,7 +25,7 @@ router.get('/bot-token', botTokenHandler)
 
 router.post('/validate', validateHandler)
 
-router.post('/create-invoice-link', createInvoiceLinkHandler(bot))
+router.post('/create-invoice-link', createInvoiceLinkHandler)
 
 api.use('/api/', router)
 

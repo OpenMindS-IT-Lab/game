@@ -8,6 +8,7 @@
     "deps:install": "npm install --install-strategy=nested --legacy-peer-deps",
     "deps:reinstall": "rm -r node_modules && rm package-lock.json && rm -r dist && npm run deps:install",
     "dev": "npm run prestart && netlify dev",
+    "dev:bot-api": "dotenv -c development -e ./.env -- zsh -c 'telegram-bot-api --local --http-port=$BOT_API_PORT --api-id=$BOT_API_ID --api-hash=$BOT_API_HASH --verbosity=$BOT_API_VERBOSITY --dir ./.telegram-bot-api'",
     "build": "netlify build",
     "preview": "vite preview",
     "start": "netlify build && vite preview",
@@ -32,6 +33,7 @@
   "devDependencies": {
     "@types/lodash": "^4.17.13",
     "@types/three": "^0.171.0",
+    "dotenv-cli": "^8.0.0",
     "telegram-webapps": "^8.0.3",
     "typescript": "^4.9.5",
     "vite": "^6.0.3"

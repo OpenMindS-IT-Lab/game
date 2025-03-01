@@ -1,5 +1,6 @@
 import crypto from 'crypto'
 import { RequestHandler } from 'express'
+import bot from '../../../bot'
 import { tgBotApiRequest } from '../telegram'
 import { Endpoint, log, logErrorToStdout, NewBotMethod } from '../utils'
 
@@ -116,43 +117,41 @@ export async function validateHandler(...[req, res]: Parameters<RequestHandler>)
   }
 }
 
-export function createInvoiceLinkHandler(bot: tg.Bot): RequestHandler {
-  return async function (...[req, res]: Parameters<RequestHandler>) {
-    log(Endpoint.CreateInvoiceLink)
-    let data = null
-    try {
-      const { body } = req
-      if (!body) {
-        data = { message: 'Invoice data is empty.' }
-        res.status(400).json(data)
-      } else {
-        await bot.telegram
-          .createInvoiceLink({
-            ...body,
-          })
-          .then(
-            invoiceLink => {
-              data = {
-                message: 'CREATE_INVOICE_LINK',
-                data: invoiceLink,
-              }
-              res.status(200).json(data)
-            },
-            reason => {
-              data = {
-                message: reason,
-              }
-              res.status(500).json(data)
+export async function createInvoiceLinkHandler(...[req, res]: Parameters<RequestHandler>) {
+  log(Endpoint.CreateInvoiceLink)
+  let data = null
+  try {
+    const { body } = req
+    if (!body) {
+      data = { message: 'Invoice data is empty.' }
+      res.status(400).json(data)
+    } else {
+      await bot.telegram
+        .createInvoiceLink({
+          ...body,
+        })
+        .then(
+          invoiceLink => {
+            data = {
+              message: 'CREATE_INVOICE_LINK',
+              data: invoiceLink,
             }
-          )
-      }
-    } catch (error) {
-      data = { message: 'Server error during creating invoice link', error: (error as any).message }
-      logErrorToStdout(error, Endpoint.CreateInvoiceLink)
-      res.status(500).json(data)
-    } finally {
-      log(Endpoint.CreateInvoiceLink, data)
+            res.status(200).json(data)
+          },
+          reason => {
+            data = {
+              message: reason,
+            }
+            res.status(500).json(data)
+          }
+        )
     }
+  } catch (error) {
+    data = { message: 'Server error during creating invoice link', error: (error as any).message }
+    logErrorToStdout(error, Endpoint.CreateInvoiceLink)
+    res.status(500).json(data)
+  } finally {
+    log(Endpoint.CreateInvoiceLink, data)
   }
 }
 
