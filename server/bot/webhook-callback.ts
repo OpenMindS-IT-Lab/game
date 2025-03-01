@@ -15,10 +15,10 @@ export default (async (req, res) => {
       const webHookInfo = await bot.telegram.getWebhookInfo()
 
       console.log(webHookInfo)
-      console.log(update)
+      console.log(JSON.stringify(update).replace(/\n|\r/g, ""))
     }
 
-    if ('pre_checkout_query' in update) console.log(update)
+    if ('pre_checkout_query' in update) console.log(JSON.stringify(update).replace(/\n|\r/g, ""))
     await bot.handleUpdate(update)
 
     res.status(200).send()
