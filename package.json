@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "prestart": "npx -y kill-port --port 5173",
-    "deps:install": "npm install --install-strategy=nested --legacy-peer-deps",
+    "deps:install": "npm install",
     "deps:reinstall": "rm -r node_modules && rm package-lock.json && rm -r dist && npm run deps:install",
     "dev": "npm run prestart && netlify dev",
     "dev:bot-api": "dotenv -c development -e ./.env -- zsh -c 'telegram-bot-api --local --http-port=$BOT_API_PORT --api-id=$BOT_API_ID --api-hash=$BOT_API_HASH --verbosity=$BOT_API_VERBOSITY --dir ./.telegram-bot-api'",
