@@ -1,4 +1,4 @@
-import { exec } from 'child_process'
+import { execFile } from 'child_process'
 import { config } from 'dotenv'
 
 // Завантажуємо змінні з .env
@@ -13,10 +13,11 @@ if (!process.env.SET_WEBHOOK_URL) {
 }
 
 // Формуємо команду для запуску
-const command = `curl -X GET "${process.env.SET_WEBHOOK_URL}"`
+const command = 'curl'
+const args = ['-X', 'GET', process.env.SET_WEBHOOK_URL]
 
 // Запускаємо процес
-const webhookProcess = exec(command, (error, stdout, stderr) => {
+const webhookProcess = execFile(command, args, (error, stdout, stderr) => {
   if (error) {
     console.error(`❌ Помилка запуску: ${error.message}`)
     return
