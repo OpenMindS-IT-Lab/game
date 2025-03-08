@@ -1,14 +1,15 @@
-import { compact, values } from 'lodash'
-import * as THREE from 'three'
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry'
-import { Font, FontLoader } from 'three/examples/jsm/loaders/FontLoader'
-import { Ally } from './canvas'
-import camera, { resetCamera } from './canvas/camera'
-import { Colors } from './canvas/constants'
-import renderer from './canvas/renderer'
-import { scene } from './canvas/scene'
-import { tiles } from './canvas/tiles'
-import Tower from './canvas/tower'
+import { compact, values } from 'lodash';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
+import { Font, FontLoader } from 'three/examples/jsm/loaders/FontLoader';
+import { Ally } from './canvas';
+import camera, { resetCamera } from './canvas/camera';
+import { Colors } from './canvas/constants';
+import renderer from './canvas/renderer';
+import { scene } from './canvas/scene';
+import { tiles } from './canvas/tiles';
+import Tower from './canvas/tower';
 
 // Utility: Switch Cube State
 export const switchObjectSelectionState = (object: THREE.Mesh, selected: boolean) => {
@@ -277,4 +278,26 @@ export function captureImage(mesh: Tower | Ally, fileName: string, gridHelper: T
 
 export function float(n: number): number {
   return parseFloat(n.toFixed(2))
+}
+
+export function enableOrbitControls() {
+  const controls = new OrbitControls(camera, renderer.domElement)
+
+  // Configure controls
+  controls.enableDamping = true // Smooth motion
+  controls.dampingFactor = 0.05
+  controls.screenSpacePanning = false
+  controls.minDistance = 5 // Minimum zoom distance
+  controls.maxDistance = 50 // Maximum zoom distance
+  controls.maxPolarAngle = Math.PI / 2 // Limit vertical rotation
+
+  // Update controls on each frame
+  const updateControls = () => controls.update()
+  renderer.setAnimationLoop(updateControls)
+
+  // Return a cleanup function
+  return () => {
+    controls.dispose()
+    renderer.setAnimationLoop(null)
+  }
 }

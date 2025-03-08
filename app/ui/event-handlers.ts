@@ -1,14 +1,14 @@
-import { compact, entries, kebabCase, startCase, values } from 'lodash'
-import { TelegramWebApps } from 'telegram-webapps'
-import * as THREE from 'three'
-import api from '../api'
-import { Ally } from '../canvas'
-import camera from '../canvas/camera'
-import Tower from '../canvas/tower'
-import Game, { CoinsPack, PaidItem } from '../game'
-import { captureImage, handleMinorError } from '../utils'
-import { shop, toggleShop, updateShop } from './bottom-menu'
-import { hideTowerInfo } from './tower-info'
+import { compact, entries, kebabCase, startCase, values } from 'lodash';
+import { TelegramWebApps } from 'telegram-webapps';
+import * as THREE from 'three';
+import api from '../api';
+import { Ally } from '../canvas';
+import camera from '../canvas/camera';
+import Tower from '../canvas/tower';
+import Game, { CoinsPack, PaidItem } from '../game';
+import { captureImage, handleMinorError } from '../utils';
+import { shop, toggleShop, updateShop } from './bottom-menu';
+import { hideTowerInfo } from './tower-info';
 
 // Event Listeners
 export const handleResize = (renderer: THREE.WebGLRenderer) => (_event: Event) => {
@@ -19,54 +19,66 @@ export const handleResize = (renderer: THREE.WebGLRenderer) => (_event: Event) =
 
 export const handlePointerEvent =
   (pointer: THREE.Vector2, raycaster: THREE.Raycaster, tower: Tower) => (event: MouseEvent | TouchEvent) => {
-    // if (animationHandler.currentState) return // Блокування під час анімації
+    const target = event.target as EventTarget & { nodeName?: string; id?: string, classList?: DOMTokenList };
+
+    console.log('Pointer Event Triggered:', event.type);
+    console.log('Event Target:', target.nodeName, target.id);
 
     event.preventDefault() // Prevent default behavior (e.g., scrolling)
 
-    try {
-      let clientX: number, clientY: number
+    let clientX: number, clientY: number
 
-      if (event instanceof TouchEvent) {
-        // Touch event
-        clientX = event.touches[0].clientX
-        clientY = event.touches[0].clientY
-        // Telegram.WebApp.showAlert('touch')
+    if (typeof TouchEvent !== 'undefined' && event instanceof TouchEvent) {
+      clientX = event.touches[0].clientX
+      clientY = event.touches[0].clientY
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Touch Event:', clientX, clientY);
+      }
+    } else {
+      clientX = (event as MouseEvent).clientX
+      clientY = (event as MouseEvent).clientY
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Mouse Event:', clientX, clientY);
+      }
+    }
+
+    pointer.x = (clientX / window.innerWidth) * 2 - 1
+    pointer.y = -(clientY / window.innerHeight) * 2 + 1
+
+    console.log('Normalized Device Coordinates:', pointer.x, pointer.y);
+
+    raycaster.setFromCamera(pointer, camera)
+
+    const allies = compact(values(tower.allies))
+    const alliesIntersects = raycaster.intersectObjects([tower, ...allies])
+
+    console.log('Raycast Intersections:', alliesIntersects.length);
+
+    if (alliesIntersects.length > 0) {
+      const { object } = alliesIntersects[0] as THREE.Intersection & {
+        object: Tower | Ally
+      }
+      console.log('Intersected Object:', object);
+
+      if (object.isSelected) {
+        console.log('Deselecting Object:', object);
+        object.unselect()
       } else {
-        // Mouse event
-        clientX = event.clientX
-        clientY = event.clientY
+        console.log('Selecting Object:', object);
+        object.select()
       }
-
-      // Calculate normalized device coordinates
-      pointer.x = (clientX / window.innerWidth) * 2 - 1
-      pointer.y = -(clientY / window.innerHeight) * 2 + 1
-
-      raycaster.setFromCamera(pointer, camera)
-
-      // Check for intersections with Tower or Allies
-      const allies = compact(values(tower.allies))
-      const alliesIntersects = raycaster.intersectObjects([tower, ...allies])
-
-      if (alliesIntersects.length > 0) {
-        const { object } = alliesIntersects[0] as THREE.Intersection & {
-          object: Tower | Ally
-        }
-        if (object.isSelected) {
-          object.unselect()
-        } else {
-          object.select()
-        }
-      } else if (
-        (event.target as EventTarget & { nodeName: string }).nodeName === 'CANVAS' ||
-        (event.target as Element).id === 'start-level-button'
-      ) {
-        tower.unselectAllies()
-        tower.unselect()
-        hideTowerInfo()
-        if (!shop.classList.contains('hidden')) toggleShop()
+    } else if (
+      target.nodeName === 'CANVAS' ||
+      target.id === 'start-level-button' || target.classList?.contains('ui')
+    ) {
+      console.log('Deselecting all allies and tower.');
+      tower.unselectAllies()
+      tower.unselect()
+      hideTowerInfo()
+      if (!shop.classList.contains('hidden')) {
+        console.log('Hiding shop.');
+        toggleShop()
       }
-    } catch (error) {
-      handleMinorError(error)
     }
   }
 
@@ -83,12 +95,12 @@ export const handleMouseMove =
     const intersects = raycaster.intersectObjects(allies)
 
     // Оновлюємо курсор миші
-    document.body.style.cursor = intersects.length > 0 ? 'pointer' : 'default'
+    const newCursor = intersects.length > 0 ? 'pointer' : 'default';
+    if (document.body.style.cursor !== newCursor) {
+      document.body.style.cursor = newCursor;
+    }
 
     if (intersects.length > 0) {
-      // allies.forEach(ally => {
-      // hoverObject(ally, intersects)
-      // })
     } else {
       allies.forEach(ally => ((ally.material as THREE.MeshStandardMaterial).opacity = 1))
     }
@@ -123,10 +135,15 @@ export const handlePayButtonClick = async (event: MouseEvent | TouchEvent) => {
   if (!Game.user?.id) return console.error('Can not find `userId` or it has inappropriate type (expect: string).')
 
   const item: PaidItem | undefined = (event.target as HTMLElement)?.dataset?.['item'] as PaidItem | undefined
+  if (!item) {
+    console.error('No valid item found in dataset.');
+    return
+  }
+
   const title = startCase(
     kebabCase(entries(PaidItem).find(([, value]) => value === item)?.[0] ?? 'Title').replace('-', ' ')
   )
-  const description = `Additional ${!!item ? Game.coinsPackMap[item as CoinsPack] + ' Coins' : 'Stuff'}`
+  const description = `Additional ${Game.coinsPackMap[item as CoinsPack] + ' Coins'}`
 
   const invoiceLink = await api
     .createInvoiceLink({
@@ -134,47 +151,40 @@ export const handlePayButtonClick = async (event: MouseEvent | TouchEvent) => {
       title,
       description,
       userId: Game.user.id,
-      //? photoUrl: ''
     })
     .catch(handleMinorError)
 
+  const handleInvoiceStatus = (status: string, description: string, item: PaidItem) => {
+    switch (status) {
+      case 'paid':
+        Telegram.WebApp.showAlert(description + ' granted!');
+        Game.__inst.addPurchasedItem(item);
+        updateShop(Game.__inst);
+        break;
+      case 'pending':
+        Telegram.WebApp.showPopup({
+          buttons: [
+            { id: 'wait', type: 'default', text: 'Wait' },
+            { id: 'proceed', type: 'default', text: 'Proceed' },
+            { id: 'cancel-payment', type: 'destructive', text: 'Cancel payment' },
+          ],
+          message: 'Your purchase is taking longer to complete. Please, stand by!',
+          title: 'Waiting confirmation',
+        });
+        Telegram.WebApp.onEvent('popupClosed', handlePopupClosed);
+        break;
+      case 'failed':
+      case 'cancelled':
+      default:
+        console.warn('Unhandled invoice status:', status);
+        break;
+    }
+  };
+
   if (invoiceLink) {
-    Telegram.WebApp.openInvoice(invoiceLink, status => {
-      console.log('Invoice status: ' + status)
-
-      switch (status) {
-        case 'paid':
-          console.log('paid invoice handler')
-          Telegram.WebApp.showAlert(description + ' granted!')
-          Game.__inst.addPurchasedItem(item as PaidItem)
-          updateShop(Game.__inst)
-          break
-        case 'pending':
-          console.log('pending invoice handler')
-          Telegram.WebApp.showPopup({
-            buttons: [
-              {
-                id: 'wait',
-                type: 'default',
-                text: 'Wait',
-              },
-              { id: 'proceed', type: 'default', text: 'Proceed' },
-              { id: 'cancel-payment', type: 'destructive', text: 'Cancel payment' },
-            ],
-            message: 'Your purchase taking longer to complete. Please, stand by!',
-            title: 'Waiting confirmation',
-          })
-
-          Telegram.WebApp.onEvent('popupClosed', handlePopupClosed)
-          break
-        case 'failed':
-          console.log('failed invoice handler')
-        case 'cancelled':
-          console.log('cancelled invoice handler')
-        default:
-          break
-      }
-    })
+    Telegram.WebApp.openInvoice(invoiceLink, (status) =>
+      handleInvoiceStatus(status, description, item as PaidItem)
+    );
   }
 }
 

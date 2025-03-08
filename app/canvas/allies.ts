@@ -1,19 +1,18 @@
-import { capitalize, values } from 'lodash'
-import * as THREE from 'three'
-import airTowerImg from '../assets/air-tower.png'
-import earthTowerImg from '../assets/earth-tower.png'
-import fireTowerImg from '../assets/fire-tower.png'
-import waterTowerImg from '../assets/water-tower.png'
-import Game from '../game'
-import * as textures from '../textures'
-import { toggleTowerInfo } from '../ui/tower-info'
-import { float, showDamageText } from '../utils'
-import { moveAndFlip, moveLinear } from './animations'
-import EnemySpawner, { Enemy } from './enemies'
-import renderer from './renderer'
-import { scene } from './scene'
-import { tiles } from './tiles'
-import Tower from './tower'
+import { capitalize } from 'lodash';
+import * as THREE from 'three';
+import airTowerImg from '../assets/air-tower.png';
+import earthTowerImg from '../assets/earth-tower.png';
+import fireTowerImg from '../assets/fire-tower.png';
+import waterTowerImg from '../assets/water-tower.png';
+import Game from '../game';
+import { toggleTowerInfo } from '../ui/tower-info';
+import { float, showDamageText } from '../utils';
+import { moveAndFlip, moveLinear } from './animations';
+import EnemySpawner, { Enemy } from './enemies';
+import loader from './model-loader';
+import { scene } from './scene';
+import { tiles } from './tiles';
+import Tower from './tower';
 
 export const enum AllyType {
   WATER = 'water',
@@ -44,157 +43,13 @@ export class Ally extends THREE.Mesh {
   allyTowerType: AllyType
   isSelected: boolean = false
   height: number
-  casting: Timeout
-
-  private static loadTexture<T extends AllyType>(
-    type: T,
-    settingsCB?: (texture: TowerTexture<T>) => TowerTexture<T>
-  ): TowerTexture<T> | {} {
-    if (type in textures) {
-      const loader = new THREE.TextureLoader()
-      const textureData = textures[type] as TextureData<T extends AllyType.FIRE ? T : undefined>
-
-      const colorTexture = loader.load(textureData.color)
-      const normalTexture = loader.load(textureData.normalGL)
-      const roughnessTexture = loader.load(textureData.roughness)
-      const displacementTexture = loader.load(textureData.displacement)
-      const aoTexture = type !== AllyType.FIRE ? loader.load((textureData as TextureData).ambientOcclusion) : undefined
-      const metalinessTexture =
-        type === AllyType.FIRE ? loader.load((textureData as TextureData<AllyType.FIRE>).metaliness) : undefined
-
-      try {
-        const maxAnisotropy = renderer.capabilities.getMaxAnisotropy()
-        colorTexture.anisotropy = maxAnisotropy
-      } catch (error) {
-        console.warn(error)
-      }
-      colorTexture.premultiplyAlpha = false
-
-      colorTexture.wrapS = THREE.RepeatWrapping
-      colorTexture.wrapT = THREE.RepeatWrapping
-      colorTexture.repeat.set(7.5, 4.5)
-
-      normalTexture.wrapS = THREE.RepeatWrapping
-      normalTexture.wrapT = THREE.RepeatWrapping
-      normalTexture.repeat.set(7.5, 4.5)
-      normalTexture.format = THREE.RGBAFormat
-      normalTexture.flipY = false
-      normalTexture.premultiplyAlpha = false
-
-      roughnessTexture.wrapS = THREE.RepeatWrapping
-      roughnessTexture.wrapT = THREE.RepeatWrapping
-      roughnessTexture.repeat.set(7.5, 4.5)
-
-      if (aoTexture) {
-        aoTexture.wrapS = THREE.RepeatWrapping
-        aoTexture.wrapT = THREE.RepeatWrapping
-        aoTexture.repeat.set(7.5, 4.5)
-      }
-
-      if (metalinessTexture) {
-        metalinessTexture.wrapS = THREE.RepeatWrapping
-        metalinessTexture.wrapT = THREE.RepeatWrapping
-        metalinessTexture.repeat.set(7.5, 4.5)
-      }
-
-      displacementTexture.wrapS = THREE.RepeatWrapping
-      displacementTexture.wrapT = THREE.RepeatWrapping
-      displacementTexture.repeat.set(7.5, 4.5)
-
-      const texture = {
-        map: colorTexture,
-        normalMap: normalTexture,
-        roughnessMap: roughnessTexture,
-        displacementMap: displacementTexture,
-      }
-
-      if (aoTexture) Object.assign(texture, { aoMap: aoTexture })
-      if (metalinessTexture) Object.assign(texture, { metalinessMap: metalinessTexture })
-
-      return typeof settingsCB === 'function' ? settingsCB(texture as TowerTexture<T>) : texture
-    }
-
-    return {}
-  }
-
-  private static textureMap = {
-    [AllyType.WATER]: Ally.loadTexture<AllyType.WATER>(AllyType.WATER, texture => {
-      values(texture).forEach(({ repeat }) => repeat.set(2, 0.5))
-      return texture
-    }),
-    [AllyType.FIRE]: Ally.loadTexture<AllyType.FIRE>(AllyType.FIRE, texture => {
-      values(texture).forEach(({ repeat }) => repeat.set(2.5, 1.5))
-      return texture
-    }),
-    [AllyType.EARTH]: Ally.loadTexture<AllyType.EARTH>(AllyType.EARTH, texture => {
-      values(texture).forEach(({ repeat }) => repeat.set(0.75, 0.75))
-      return texture
-    }),
-    [AllyType.AIR]: Ally.loadTexture<AllyType.AIR>(AllyType.AIR, texture => {
-      values(texture).forEach(({ repeat }) => repeat.set(5, 1))
-      return texture
-    }),
-  }
-
-  private static geometryMap = {
-    [AllyType.WATER]: () => new THREE.SphereGeometry(0.75, 16, 16),
-    [AllyType.FIRE]: () => new THREE.OctahedronGeometry(0.9).rotateY(Math.PI / 4),
-    [AllyType.EARTH]: () => new THREE.BoxGeometry(1.25, 1.25, 1.25),
-    [AllyType.AIR]: () => new THREE.IcosahedronGeometry(0.9, 0),
-  }
-
-  private static materialMap = {
-    [AllyType.WATER]: {
-      // color: 0x4277ff,
-      // transparent: true,
-      // opacity: 0.8,
-      // roughness: 0.5,
-      // metalness: 0,
-      // emissive: 0x4277ff,
-      // emissiveIntensity: 0.25,
-      displacementScale: 0.01,
-      normalScale: new THREE.Vector2(10, 10),
-    },
-    [AllyType.FIRE]: {
-      // color: 0xff4444,
-      // transparent: true,
-      // opacity: 1,
-      // roughness: 0.1,
-      // metalness: 0,
-      // emissive: 0xff4444,
-      // emissiveIntensity: 0.1,
-      displacementScale: 0.01,
-      normalScale: new THREE.Vector2(10, 10),
-    },
-    [AllyType.EARTH]: {
-      // color: 0x423333,
-      // transparent: true,
-      // opacity: 1,
-      // roughness: 1,
-      // metalness: 0,
-      // emissive: 0x424242,
-      // emissiveIntensity: 0.25,
-      displacementScale: 0.01,
-      normalScale: new THREE.Vector2(10, 10),
-    },
-    [AllyType.AIR]: {
-      // color: 0x42ffff,
-      // transparent: true,
-      // opacity: 0.7,
-      // roughness: 0.2,
-      // metalness: 0,
-      // emissive: 0x42ffff,
-      // emissiveIntensity: 0.25,
-      displacementScale: 0,
-      normalScale: new THREE.Vector2(10, 10),
-    },
-  }
+  casting: Timeout = 0
 
   private static heightMap = {
-    [AllyType.WATER]: 1.5,
-    [AllyType.FIRE]: 1.8,
-    [AllyType.EARTH]: 1.25,
-    [AllyType.AIR]: 1.8,
+    [AllyType.WATER]: 1,
+    [AllyType.FIRE]: 1,
+    [AllyType.EARTH]: 1,
+    [AllyType.AIR]: 1,
   }
 
   private static embers() {
@@ -496,6 +351,13 @@ export class Ally extends THREE.Mesh {
     [AllyType.AIR]: airTowerImg,
   }
 
+  private static modelPathMap = {
+    [AllyType.WATER]: '/app/models/water-tower.glb',
+    [AllyType.FIRE]: '/app/models/fire-tower.glb',
+    [AllyType.EARTH]: '/app/models/earth-tower.glb',
+    [AllyType.AIR]: '/app/models/air-tower.glb',
+  }
+
   private static getRandomPosition() {
     let targetTile
 
@@ -544,52 +406,51 @@ export class Ally extends THREE.Mesh {
   }
 
   constructor(type: AllyType) {
-    const geometry = Ally.geometryMap[type]()
-    const material = new THREE.MeshStandardMaterial({
-      ...Ally.materialMap[type],
-      ...Ally.textureMap[type],
-    })
-
-    try {
-      if (material.map) material.map.anisotropy = renderer.capabilities.getMaxAnisotropy()
-    } catch (error) {
-      console.warn(error)
-    }
-
-    super(geometry, material)
+    super()
 
     this.title = capitalize(type) + ' Tower'
     this.description = Ally.descriptionMap[type]
     this.image = Ally.imageMap[type]
-
     this.allyTowerType = type
     this.height = Ally.heightMap[type]
 
-    this.level = 0
-    this.levelUp()
+    loader.load(Ally.modelPathMap[type], gltf => {
+      console.log('Object loaded: ', gltf)
 
-    this.casting = 0
+      this.copy(gltf.scene.children[0])
 
-    try {
-      const position = Ally.getRandomPosition()
-      this.position.copy(position).setY(this.height / 2)
-    } catch (error) {
-      console.error(error)
-      return
-    }
+      this.levelUp()
 
-    this.castShadow = true
-    this.receiveShadow = true
+      try {
+        const position = Ally.getRandomPosition()
+        // this.position.copy(position).setY(this.height / 2)
+        this.position.copy(position).setY(0)
+      } catch (error) {
+        console.error(error)
+        return
+      }
 
-    this.userData = {
-      isPersistant: false,
-      boundingBox: new THREE.Box3(),
-      initialColor: material.color,
-    }
+      this.scale.setY(2)
 
-    this.particles = Ally.particlesMap[type].bind(this)()
+      this.castShadow = true
+      this.receiveShadow = true
 
-    scene.add(this)
+      this.userData = {
+        isPersistant: false,
+        boundingBox: new THREE.Box3(),
+        initialColor: (this.material as THREE.MeshStandardMaterial).color,
+      }
+
+      this.particles = Ally.particlesMap[type].bind(this)()
+
+      const wireframe = new THREE.LineSegments(
+        new THREE.WireframeGeometry(this.geometry.clone()),
+        new THREE.MeshBasicMaterial({ color: 0x000, transparent: true, opacity: 0.005, depthTest: false })
+      )
+      wireframe.position.copy(this.position.clone())
+
+      scene.add(this)
+    })
   }
 
   updatePrice(priceMap: typeof Ally.priceMap = Ally.priceMap) {
@@ -623,20 +484,14 @@ export class Ally extends THREE.Mesh {
 
   select() {
     const tower = scene.getObjectByName('Tower') as Tower
-    // if (tower.isSelected) tower.unselect()
     tower.unselectAllies()
     tower.unselect()
     if (this.particles) this.particles.resume()
-    // ;(this.material as THREE.MeshStandardMaterial).color.set(Colors.SELECTED_TOWER.color)
-    // ;(this.material as THREE.MeshStandardMaterial).emissiveIntensity = 0
     this.isSelected = true
     toggleTowerInfo(this)
   }
 
   unselect() {
-    // ;(this.material as THREE.MeshStandardMaterial).color.set(Ally.materialMap[this.allyTowerType].color)
-    // ;(this.material as THREE.MeshStandardMaterial).emissiveIntensity =
-    // Ally.materialMap[this.allyTowerType].emissiveIntensity
     if (this.particles && Game.__inst.isUpgrading) this.particles.pause()
     this.isSelected = false
     toggleTowerInfo()

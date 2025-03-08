@@ -1,17 +1,16 @@
 /* Styles for the Shop Section */
 
 #shop {
-  --width: 480px;
   --padding: 20px;
   position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
+  top: 0;
+  left: 0;
   display: flex;
   visibility: visible;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   z-index: 100;
 }
 
@@ -27,10 +26,12 @@
 }
 
 #shop .content {
+  width: calc(var(--width) - var(--padding) * 2);
+  max-width: 480px;
+  height: calc(var(--height) - var(--padding) * 2);
+  max-height: 100vh;
   position: relative;
   margin: 0 auto;
-  width: var(--width);
-  max-width: calc(100% - var(--padding) * 2);
   background-color: rgba(0, 0, 0, 0.85);
   padding: 20px 10px 20px;
   border-radius: 10px;
@@ -40,6 +41,8 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
+
+  overflow-y: auto; /* Automatically hides scrollbar when no overflow */
 }
 
 #shop .content h1 {
@@ -126,4 +129,29 @@
   font-weight: 400;
   margin: 0 10px 3px 0;
   display: inline-block;
+}
+
+/* Custom Scrollbar for Shop Content */
+#shop .content {
+  scrollbar-width: thin; /* Firefox: Makes the scrollbar thin */
+  scrollbar-color: #007bff rgba(255, 255, 255, 0.2); /* Thumb and track color */
+}
+
+/* Custom Scrollbar for WebKit Browsers */
+#shop .content::-webkit-scrollbar {
+  width: 6px; /* Thin scrollbar */
+}
+
+#shop .content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.2); /* Semi-transparent track */
+  border-radius: 10px;
+}
+
+#shop .content::-webkit-scrollbar-thumb {
+  background: #007bff; /* Scrollbar color */
+  border-radius: 10px;
+}
+
+#shop .content::-webkit-scrollbar-thumb:hover {
+  background: #0056b3; /* Darker color on hover */
 }

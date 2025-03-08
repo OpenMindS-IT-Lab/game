@@ -1,5 +1,5 @@
-import { execFile } from 'child_process'
 import { config } from 'dotenv'
+import { exec } from 'node:child_process'
 
 // Завантажуємо змінні з .env
 config({
@@ -10,19 +10,25 @@ config({
 console.log(process.env.BOT_API_ID)
 
 // Формуємо команду для запуску
-const command = 'telegram-bot-api'
+let command = process.env.BOT_API_PATH ?? 'telegram-bot-api'
 const args = [
-  '--local',
   `--http-port=${process.env.BOT_API_PORT}`,
   `--api-id=${process.env.BOT_API_ID}`,
   `--api-hash=${process.env.BOT_API_HASH}`,
   `--verbosity=${process.env.BOT_API_VERBOSITY}`,
+  '--local',
   '--dir',
+  './.telegram-bot-api',
+  '--temp-dir',
   './.telegram-bot-api'
 ]
+command += ' '
+command += args.join(' ')
+
+console.log(command)
 
 // Запускаємо процес
-const botProcess = execFile(command, args, (error, stdout, stderr) => {
+const botProcess = exec(command, (error, stdout, stderr) => {
   if (error) {
     console.error(`Помилка запуску: ${error.message}`)
     return
@@ -38,5 +44,7 @@ const botProcess = execFile(command, args, (error, stdout, stderr) => {
 console.log(`✅ Запущено: ${command}`)
 
 // Перенаправляємо вивід у консоль
-botProcess.stdout.pipe(process.stdout)
-botProcess.stderr.pipe(process.stderr)
+if (!!botProcess) {
+  botProcess.stdout?.pipe(process.stdout)
+  botProcess.stderr?.pipe(process.stderr)
+} else process.exit(1)

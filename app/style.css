@@ -6,26 +6,27 @@ body {
   margin: 0;
   overflow: hidden;
   font-family: Arial, sans-serif;
+  position: relative;
 }
 
 #game-container {
   width: 100vw;
   height: 100vh;
-  position: relative;
+  position: static;
   background: black; /* Під сценою */
 }
 
 #ui-container {
-  --top: calc(var(--tg-safe-area-inset-top));
+  --top: calc(var(--tg-safe-area-inset-top) + var(--tg-safe-area-inset-bottom));
   --right: calc(var(--tg-safe-area-inset-right) + var(--tg-safe-area-inset-left));
 
   --content-vertical: calc(var(--tg-content-safe-area-inset-top) + var(--tg-content-safe-area-inset-bottom));
   --content-horizontal: calc(var(--tg-content-safe-area-inset-left) + var(--tg-content-safe-area-inset-right));
 
-  --height: calc(100vh - var(--content-vertical) - var(--top) - var(--tg-safe-area-inset-bottom));
-  --width: calc(100vw - var(--right));
+  --height: calc(100vh - var(--content-vertical) - var(--top));
+  --width: calc(100vw - var(--content-horizontal) - var(--right));
 
-  position: absolute;
+  position: static;
   top: var(--top);
   right: var(--right);
   left: 0;
