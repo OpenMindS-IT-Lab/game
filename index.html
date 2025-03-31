@@ -15,166 +15,176 @@
 
   <!-- Інтерфейс -->
   <div id="ui-container">
-    <!-- Нижні кнопки (основний ігровий інтерфейс користувача для взаємодії зі сценою) -->
-    <nav id="bottom-buttons" class="ui active">
-      <button id="shop-button" type="button" class="ui-button">shop</button>
-      <button id="start-level-button" type="button" class="ui-button">start</button>
-    </nav>
+    <div id="safe-area">
+      <div id="modals">
 
-    <section id="shop" class="hidden">
-      <div class="content">
-        <h1>Shop</h1>
-        <figure class="air">
-          <button disabled id="purchase-main-tower" type="button" class="ui-button">OPEN</button>
-          <figcaption>Main Tower</figcaption>
-          <img class="thumb" src="./app/assets/main-tower.PNG" alt="Main Tower" />
-        </figure>
-        <figure class="air">
-          <button disabled id="purchase-air-tower" type="button" class="ui-button">OPEN</button>
-          <figcaption>Air Tower</figcaption>
-          <img class="thumb" src="./app/assets/air-tower.PNG" alt="Air Tower" />
-        </figure>
-        <figure class="water">
-          <button disabled="false" id="purchase-water-tower" type="button" class="ui-button">OPEN</button>
-          <figcaption>Water Tower</figcaption>
-          <img class="thumb" src="./app/assets/water-tower.PNG" alt="Water Tower" />
-        </figure>
-        <figure class="earth">
-          <button disabled id="purchase-earth-tower" type="button" class="ui-button">OPEN</button>
-          <figcaption>Earth Tower</figcaption>
-          <img class="thumb" src="./app/assets/earth-tower.PNG" alt="Earth Tower" />
-        </figure>
-        <figure class="fire">
-          <button disabled id="purchase-fire-tower" type="button" class="ui-button">OPEN</button>
-          <figcaption>Fire Tower</figcaption>
-          <img class="thumb" src="./app/assets/fire-tower.PNG" alt="Fire Tower" />
-        </figure>
-        <figure class="coins">
-          <button id="purchase-coins" type="button" class="ui-button" data-item="cs">BUY</button>
-          <figcaption>Coins</figcaption>
-          <img class="thumb" src="./app/assets/coin.png" alt="Coins" />
-        </figure>
-        <button id="close-shop-button" type="button"><span>Close</span> X</button>
-      </div>
-    </section>
+        <section id="shop" class="hidden">
+          <div class="content">
+            <h1>Shop</h1>
+            <figure class="air">
+              <button disabled id="purchase-main-tower" type="button" class="ui-button">OPEN</button>
+              <figcaption>Main Tower</figcaption>
+              <img class="thumb" src="./app/assets/main-tower.PNG" alt="Main Tower" />
+            </figure>
+            <figure class="air">
+              <button disabled id="purchase-air-tower" type="button" class="ui-button">OPEN</button>
+              <figcaption>Air Tower</figcaption>
+              <img class="thumb" src="./app/assets/air-tower.PNG" alt="Air Tower" />
+            </figure>
+            <figure class="water">
+              <button disabled="false" id="purchase-water-tower" type="button" class="ui-button">OPEN</button>
+              <figcaption>Water Tower</figcaption>
+              <img class="thumb" src="./app/assets/water-tower.PNG" alt="Water Tower" />
+            </figure>
+            <figure class="earth">
+              <button disabled id="purchase-earth-tower" type="button" class="ui-button">OPEN</button>
+              <figcaption>Earth Tower</figcaption>
+              <img class="thumb" src="./app/assets/earth-tower.PNG" alt="Earth Tower" />
+            </figure>
+            <figure class="fire">
+              <button disabled id="purchase-fire-tower" type="button" class="ui-button">OPEN</button>
+              <figcaption>Fire Tower</figcaption>
+              <img class="thumb" src="./app/assets/fire-tower.PNG" alt="Fire Tower" />
+            </figure>
+            <figure class="coins">
+              <button id="purchase-coins" type="button" class="ui-button" data-item="cs">BUY</button>
+              <figcaption>Coins</figcaption>
+              <img class="thumb" src="./app/assets/coin.png" alt="Coins" />
+            </figure>
+            <button id="close-shop-button" type="button"><span>Close</span> X</button>
+          </div>
+        </section>
 
-    <section id="tower-info" class="hidden">
-      <div class="content" name="content">
-        <h1 id="tower-title" name="title">Tower Title</h1>
-        <div id="tower-info-content" name="content">
-          <div id="tower-info-image" name="image">
-          </div>
-          <div class="health-bar" name="health-bar">
-            <label for="health">Health:</label>
-            <progress id="health" value="100" max="120">100 / 120</progress>
-            <span>100 / 120</span>
-          </div>
-          <p id="tower-description" name="description">"Tower description."</p>
-          <span id="show-more">Show more...</span>
-          <div id="tower-info-stats" name="stats">
-            <table name="stats-table" class="upgrade">
-              <colgroup>
-                <col span="1">
-                <col span="2">
-                <col span="1">
-              </colgroup>
-              <tr>
-                <th>STAT</th>
-                <th>CURRENT</th>
-                <th>NEXT</th>
-              </tr>
-              <tr>
-                <td><img src="app/assets/level.svg" alt="Level"> Level</td>
-                <td name="level"></td>
-                <td name="next-level" style="color: green;"></td>
-              </tr>
-              <tr>
-                <td><img src="app/assets/health.svg" alt="Health"> Health</td>
-                <td name="health"></td>
-                <td name="next-health" style="color: green;"></td>
-              </tr>
-              <tr>
-                <td><img src="app/assets/speed.svg" alt="Attack Speed"> Attack Speed</td>
-                <td name="attack-speed"></td>
-                <td name="next-attack-speed" style="color: green;"></td>
-              </tr>
-              <tr>
-                <td><img src="app/assets/damage.svg" alt="Damage"> Damage</td>
-                <td name="damage"></td>
-                <td name="next-damage" style="color: green;"></td>
-              </tr>
-              <tr>
-                <td><img src="app/assets/cooldown.svg" alt="Cooldown"> Cooldown</td>
-                <td name="cooldown"></td>
-                <td name="next-cooldown" style="color: green;"></td>
-              </tr>
-            </table>
-            <div id="upgrade-cost" name="upgrade-cost">
-              <strong>Upgrade Cost:</strong> 50 Coins
+        <section id="tower-info" class="hidden">
+          <div class="content" name="content">
+            <h1 id="tower-title" name="title">Tower Title</h1>
+            <div id="tower-info-content" name="content">
+              <div id="tower-info-image" name="image">
+              </div>
+              <div class="health-bar" name="health-bar">
+                <label for="health">Health:</label>
+                <progress id="health" value="100" max="120">100 / 120</progress>
+                <span>100 / 120</span>
+              </div>
+              <p id="tower-description" name="description">"Tower description."</p>
+              <span id="show-more">Show more...</span>
+              <div id="tower-info-stats" name="stats">
+                <table name="stats-table" class="upgrade">
+                  <colgroup>
+                    <col span="1">
+                    <col span="2">
+                    <col span="1">
+                  </colgroup>
+                  <tr>
+                    <th>STAT</th>
+                    <th>CURRENT</th>
+                    <th>NEXT</th>
+                  </tr>
+                  <tr>
+                    <td><img src="app/assets/level.svg" alt="Level"> Level</td>
+                    <td name="level"></td>
+                    <td name="next-level" style="color: green;"></td>
+                  </tr>
+                  <tr>
+                    <td><img src="app/assets/health.svg" alt="Health"> Health</td>
+                    <td name="health"></td>
+                    <td name="next-health" style="color: green;"></td>
+                  </tr>
+                  <tr>
+                    <td><img src="app/assets/speed.svg" alt="Attack Speed"> Attack Speed</td>
+                    <td name="attack-speed"></td>
+                    <td name="next-attack-speed" style="color: green;"></td>
+                  </tr>
+                  <tr>
+                    <td><img src="app/assets/damage.svg" alt="Damage"> Damage</td>
+                    <td name="damage"></td>
+                    <td name="next-damage" style="color: green;"></td>
+                  </tr>
+                  <tr>
+                    <td><img src="app/assets/cooldown.svg" alt="Cooldown"> Cooldown</td>
+                    <td name="cooldown"></td>
+                    <td name="next-cooldown" style="color: green;"></td>
+                  </tr>
+                </table>
+                <div id="upgrade-cost" name="upgrade-cost">
+                  <strong>Upgrade Cost:</strong> 50 Coins
+                </div>
+              </div>
             </div>
+            <button id="back-to-shop-button" name="back-to-shop-button" type="button">← <span>Shop</span></button>
+            <button id="upgrade-tower-button" name="upgrade-button" type="button" class="ui-button">UPGRADE</button>
+            <button id="close-tower-info-button" name="close-button" type="button"><span>Close</span> X</button>
           </div>
-        </div>
-        <button id="back-to-shop-button" name="back-to-shop-button" type="button">← <span>Shop</span></button>
-        <button id="upgrade-tower-button" name="upgrade-button" type="button" class="ui-button">UPGRADE</button>
-        <button id="close-tower-info-button" name="close-button" type="button"><span>Close</span> X</button>
+        </section>
+
       </div>
-    </section>
+
+      <!-- Нижні кнопки (основний ігровий інтерфейс користувача для взаємодії зі сценою) -->
+      <section id="main-menu">
+        <nav id="bottom-buttons" class="ui active">
+          <button id="shop-button" type="button" class="ui-button">shop</button>
+          <button id="start-level-button" type="button" class="ui-button">start</button>
+        </nav>
+
+        <div id="bottom-info" class="ui">
+          <h1 id="level-display">Level 1
+          </h1>
+          <span id="timer">30</span>
+        </div>
+      </section>
 
 
-    <div id="bottom-info" class="ui">
-      <h1 id="level-display">Level 1
-      </h1>
-      <span id="timer">30</span>
+      <div class="ui counters">
+        <div class="ui" id="coin-counter">Coins: 0</div>
+        <div class="ui" id="score-counter">Score: 0</div>
+        <div class="ui" id="highscore-counter">Hightscore: 0</div>
+      </div>
+
     </div>
+
 
     <!-- Бічні кнопки (для зручності під час розробки; не входитимуть в кінцевий інтерфейс гри) -->
     <!-- <nav id="side-buttons">
-      <button id="spawn-fat" type="button" class="ui-button">Spawn Fat</button>
-      <button id="spawn-fast" type="button" class="ui-button">Spawn Fast</button>
-      <button id="spawn-regular" type="button" class="ui-button">Spawn Regular</button>
-      <button id="spawn-strong" type="button" class="ui-button">Spawn Strong</button>
-    </nav> -->
+        <button id="spawn-fat" type="button" class="ui-button">Spawn Fat</button>
+        <button id="spawn-fast" type="button" class="ui-button">Spawn Fast</button>
+        <button id="spawn-regular" type="button" class="ui-button">Spawn Regular</button>
+        <button id="spawn-strong" type="button" class="ui-button">Spawn Strong</button>
+      </nav> -->
 
     <!-- Кнопка-бургер -->
     <!-- <button id="burger-button" type="button" aria-label="Toggle Menu">
-      ☰
-    </button> -->
+        ☰
+      </button> -->
 
     <!-- Випадаюче меню -->
     <!-- <nav id="side-menu" class="hidden">
-      <button id="close-button" type="button" aria-label="Toggle Menu">
-        X
-      </button>
-      <ul>
-        <li><button id="pause-button" type="button" class="menu-item">Pause</button></li> -->
+        <button id="close-button" type="button" aria-label="Toggle Menu">
+          X
+        </button>
+        <ul>
+          <li><button id="pause-button" type="button" class="menu-item">Pause</button></li> -->
     <!-- Майбутні пункти меню -->
     <!-- <li><button id="resume-button" type="button" class="menu-item">Resume</button></li>
-        <li><button type="button" class="menu-item">Menu Option 3</button></li>
-        <li><button type="button" class="menu-item">Menu Option 4</button></li>
-      </ul>
-    </nav> -->
-
-    <div class="ui counters">
-      <div class="ui" id="coin-counter">Coins: 0</div>
-      <div class="ui" id="score-counter">Score: 0</div>
-      <div class="ui" id="highscore-counter">Hightscore: 0</div>
-    </div>
+          <li><button type="button" class="menu-item">Menu Option 3</button></li>
+          <li><button type="button" class="menu-item">Menu Option 4</button></li>
+        </ul>
+      </nav> -->
 
     <!-- <table id="game-info-table">
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>HP</th>
-          <th>LVL</th>
-          <th>DMG</th>
-          <th>Speed</th>
-          <th>Cooldown</th>
-        </tr>
-      </thead>
-      <tbody>
-        ...
-    </tbody>
-    </table> -->
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>HP</th>
+            <th>LVL</th>
+            <th>DMG</th>
+            <th>Speed</th>
+            <th>Cooldown</th>
+          </tr>
+        </thead>
+        <tbody>
+          ...
+      </tbody>
+      </table> -->
   </div>
 
   <script type="module" src="/app/main.ts" charset="utf-8"></script>

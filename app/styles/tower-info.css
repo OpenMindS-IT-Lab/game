@@ -3,24 +3,22 @@
 #tower-info {
   --width: 480px;
   --padding: 20px;
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
+  max-height: min-content;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   z-index: 100;
 }
 
 #tower-info .content {
   position: relative;
   margin: auto;
-  width: var(--width);
-  max-width: calc(100% - var(--padding) * 4);
+  width: calc(100% - var(--padding) * 2);
+  max-width: var(--width);
+  max-height: calc(100% - var(--padding) * 2);
   background-color: rgba(0, 0, 0, 0.85);
-  padding: 10px 20px 20px;
+  padding: 10px var(--padding) var(--padding);
   border-radius: 10px;
   color: white;
   pointer-events: auto; /* Ensures the UI is interactive */
@@ -29,7 +27,7 @@
 #tower-info .content button#close-tower-info-button {
   position: absolute;
   top: 23px;
-  right: 20px;
+  right: var(--padding);
   color: #ff0000;
   background-color: transparent;
   border: none;
@@ -51,8 +49,8 @@
 
 #tower-info .content button#back-to-shop-button {
   position: absolute;
-  top: 20px;
-  left: 20px;
+  top: var(--padding);
+  left: var(--padding);
   color: #fff;
   background-color: transparent;
   border: none;
@@ -126,7 +124,7 @@
 
 .health-bar progress {
   width: 100%;
-  height: 20px;
+  height: var(--padding);
   -webkit-appearance: none;
   appearance: none;
   margin: 0;

@@ -17,28 +17,21 @@ body {
 }
 
 #ui-container {
-  --top: calc(var(--tg-safe-area-inset-top) + var(--tg-safe-area-inset-bottom));
-  --right: calc(var(--tg-safe-area-inset-right) + var(--tg-safe-area-inset-left));
-
-  --content-vertical: calc(var(--tg-content-safe-area-inset-top) + var(--tg-content-safe-area-inset-bottom));
-  --content-horizontal: calc(var(--tg-content-safe-area-inset-left) + var(--tg-content-safe-area-inset-right));
-
-  --height: calc(100vh - var(--content-vertical) - var(--top));
-  --width: calc(100vw - var(--content-horizontal) - var(--right));
-
-  position: static;
-  top: var(--top);
-  right: var(--right);
+  position: fixed;
+  top: 0;
+  right: 0;
   left: 0;
   bottom: 0;
 
-  width: var(--width);
-  height: var(--height);
-
-  margin: var(--tg-content-safe-area-inset-top) var(--tg-content-safe-area-inset-right) 0
-    var(--tg-content-safe-area-inset-left);
-
-  padding: var(--tg-safe-area-inset-bottom) var(--tg-safe-area-inset-left) 0 var(--tg-safe-area-inset-right);
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  max-width: 100vw;
+  max-height: 100vh;
+  
+  margin: var(--tg-safe-area-inset-top) var(--tg-safe-area-inset-right) var(--tg-safe-area-inset-bottom)
+  var(--tg-safe-area-inset-left);
+  padding: var(--tg-content-safe-area-inset-top) var(--tg-content-safe-area-inset-right) var(--tg-content-safe-area-inset-bottom) var(--tg-content-safe-area-inset-left);
 
   pointer-events: none; /* Щоб UI не блокував мишу для сцени */
   -webkit-user-select: none; /* Safari and Chrome (Mobile and Desktop) */
@@ -49,6 +42,49 @@ body {
   -webkit-touch-callout: none; /* iOS Safari */
   touch-action: manipulation; /* Disables double-tap zooming */
 }
+
+#ui-container > #safe-area {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  box-sizing: content-box;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#ui-container > #safe-area > #modals {
+  width: 100%;
+  box-sizing: border-box;
+  flex-grow: 1;
+  border: 1px solid red;
+  overflow-y: auto;
+
+  display: flex;
+
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
+}
+
+#ui-container > #safe-area > #modals::-webkit-scrollbar {
+  width: 0;
+}
+
+#ui-container > #safe-area > #modals > * {
+  margin: auto;
+}
+
+#ui-container > #safe-area > #main-menu {
+  width: 100%;
+  height: auto;
+  box-sizing: border-box;
+  position: relative;
+  bottom: 0;
+}
+
 
 .ui-button {
   padding: 10px;
