@@ -32,7 +32,9 @@ export function moveAndFlip(
   spotLight?: THREE.SpotLight,
   cb?: () => void
 ) {
-  ;((object.userData.isAnimating as AnimationHandler) ?? animationHandler).switchState(true)
+  ;(
+    (object.userData.isAnimating as AnimationHandler) ?? animationHandler
+  ).switchState(true)
   // Block re-triggering
   const initialPosition = object.position.clone()
   const initialRotation = object.rotation.clone()
@@ -68,14 +70,20 @@ export function moveAndFlip(
       object.position.y = initialPosition.y // Return to initial height
 
       object.rotation.copy(initialRotation) // Reset rotation
-      ;((object.userData.isAnimating as AnimationHandler) ?? animationHandler).switchState(false)
+      ;(
+        (object.userData.isAnimating as AnimationHandler) ?? animationHandler
+      ).switchState(false)
       const prevTile = tiles.find(
-        tile => tile.position.x === object.position.x && tile.position.z === object.position.z
+        tile =>
+          tile.position.x === object.position.x &&
+          tile.position.z === object.position.z
       )
       if (prevTile) prevTile.userData.isOccupied = true
 
       const currTile = tiles.find(
-        tile => tile.position.x === initialPosition.x && tile.position.z === initialPosition.z
+        tile =>
+          tile.position.x === initialPosition.x &&
+          tile.position.z === initialPosition.z
       )
       if (currTile) currTile.userData.isOccupied = false
 
@@ -130,7 +138,9 @@ export function moveLinear(
   cb?: () => void,
   speed: number = 1
 ) {
-  ;((object.userData.isAnimating as AnimationHandler) ?? animationHandler).switchState(true) // Блокування повторного запуску
+  ;(
+    (object.userData.isAnimating as AnimationHandler) ?? animationHandler
+  ).switchState(true) // Блокування повторного запуску
 
   const initialPosition = object.position.clone()
   let elapsed = 0 // Час, який минув
@@ -149,16 +159,22 @@ export function moveLinear(
     if (elapsed >= 1) {
       object.position.x = targetPosition?.x ?? initialPosition.x
       object.position.z = targetPosition?.z ?? initialPosition.z
-      ;((object.userData.isAnimating as AnimationHandler) ?? animationHandler).switchState(false) // Розблокування
+      ;(
+        (object.userData.isAnimating as AnimationHandler) ?? animationHandler
+      ).switchState(false) // Розблокування
 
       // Оновлення статусу плитки
       const targetTile = tiles.find(
-        tile => tile.position.x === object.position.x && tile.position.z === object.position.z
+        tile =>
+          tile.position.x === object.position.x &&
+          tile.position.z === object.position.z
       )
       if (targetTile) targetTile.userData.isOccupied = true
 
       const initialTile = tiles.find(
-        tile => tile.position.x === initialPosition.x && tile.position.z === initialPosition.z
+        tile =>
+          tile.position.x === initialPosition.x &&
+          tile.position.z === initialPosition.z
       )
       if (initialTile) initialTile.userData.isOccupied = false
 

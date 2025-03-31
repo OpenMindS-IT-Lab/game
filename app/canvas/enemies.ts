@@ -14,46 +14,11 @@ function getRandomColor() {
   return { ...Colors.ENEMY, color: new THREE.Color(Math.random() * 0xffffff) }
 }
 
-// Функція для випадкового розташування
-function getRandomPosition() {
-  let targetTile
-
-  const getRandomFreeTile = () => {
-    let freeTiles = tiles.filter(tile => !tile.userData.isOccupied && tile.position.z === -14)
-    let randomIndex = Math.floor(Math.random() * freeTiles.length)
-
-    if (freeTiles.length === 0) {
-      throw new Error("Can't spawn new enemy! All tiles are occupied!")
-    }
-
-    return freeTiles[randomIndex]
-  }
-
-  do {
-    targetTile = getRandomFreeTile()
-  } while (!targetTile)
-
-  targetTile.userData.isOccupied = true
-
-  return {
-    x: targetTile.position.x,
-    y: 0,
-    z: targetTile.position.z,
-  }
-}
-
 const enum EnemyType {
   REGULAR = 'regular',
   FAST = 'fast',
   FAT = 'fat',
   STRONG = 'strong',
-}
-
-const geometryMap = {
-  [EnemyType.FAT]: () => new THREE.BoxGeometry(1.25, 1.25, 1.25),
-  [EnemyType.FAST]: () => new THREE.SphereGeometry(0.75, 16, 16),
-  [EnemyType.REGULAR]: () => new THREE.OctahedronGeometry(0.9).rotateY(Math.PI / 4),
-  [EnemyType.STRONG]: () => new THREE.IcosahedronGeometry(0.9, 0),
 }
 
 export class Enemy extends THREE.Mesh {
@@ -70,15 +35,73 @@ export class Enemy extends THREE.Mesh {
   spawnPostion: THREE.Vector3
   spawner: EnemySpawner
 
-  private statsMap = {
-    [EnemyType.REGULAR]: { health: 1, damage: 1, speed: 0.05, height: 1.9 * 0.75, coinDropRange: [0, 1] },
-    [EnemyType.FAST]: { health: 1, damage: 1, speed: 0.1, height: 1.6 * 0.75, coinDropRange: [0, 2] },
-    [EnemyType.FAT]: { health: 2, damage: 1, speed: 0.05, height: 1.3 * 0.75, coinDropRange: [0, 3] },
-    [EnemyType.STRONG]: { health: 1, damage: 2, speed: 0.05, height: 1.6 * 0.75, coinDropRange: [0, 2] },
+  private static geometryMap = {
+    [EnemyType.FAT]: () => new THREE.BoxGeometry(1.25, 1.25, 1.25),
+    [EnemyType.FAST]: () => new THREE.SphereGeometry(0.75, 16, 16),
+    [EnemyType.REGULAR]: () =>
+      new THREE.OctahedronGeometry(0.9).rotateY(Math.PI / 4),
+    [EnemyType.STRONG]: () => new THREE.IcosahedronGeometry(0.9, 0),
+  }
+
+  private static statsMap = {
+    [EnemyType.REGULAR]: {
+      health: 1,
+      damage: 1,
+      speed: 0.05,
+      height: 1.9 * 0.75,
+      coinDropRange: [0, 1],
+    },
+    [EnemyType.FAST]: {
+      health: 1,
+      damage: 1,
+      speed: 0.1,
+      height: 1.6 * 0.75,
+      coinDropRange: [0, 2],
+    },
+    [EnemyType.FAT]: {
+      health: 2,
+      damage: 1,
+      speed: 0.05,
+      height: 1.3 * 0.75,
+      coinDropRange: [0, 3],
+    },
+    [EnemyType.STRONG]: {
+      health: 1,
+      damage: 2,
+      speed: 0.05,
+      height: 1.6 * 0.75,
+      coinDropRange: [0, 2],
+    },
+  }
+
+  private static getRandomFreeTile = () => {
+    let freeTiles = tiles.filter(
+      tile => !tile.userData.isOccupied && tile.position.z === -14
+    )
+    let randomIndex = Math.floor(Math.random() * freeTiles.length)
+
+    if (freeTiles.length === 0) {
+      throw new Error("Can't spawn new enemy! All tiles are occupied!")
+    }
+
+    return freeTiles[randomIndex]
+  }
+
+  // Функція для випадкового розташування
+  private static getRandomPosition() {
+    let targetTile
+
+    do {
+      targetTile = Enemy.getRandomFreeTile()
+    } while (!targetTile)
+
+    targetTile.userData.isOccupied = true
+
+    return { x: targetTile.position.x, y: 0, z: targetTile.position.z }
   }
 
   constructor(type: EnemyType = EnemyType.REGULAR, spawner: EnemySpawner) {
-    const geometry = geometryMap[type]().scale(0.75, 0.75, 0.75)
+    const geometry = Enemy.geometryMap[type]().scale(0.75, 0.75, 0.75)
     const material = new THREE.MeshStandardMaterial({
       ...getRandomColor(),
       metalness: 0.1,
@@ -88,7 +111,7 @@ export class Enemy extends THREE.Mesh {
     super(geometry, material)
 
     this.enemyType = type
-    const baseStats = this.statsMap[this.enemyType]
+    const baseStats = Enemy.statsMap[this.enemyType]
     const {
       health,
       damage,
@@ -110,7 +133,11 @@ export class Enemy extends THREE.Mesh {
       Math.ceil(maxCoinDrop * (this.level % 2 ? this.level : this.level / 2)),
     ]
     this.score = Math.floor(
-      (this.level * (1 / this.speed) * (this.health / this.level) * (this.damage / (this.level / 2))) / 14
+      (this.level *
+        (1 / this.speed) *
+        (this.health / this.level) *
+        (this.damage / (this.level / 2))) /
+        14
     )
     this.spawnPostion = this.position.clone().setY(this.height)
 
@@ -120,14 +147,17 @@ export class Enemy extends THREE.Mesh {
 
     while (attempts < maxAttempts) {
       try {
-        randomPosition = getRandomPosition()
+        randomPosition = Enemy.getRandomPosition()
         this.position.copy(randomPosition).setY(this.height)
         this.spawnPostion = this.position.clone()
         break
       } catch (error) {
         attempts++
         if (attempts >= maxAttempts) {
-          console.error('Failed to generate position after multiple attempts:', error)
+          console.error(
+            'Failed to generate position after multiple attempts:',
+            error
+          )
         }
       }
     }
@@ -155,11 +185,20 @@ export class Enemy extends THREE.Mesh {
     const tower = scene.children.find(child => child.name === 'Tower') as Tower
 
     const towerPosition = tower.position.clone()
-    const alliesPositions = compact(entries(tower.allies).map(([, ally]) => (ally ? ally.position.clone() : null)))
-    const defaultDirectionSubVector = new THREE.Vector3(spawnPosition.x, spawnPosition.y, 14)
+    const alliesPositions = compact(
+      entries(tower.allies).map(([, ally]) =>
+        ally ? ally.position.clone() : null
+      )
+    )
+    const defaultDirectionSubVector = new THREE.Vector3(
+      spawnPosition.x,
+      spawnPosition.y,
+      14
+    )
     const nearestAllyPosition =
-      minBy([...alliesPositions, towerPosition], position => this.position.distanceTo(position)) ??
-      defaultDirectionSubVector
+      minBy([...alliesPositions, towerPosition], position =>
+        this.position.distanceTo(position)
+      ) ?? defaultDirectionSubVector
     const direction = this.spawnPostion
       .clone()
       .subVectors(nearestAllyPosition, this.position.clone())
@@ -177,7 +216,10 @@ export class Enemy extends THREE.Mesh {
       fieldTiles.forEach(tile => {
         if (tile.position.distanceTo(this.position.clone()) <= 0.05) {
           tile.userData.isOccupied = true
-        } else if (tile.userData.isOccupied && tile.position.distanceTo(this.position.clone()) > 1) {
+        } else if (
+          tile.userData.isOccupied &&
+          tile.position.distanceTo(this.position.clone()) > 1
+        ) {
           tile.userData.isOccupied = false
         }
       })
@@ -207,7 +249,10 @@ export class Enemy extends THREE.Mesh {
           if (collision instanceof Tower) {
             const tower = scene.getObjectByName('Tower') as Tower
 
-            if (!tower) throw new Error('Smth went wrong with Tower when handling collision!')
+            if (!tower)
+              throw new Error(
+                'Smth went wrong with Tower when handling collision!'
+              )
 
             tower.takeDamage(this.damage, this.spawner)
             this.spawner.addScore(this.score)
@@ -226,18 +271,32 @@ export class Enemy extends THREE.Mesh {
             this.stop()
 
             if (this.position.z >= -12 && collision.position.z >= -12)
-              collision.takeDamage(float(0.1 * this.damage), AllyType.WATER, this.spawner.enemies.length > 25)
+              collision.takeDamage(
+                float(0.1 * this.damage),
+                AllyType.WATER,
+                this.spawner.enemies.length > 25
+              )
 
-            const towerPosition = (scene.getObjectByName('Tower') as Tower).position.clone()
-            const distanceToTower = this.position.clone().distanceTo(towerPosition)
-            const collisionDistanceToTower = collision.position.clone().distanceTo(towerPosition)
+            const towerPosition = (
+              scene.getObjectByName('Tower') as Tower
+            ).position.clone()
+            const distanceToTower = this.position
+              .clone()
+              .distanceTo(towerPosition)
+            const collisionDistanceToTower = collision.position
+              .clone()
+              .distanceTo(towerPosition)
 
             const direction = new THREE.Vector3()
               .subVectors(collision.position.clone(), this.position.clone())
               .multiplyScalar(20)
               .normalize()
 
-            if (distanceToTower > collisionDistanceToTower && !this.moving && !this.userData.isAnimating.currentState) {
+            if (
+              distanceToTower > collisionDistanceToTower &&
+              !this.moving &&
+              !this.userData.isAnimating.currentState
+            ) {
               moveLinear(
                 this,
                 this.position.clone().sub(direction.clone()),
@@ -245,7 +304,10 @@ export class Enemy extends THREE.Mesh {
                 () => this.move(),
                 2
               )
-            } else if (!this.moving && !this.userData.isAnimating.currentState) {
+            } else if (
+              !this.moving &&
+              !this.userData.isAnimating.currentState
+            ) {
               this.move()
             }
           }
@@ -258,7 +320,11 @@ export class Enemy extends THREE.Mesh {
     return this.watchingCollisions
   }
 
-  public takeDamage(damage: number, type?: AllyType, hideDamageText: boolean = false) {
+  public takeDamage(
+    damage: number,
+    type?: AllyType,
+    hideDamageText: boolean = false
+  ) {
     const colorMap = {
       [AllyType.WATER]: 0x4277ff,
       [AllyType.FIRE]: 0xff4444,
@@ -266,7 +332,12 @@ export class Enemy extends THREE.Mesh {
       [AllyType.AIR]: 0x42ffff,
     }
 
-    if (!hideDamageText) showDamageText(damage, this.position.clone(), !!type ? colorMap[type] : 0xffffff)
+    if (!hideDamageText)
+      showDamageText(
+        damage,
+        this.position.clone(),
+        !!type ? colorMap[type] : 0xffffff
+      )
 
     this.health -= damage
 
@@ -383,7 +454,8 @@ export default class EnemySpawner {
       3: this.spawnRegular.bind(_spawner),
     }
 
-    const randomEnemy = EnemiesMap[Math.floor(Math.random() * 4) as keyof typeof EnemiesMap]()
+    const randomEnemy =
+      EnemiesMap[Math.floor(Math.random() * 4) as keyof typeof EnemiesMap]()
 
     if (!randomEnemy) throw new Error('Failed to spawn new enemy!')
 

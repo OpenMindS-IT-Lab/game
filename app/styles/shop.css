@@ -24,7 +24,7 @@
   box-shadow: 0 0 10px 2px #007bff;
 }
 
-#shop .content { 
+#shop .content {
   width: calc(var(--width) - var(--padding) * 4);
   max-width: var(--width);
   position: relative;

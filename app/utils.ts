@@ -1,25 +1,33 @@
-import { compact, values } from 'lodash';
-import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
-import { Font, FontLoader } from 'three/examples/jsm/loaders/FontLoader';
-import { Ally } from './canvas';
-import camera, { resetCamera } from './canvas/camera';
-import { Colors } from './canvas/constants';
-import renderer from './canvas/renderer';
-import { scene } from './canvas/scene';
-import { tiles } from './canvas/tiles';
-import Tower from './canvas/tower';
+import { compact, values } from 'lodash'
+import * as THREE from 'three'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry'
+import { Font, FontLoader } from 'three/examples/jsm/loaders/FontLoader'
+import { Ally } from './canvas'
+import camera, { resetCamera } from './canvas/camera'
+import { Colors } from './canvas/constants'
+import renderer from './canvas/renderer'
+import { scene } from './canvas/scene'
+import { tiles } from './canvas/tiles'
+import Tower from './canvas/tower'
 
 // Utility: Switch Cube State
-export const switchObjectSelectionState = (object: THREE.Mesh, selected: boolean) => {
+export const switchObjectSelectionState = (
+  object: THREE.Mesh,
+  selected: boolean
+) => {
   const { initialColor } = object.userData
 
-  object.material = new THREE.MeshStandardMaterial(selected ? Colors.SELECTED_TOWER : initialColor)
+  object.material = new THREE.MeshStandardMaterial(
+    selected ? Colors.SELECTED_TOWER : initialColor
+  )
   object.userData.isSelected = selected
 }
 
-export function hoverObject(object: THREE.Mesh, intersects: THREE.Intersection[]) {
+export function hoverObject(
+  object: THREE.Mesh,
+  intersects: THREE.Intersection[]
+) {
   const isHovered = intersects.length > 0 && intersects[0].object === object
 
   ;(object.material as THREE.MeshStandardMaterial).opacity = isHovered ? 0.6 : 1
@@ -69,7 +77,9 @@ export function enableCameraDrag() {
   }
 }
 
-export function disableCameraDrag(disableHandler: ReturnType<typeof enableCameraDrag>) {
+export function disableCameraDrag(
+  disableHandler: ReturnType<typeof enableCameraDrag>
+) {
   if (disableHandler) disableHandler() // Call the cleanup function returned by `enableCameraDrag`
 }
 
@@ -85,7 +95,11 @@ export function enableMouseWheelTilt() {
 
     // Обчислюємо новий кут нахилу
     const delta = event.deltaY * tiltSpeed // Рух колеса
-    const newTilt = THREE.MathUtils.clamp(camera.rotation.x + delta, minTilt, maxTilt)
+    const newTilt = THREE.MathUtils.clamp(
+      camera.rotation.x + delta,
+      minTilt,
+      maxTilt
+    )
 
     camera.rotation.x = newTilt
 
@@ -105,7 +119,9 @@ export function enableMouseWheelTilt() {
   }
 }
 //! TRY ORBIT CPNTROL
-export function disableMouseWheelTilt(disableHandler: ReturnType<typeof enableMouseWheelTilt>) {
+export function disableMouseWheelTilt(
+  disableHandler: ReturnType<typeof enableMouseWheelTilt>
+) {
   if (disableHandler) disableHandler()
 }
 
@@ -163,7 +179,8 @@ export function deleteAllObjects() {
 export const resetScene = () => {
   deleteAllObjects() // Видаляємо всі об'єкти
   tiles.forEach((tile: THREE.Mesh) => {
-    if (tile.position.x === 0 && tile.position.z === 14) tile.userData.isOccupied = true
+    if (tile.position.x === 0 && tile.position.z === 14)
+      tile.userData.isOccupied = true
     else tile.userData.isOccupied = false
   })
 
@@ -192,7 +209,11 @@ fontLoader.load(
 )
 
 // Функція для відображення тексту пошкодження
-export function showDamageText(damage: number, position: THREE.Vector3, color?: number) {
+export function showDamageText(
+  damage: number,
+  position: THREE.Vector3,
+  color?: number
+) {
   if (damageTextCounter < 0) damageTextCounter = 0
   if (!font || damageTextCounter >= 20) return
 
@@ -234,8 +255,9 @@ export function showDamageText(damage: number, position: THREE.Vector3, color?: 
 
 export function handleMinorError(errorMessage?: unknown) {
   const message =
-    ((typeof errorMessage === 'object' ? JSON.stringify(errorMessage) : errorMessage) ?? 'Error!') +
-    '\nTry reloading the app?'
+    ((typeof errorMessage === 'object'
+      ? JSON.stringify(errorMessage)
+      : errorMessage) ?? 'Error!') + '\nTry reloading the app?'
 
   console.warn(message)
 
@@ -245,10 +267,21 @@ export function handleMinorError(errorMessage?: unknown) {
   })
 }
 
-export function captureImage(mesh: Tower | Ally, fileName: string, gridHelper: THREE.GridHelper, plane: THREE.Mesh) {
+export function captureImage(
+  mesh: Tower | Ally,
+  fileName: string,
+  gridHelper: THREE.GridHelper,
+  plane: THREE.Mesh
+) {
   const mainTower = scene.getObjectByName('Tower') as Tower
   const allies = compact(values(mainTower.allies)) as Ally[]
-  const objectsToHide = [...tiles, gridHelper, plane, mainTower, ...allies].filter(obj => {
+  const objectsToHide = [
+    ...tiles,
+    gridHelper,
+    plane,
+    mainTower,
+    ...allies,
+  ].filter(obj => {
     if ('title' in obj) return obj.title !== mesh.title
     return true
   })

@@ -1,18 +1,18 @@
-import { capitalize } from 'lodash';
-import * as THREE from 'three';
-import airTowerImg from '../assets/air-tower.png';
-import earthTowerImg from '../assets/earth-tower.png';
-import fireTowerImg from '../assets/fire-tower.png';
-import waterTowerImg from '../assets/water-tower.png';
-import Game from '../game';
-import { toggleTowerInfo } from '../ui/tower-info';
-import { float, showDamageText } from '../utils';
-import { moveAndFlip, moveLinear } from './animations';
-import EnemySpawner, { Enemy } from './enemies';
-import loader from './model-loader';
-import { scene } from './scene';
-import { tiles } from './tiles';
-import Tower from './tower';
+import { capitalize } from 'lodash'
+import * as THREE from 'three'
+import airTowerImg from '../assets/air-tower.png'
+import earthTowerImg from '../assets/earth-tower.png'
+import fireTowerImg from '../assets/fire-tower.png'
+import waterTowerImg from '../assets/water-tower.png'
+import Game from '../game'
+import { toggleTowerInfo } from '../ui/tower-info'
+import { float, showDamageText } from '../utils'
+import { moveAndFlip, moveLinear } from './animations'
+import EnemySpawner, { Enemy } from './enemies'
+import loader from './model-loader'
+import { scene } from './scene'
+import { tiles } from './tiles'
+import Tower from './tower'
 
 export const enum AllyType {
   WATER = 'water',
@@ -35,10 +35,7 @@ export class Ally extends THREE.Mesh {
   cooldown: number = 0
   upgradeCost: number = 0
 
-  particles?: {
-    pause(): void
-    resume(): void
-  }
+  particles?: { pause(): void; resume(): void }
 
   allyTowerType: AllyType
   isSelected: boolean = false
@@ -64,7 +61,10 @@ export class Ally extends THREE.Mesh {
       emberPositions[i * 3 + 2] = (Math.random() - 0.5) * 1.25 // z
     }
 
-    emberGeometry.setAttribute('position', new THREE.BufferAttribute(emberPositions, 3))
+    emberGeometry.setAttribute(
+      'position',
+      new THREE.BufferAttribute(emberPositions, 3)
+    )
 
     const emberMaterial = new THREE.PointsMaterial({
       color: 0xff4500,
@@ -128,7 +128,10 @@ export class Ally extends THREE.Mesh {
       dropletPositions[i * 3 + 2] = (Math.random() - 0.5) * 1.25 // z
     }
 
-    dropletGeometry.setAttribute('position', new THREE.BufferAttribute(dropletPositions, 3))
+    dropletGeometry.setAttribute(
+      'position',
+      new THREE.BufferAttribute(dropletPositions, 3)
+    )
 
     const dropletMaterial = new THREE.PointsMaterial({
       color: 0x00bfff,
@@ -191,7 +194,10 @@ export class Ally extends THREE.Mesh {
       dustPositions[i * 3 + 2] = (Math.random() - 0.5) * 1.25 // z
     }
 
-    dustGeometry.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3))
+    dustGeometry.setAttribute(
+      'position',
+      new THREE.BufferAttribute(dustPositions, 3)
+    )
 
     const dustMaterial = new THREE.PointsMaterial({
       color: 0x1e0e01,
@@ -258,7 +264,10 @@ export class Ally extends THREE.Mesh {
       airPositions[i * 3 + 2] = Math.sin(angle) * radius // z
     }
 
-    airGeometry.setAttribute('position', new THREE.BufferAttribute(airPositions, 3))
+    airGeometry.setAttribute(
+      'position',
+      new THREE.BufferAttribute(airPositions, 3)
+    )
 
     const airMaterial = new THREE.PointsMaterial({
       color: 0xffffff,
@@ -283,7 +292,10 @@ export class Ally extends THREE.Mesh {
 
         for (let i = 0; i < airCount; i++) {
           const angle = Math.atan2(positions[i * 3 + 2], positions[i * 3])
-          const radius = Math.sqrt(positions[i * 3] * positions[i * 3] + positions[i * 3 + 2] * positions[i * 3 + 2])
+          const radius = Math.sqrt(
+            positions[i * 3] * positions[i * 3] +
+              positions[i * 3 + 2] * positions[i * 3 + 2]
+          )
 
           // Increment the angle for circular motion
           const newAngle = angle + speed
@@ -327,10 +339,22 @@ export class Ally extends THREE.Mesh {
   }
 
   static priceMap = {
-    [AllyType.AIR]: [10, 20, 100, 200, 1000, 2000, 10000, 20000, 50000, 100000, 1000000, 2000000],
-    [AllyType.WATER]: [15, 30, 150, 300, 1500, 3000, 15000, 30000, 100000, 200000, 1000000, 2000000],
-    [AllyType.EARTH]: [20, 40, 200, 400, 2000, 4000, 20000, 40000, 150000, 300000, 1000000, 2000000],
-    [AllyType.FIRE]: [25, 50, 250, 500, 2500, 5000, 25000, 50000, 200000, 400000, 1000000, 2000000],
+    [AllyType.AIR]: [
+      10, 20, 100, 200, 1000, 2000, 10000, 20000, 50000, 100000, 1000000,
+      2000000,
+    ],
+    [AllyType.WATER]: [
+      15, 30, 150, 300, 1500, 3000, 15000, 30000, 100000, 200000, 1000000,
+      2000000,
+    ],
+    [AllyType.EARTH]: [
+      20, 40, 200, 400, 2000, 4000, 20000, 40000, 150000, 300000, 1000000,
+      2000000,
+    ],
+    [AllyType.FIRE]: [
+      25, 50, 250, 500, 2500, 5000, 25000, 50000, 200000, 400000, 1000000,
+      2000000,
+    ],
   }
 
   static descriptionMap = {
@@ -362,7 +386,9 @@ export class Ally extends THREE.Mesh {
     let targetTile
 
     const getRandomFreeTile = () => {
-      let freeTiles = tiles.filter(tile => !tile.userData.isOccupied && tile.position.z === 14)
+      let freeTiles = tiles.filter(
+        tile => !tile.userData.isOccupied && tile.position.z === 14
+      )
       let randomIndex = Math.round(Math.random() * freeTiles.length)
 
       if (freeTiles.length === 0) {
@@ -445,7 +471,12 @@ export class Ally extends THREE.Mesh {
 
       const wireframe = new THREE.LineSegments(
         new THREE.WireframeGeometry(this.geometry.clone()),
-        new THREE.MeshBasicMaterial({ color: 0x000, transparent: true, opacity: 0.005, depthTest: false })
+        new THREE.MeshBasicMaterial({
+          color: 0x000,
+          transparent: true,
+          opacity: 0.005,
+          depthTest: false,
+        })
       )
       wireframe.position.copy(this.position.clone())
 
@@ -473,13 +504,7 @@ export class Ally extends THREE.Mesh {
     const speed = Ally.calcSpeed(this.level + 1)
     const cooldown = Ally.calcSkillCooldown(this.level + 1)
 
-    return {
-      level,
-      health,
-      damage,
-      speed,
-      cooldown,
-    }
+    return { level, health, damage, speed, cooldown }
   }
 
   select() {
@@ -505,8 +530,10 @@ export class Ally extends THREE.Mesh {
     const nearestEnemy =
       enemies
         .filter(({ userData: { isAnimating } }) => !isAnimating.currentState)
-        .sort(({ position: a }, { position: b }) => a.distanceTo(towerPosition) - b.distanceTo(towerPosition))[0] ??
-      null
+        .sort(
+          ({ position: a }, { position: b }) =>
+            a.distanceTo(towerPosition) - b.distanceTo(towerPosition)
+        )[0] ?? null
 
     if (!nearestEnemy) return false
 
@@ -516,7 +543,9 @@ export class Ally extends THREE.Mesh {
 
   private freeze(enemies: Enemy[]) {
     const nearestEnemy = this.getNearestEnemy(
-      enemies.filter(enemy => !enemy.userData.isAnimating.currentState && enemy.moving)
+      enemies.filter(
+        enemy => !enemy.userData.isAnimating.currentState && enemy.moving
+      )
     )
 
     if (!nearestEnemy) return
@@ -554,7 +583,11 @@ export class Ally extends THREE.Mesh {
       spawner.purgeDestroyedEnemies()
 
       spawner.enemies
-        .filter(enemy => !enemy.userData.isDestroyed && !enemy.userData.isAnimating.currentState)
+        .filter(
+          enemy =>
+            !enemy.userData.isDestroyed &&
+            !enemy.userData.isAnimating.currentState
+        )
         .forEach(enemy => {
           enemy.stop()
         })
@@ -562,7 +595,12 @@ export class Ally extends THREE.Mesh {
       tower.allies[this.allyTowerType] = undefined
 
       spawner.enemies
-        .filter(enemy => !enemy.userData.isAnimating.currentState && !enemy.userData.isDestroyed && !enemy.moving)
+        .filter(
+          enemy =>
+            !enemy.userData.isAnimating.currentState &&
+            !enemy.userData.isDestroyed &&
+            !enemy.moving
+        )
         .forEach(enemy => {
           enemy.moving = enemy.move()
         })
@@ -578,9 +616,17 @@ export class Ally extends THREE.Mesh {
         enemy.takeDamage(fireDamage, this.allyTowerType)
 
         for (let i = 0; i <= this.level; i++) {
-          setTimeout(() => {
-            if (!enemy.userData.isDestroyed) enemy.takeDamage(float(fireDamage / (i + 1)), this.allyTowerType, true)
-          }, this.cooldown * (i + 1))
+          setTimeout(
+            () => {
+              if (!enemy.userData.isDestroyed)
+                enemy.takeDamage(
+                  float(fireDamage / (i + 1)),
+                  this.allyTowerType,
+                  true
+                )
+            },
+            this.cooldown * (i + 1)
+          )
         }
       })
   }
@@ -592,10 +638,16 @@ export class Ally extends THREE.Mesh {
     const earthDamage = this.damage
 
     nearestEnemy.stop()
-    moveAndFlip(nearestEnemy, nearestEnemy.position.clone(), nearestEnemy.userData.isAnimating, undefined, () => {
-      nearestEnemy.takeDamage(earthDamage, this.allyTowerType)
-      if (nearestEnemy.health >= 0) nearestEnemy.move()
-    })
+    moveAndFlip(
+      nearestEnemy,
+      nearestEnemy.position.clone(),
+      nearestEnemy.userData.isAnimating,
+      undefined,
+      () => {
+        nearestEnemy.takeDamage(earthDamage, this.allyTowerType)
+        if (nearestEnemy.health >= 0) nearestEnemy.move()
+      }
+    )
   }
 
   private throwback(enemies: Enemy[]) {
@@ -611,7 +663,9 @@ export class Ally extends THREE.Mesh {
       .forEach(enemy => {
         enemy.stop()
         enemy.userData.isAnimating.switchState(true)
-        const enemyPostion = enemy.position.clone().setZ(enemy.position.z - this.damage)
+        const enemyPostion = enemy.position
+          .clone()
+          .setZ(enemy.position.z - this.damage)
         moveLinear(
           enemy,
           enemyPostion,

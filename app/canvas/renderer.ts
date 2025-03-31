@@ -9,15 +9,22 @@ import { scene } from './scene'
 const renderer = new THREE.WebGLRenderer({ antialias: true })
 
 // Setup Game Container
-if (!gameContainer || !uiContainer) throw new Error('Game and/or UI container not found!')
+if (!gameContainer || !uiContainer)
+  throw new Error('Game and/or UI container not found!')
 
 const initialWidth = window.innerWidth
 const initialHeight = window.innerHeight
 
 export const updateSize = (override?: { w: number; h: number }) => {
-  const viewPortHeight = override ? override.h : Telegram.WebApp.viewportHeight ?? initialHeight
-  const viewPortWidth = override ? override.w : window.innerWidth ?? initialWidth
-  const currentViewPort = renderer.getCurrentViewport(new THREE.Vector4()).clone()
+  const viewPortHeight = override
+    ? override.h
+    : (Telegram.WebApp.viewportHeight ?? initialHeight)
+  const viewPortWidth = override
+    ? override.w
+    : (window.innerWidth ?? initialWidth)
+  const currentViewPort = renderer
+    .getCurrentViewport(new THREE.Vector4())
+    .clone()
 
   currentViewPort.setW(viewPortWidth).setZ(viewPortHeight)
 

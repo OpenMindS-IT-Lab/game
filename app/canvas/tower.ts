@@ -1,14 +1,14 @@
-import { compact, values } from 'lodash';
-import * as THREE from 'three';
-import mainTowerImg from '../assets/main-tower.png';
-import Game from '../game';
-import { toggleTowerInfo } from '../ui/tower-info';
-import { showDamageText } from '../utils';
-import { Ally, AllyType } from './allies';
-import { Colors } from './constants';
-import EnemySpawner, { Enemy } from './enemies';
-import loader from './model-loader';
-import { scene } from './scene';
+import { compact, values } from 'lodash'
+import * as THREE from 'three'
+import mainTowerImg from '../assets/main-tower.png'
+import Game from '../game'
+import { toggleTowerInfo } from '../ui/tower-info'
+import { showDamageText } from '../utils'
+import { Ally, AllyType } from './allies'
+import { Colors } from './constants'
+import EnemySpawner, { Enemy } from './enemies'
+import loader from './model-loader'
+import { scene } from './scene'
 
 class Tower extends THREE.Mesh {
   title?: string
@@ -32,64 +32,64 @@ class Tower extends THREE.Mesh {
   }
 
   private priceMap: number[] = [
-    5, 10, 20, 50, 100, 200, 500, 1000, 2000, 4000, 8000, 12000, 16000, 40000, 80000, 120000, 160000, 400000, 800000,
-    1200000, 1600000,
+    5, 10, 20, 50, 100, 200, 500, 1000, 2000, 4000, 8000, 12000, 16000, 40000,
+    80000, 120000, 160000, 400000, 800000, 1200000, 1600000,
   ]
 
   constructor(size: number = 1) {
     super()
-    this.initializeProperties();
-    this.loadModel(size);
+    this.initializeProperties()
+    this.loadModel(size)
   }
 
   private initializeProperties() {
-    this.title = 'Main Tower';
+    this.title = 'Main Tower'
     this.description =
-      'Unleash the precision of the Main Tower as it methodically targets the nearest enemy, firing with deadly accuracy and inflicting massive damage. This reliable sentinel stands as the cornerstone of your defenses.';
-    this.image = mainTowerImg;
-    this.isSelected = false;
-    this.health = 0;
-    this.maxHealth = 0;
-    this.level = 0;
-    this.speed = 0;
-    this.damage = 0;
-    this.cooldown = 0;
-    this.upgradeCost = 0;
-    this.shooting = 0;
+      'Unleash the precision of the Main Tower as it methodically targets the nearest enemy, firing with deadly accuracy and inflicting massive damage. This reliable sentinel stands as the cornerstone of your defenses.'
+    this.image = mainTowerImg
+    this.isSelected = false
+    this.health = 0
+    this.maxHealth = 0
+    this.level = 0
+    this.speed = 0
+    this.damage = 0
+    this.cooldown = 0
+    this.upgradeCost = 0
+    this.shooting = 0
     this.allies = {
       [AllyType.EARTH]: undefined,
       [AllyType.AIR]: undefined,
       [AllyType.FIRE]: undefined,
       [AllyType.WATER]: undefined,
-    };
+    }
   }
 
   private loadModel(size: number) {
     loader.load(
       '/app/models/main-tower.glb',
       gltf => {
-        this.setupModel(gltf.scene, size);
+        this.setupModel(gltf.scene, size)
       },
       progress => console.log('Loading glTF model: ', progress),
       err => console.error(err)
-    );
+    )
   }
 
   private setupModel(gltf: THREE.Group, size: number) {
-    console.log('Object loaded: ', gltf);
-    this.copy(gltf.children[0]);
+    console.log('Object loaded: ', gltf)
+    this.copy(gltf.children[0])
 
-    const material = (this.material as THREE.MeshStandardMaterial);
-    material.setValues({ wireframe: true });
+    const material = this.material as THREE.MeshStandardMaterial
+    material.setValues({ wireframe: true })
 
-    this.initialMaterial = material.clone();
-    this.name = 'Tower';
-    this.receiveShadow = true;
-    this.castShadow = true;
+    this.initialMaterial = material.clone()
+    this.name = 'Tower'
+    this.receiveShadow = true
+    this.castShadow = true
 
-    this.position.set(0, 0, 14);
-    this.rotateY(Math.PI);
-    this.scale.setY(size);
+    this.position.set(0, 0, 14)
+    this.rotateY(Math.PI)
+    this.scale.setY(size)
 
     this.userData = {
       isSelected: false,
@@ -97,22 +97,25 @@ class Tower extends THREE.Mesh {
       boundingBox: new THREE.Box3(),
       initialColor: Colors.TOWER,
       health: this.health,
-    };
+    }
 
-    this.levelUp();
-    scene.add(this);
+    this.levelUp()
+    scene.add(this)
   }
 
   select() {
     this.unselectAllies()
-    ;(this.material as THREE.MeshStandardMaterial).color.set(Colors.SELECTED_TOWER.color)
+    ;(this.material as THREE.MeshStandardMaterial).color.set(
+      Colors.SELECTED_TOWER.color
+    )
     ;(this.material as THREE.MeshStandardMaterial).emissiveIntensity = 0
     this.isSelected = true
     toggleTowerInfo(this)
   }
 
   unselect() {
-    this.initialMaterial && (this.material as THREE.MeshStandardMaterial).copy(this.initialMaterial)
+    this.initialMaterial &&
+      (this.material as THREE.MeshStandardMaterial).copy(this.initialMaterial)
     ;(this.material as THREE.MeshStandardMaterial).emissiveIntensity = 0.25
     this.isSelected = false
     toggleTowerInfo()
@@ -131,29 +134,25 @@ class Tower extends THREE.Mesh {
     const speed = this.calcSpeed(this.level + 1)
     const cooldown = this.calcCooldown(this.level + 1)
 
-    return {
-      level,
-      health,
-      damage,
-      speed,
-      cooldown,
-    }
+    return { level, health, damage, speed, cooldown }
   }
 
   private calcHealth(level: number) {
-    return this.maxHealth + level * 10;
+    return this.maxHealth + level * 10
   }
-  
+
   private calcSpeed(level: number) {
-    return parseFloat(Math.max((level - 3) / (level > 6 ? 10 : 6), 0.1).toFixed(2));
+    return parseFloat(
+      Math.max((level - 3) / (level > 6 ? 10 : 6), 0.1).toFixed(2)
+    )
   }
-  
+
   private calcDamage(level: number) {
-    return parseFloat((level * 0.75 + 0.5 * level).toFixed(2));
+    return parseFloat((level * 0.75 + 0.5 * level).toFixed(2))
   }
-  
+
   private calcCooldown(level: number) {
-    return parseFloat((4000 / Math.max(level * 2, 1)).toFixed(2));
+    return parseFloat((4000 / Math.max(level * 2, 1)).toFixed(2))
   }
 
   levelUp() {
@@ -170,13 +169,13 @@ class Tower extends THREE.Mesh {
     const updatedPrices: Record<AllyType, number[]> = Object.fromEntries(
       Object.entries(Ally.priceMap).map(([type, prices]) => [
         type as AllyType,
-        prices.map(price => Math.round(price + score / totalUpgrades))
+        prices.map(price => Math.round(price + score / totalUpgrades)),
       ])
-    ) as Record<AllyType, number[]>;
+    ) as Record<AllyType, number[]>
 
     Object.values(this.allies).forEach(ally => {
-      if (ally) ally.updatePrice(updatedPrices);
-    });
+      if (ally) ally.updatePrice(updatedPrices)
+    })
   }
 
   heal() {
@@ -187,28 +186,40 @@ class Tower extends THREE.Mesh {
   }
 
   private attack(enemy: Enemy): void {
-    const projectile = new Projectile(this.position.clone(), this.damage, 0.5, enemy.position.clone().sub(this.position).normalize());
-    projectile.shoot();
+    const projectile = new Projectile(
+      this.position.clone(),
+      this.damage,
+      0.5,
+      enemy.position.clone().sub(this.position).normalize()
+    )
+    projectile.shoot()
   }
 
   private shootAtNearestEnemy(enemies: Enemy[]): void {
-    if (enemies.length === 0) return;
+    if (enemies.length === 0) return
 
     const nearestEnemy = enemies.reduce((closest: Enemy | null, enemy) => {
-      if (enemy.userData.isDestroyed) return closest;
-      if (!closest || enemy.position.distanceTo(this.position) < closest.position.distanceTo(this.position)) {
-        return enemy;
+      if (enemy.userData.isDestroyed) return closest
+      if (
+        !closest ||
+        enemy.position.distanceTo(this.position) <
+          closest.position.distanceTo(this.position)
+      ) {
+        return enemy
       }
-      return closest;
-    }, null);
+      return closest
+    }, null)
 
-    if (!nearestEnemy) return;
+    if (!nearestEnemy) return
 
-    this.attack(nearestEnemy);
+    this.attack(nearestEnemy)
   }
 
   public startShooting(enemies: Enemy[]): void {
-    this.shooting = setInterval(() => this.shootAtNearestEnemy(enemies), this.cooldown)
+    this.shooting = setInterval(
+      () => this.shootAtNearestEnemy(enemies),
+      this.cooldown
+    )
   }
 
   public stopShooting() {
@@ -261,7 +272,12 @@ export class Projectile extends THREE.Mesh {
   speed: number
   direction: THREE.Vector3
   initialPosition: THREE.Vector3
-  constructor(position: THREE.Vector3, damage: number, speed: number, direction: THREE.Vector3) {
+  constructor(
+    position: THREE.Vector3,
+    damage: number,
+    speed: number,
+    direction: THREE.Vector3
+  ) {
     const geometry = new THREE.SphereGeometry(0.1, 16, 16)
     const material = new THREE.MeshStandardMaterial({
       color: Colors.TOWER.color,
@@ -275,10 +291,7 @@ export class Projectile extends THREE.Mesh {
     this.damage = damage
     this.speed = speed
     this.direction = direction
-    this.userData = {
-      isPersistant: false,
-      boundingBox: new THREE.Box3(),
-    }
+    this.userData = { isPersistant: false, boundingBox: new THREE.Box3() }
 
     const shockwaveGeometry = new THREE.RingGeometry(0.15, 0.25, 32)
     const shockwaveMaterial = new THREE.MeshBasicMaterial({

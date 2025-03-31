@@ -12,7 +12,8 @@
     "deploy": "netlify deploy --prod --build",
     "deploy:verbose": "netlify deploy --prod --build --debug",
     "deploy:debug": "npm run deploy:verbose && npm run debug",
-    "debug": "concurrently \"netlify logs:function deploy-succeeded\" \"netlify logs:function bot\" \"netlify logs:function api\" --names deploy-succeeded,bot,api --prefix-colors bgGreen,bgBlue,bgYellow"
+    "debug": "concurrently \"netlify logs:function deploy-succeeded\" \"netlify logs:function bot\" \"netlify logs:function api\" --names deploy-succeeded,bot,api --prefix-colors bgGreen,bgBlue,bgYellow",
+    "pretty": "prettier \"./app/**/*.{ts,js,css,html}\" --write --log-level log"
   },
   "keywords": [
     "Telegram",
@@ -47,6 +48,7 @@
     "concurrently": "^9.1.2",
     "dotenv": "^16.4.7",
     "node-stdlib-browser": "^1.3.1",
+    "prettier": "^3.5.3",
     "rimraf": "^6.0.1",
     "telegram-webapps": "^8.0.3",
     "typescript": "^4.9.5",

@@ -1,15 +1,20 @@
-import { keys, values } from 'lodash';
+import { keys, values } from 'lodash'
 // import { WebAppInitData } from 'telegram-webapps'
-import { TelegramWebApps } from 'telegram-webapps';
-import api from './api';
-import { scene } from './canvas';
-import { Ally, AllyType } from './canvas/allies';
-import EnemySpawner from './canvas/enemies';
-import Tower from './canvas/tower';
-import { coinCounter, highscoreCounter, scoreCounter } from './ui';
-import { bottomButtons, bottomInfo, levelDisplay, timer } from './ui/bottom-menu';
-import { upgradeTowerButton } from './ui/tower-info';
-import { handleMinorError } from './utils';
+import { TelegramWebApps } from 'telegram-webapps'
+import api from './api'
+import { scene } from './canvas'
+import { Ally, AllyType } from './canvas/allies'
+import EnemySpawner from './canvas/enemies'
+import Tower from './canvas/tower'
+import { coinCounter, highscoreCounter, scoreCounter } from './ui'
+import {
+  bottomButtons,
+  bottomInfo,
+  levelDisplay,
+  timer,
+} from './ui/bottom-menu'
+import { upgradeTowerButton } from './ui/tower-info'
+import { handleMinorError } from './utils'
 
 export enum PaidItem {
   CoinsS = 'cs',
@@ -31,7 +36,9 @@ export default class Game {
   protected _onLevelComplete: () => void = () => void 0
 
   public static user?: Partial<TelegramWebApps.WebAppInitData['user']>
-  public static webAppData?: Partial<Omit<TelegramWebApps.WebAppInitData, 'user' | 'hash'>>
+  public static webAppData?: Partial<
+    Omit<TelegramWebApps.WebAppInitData, 'user' | 'hash'>
+  >
   public static coinsPackMap: Record<CoinsPack, number> = {
     [PaidItem.CoinsS]: 35,
     [PaidItem.CoinsM]: 85,
@@ -59,19 +66,19 @@ export default class Game {
       case PaidItem.CoinsS:
         multiplier += 1
         console.log('S1')
-        break;
+        break
       case PaidItem.CoinsM:
         multiplier += 1
         console.log('S2')
-        break;
+        break
       case PaidItem.CoinsL:
         multiplier += 1
         console.log('S3')
-        break;
+        break
       case PaidItem.CoinsXL:
         multiplier += 1
         console.log('S4')
-        break;
+        break
     }
     addCoins(Game.coinsPackMap[item as CoinsPack] as number)
     upgradeCoinsPack(multiplier)
@@ -107,15 +114,19 @@ export default class Game {
     return this._highscore
   }
   set highscore(value: number) {
-    Telegram.WebApp.CloudStorage.setItem('highscore', `${value}`, (error, _success) => {
-      if (error) console.error(error)
-      else {
-        console.log('new highscore: ' + value)
-        this._highscore = value
-        highscoreCounter.innerHTML = `Highscore: ${value}`
-        Telegram.WebApp.showAlert('New highscore:\r\n' + value)
+    Telegram.WebApp.CloudStorage.setItem(
+      'highscore',
+      `${value}`,
+      (error, _success) => {
+        if (error) console.error(error)
+        else {
+          console.log('new highscore: ' + value)
+          this._highscore = value
+          highscoreCounter.innerHTML = `Highscore: ${value}`
+          Telegram.WebApp.showAlert('New highscore:\r\n' + value)
+        }
       }
-    })
+    )
   }
 
   get onLevelStart() {
@@ -149,11 +160,14 @@ export default class Game {
     this.level = 0
 
     if (process.env.NODE_ENV === 'development') {
-      this.coins += 1000000;
+      this.coins += 1000000
     }
 
     if (!Telegram.WebApp.initData)
-      Telegram.WebApp.showAlert('Launched from KeyboardButton! Unsupported!', () => Telegram.WebApp.close())
+      Telegram.WebApp.showAlert(
+        'Launched from KeyboardButton! Unsupported!',
+        () => Telegram.WebApp.close()
+      )
     else {
       api.validate(Telegram.WebApp.initData).then(async validData => {
         const { user, ...webAppData } = validData
@@ -171,10 +185,14 @@ export default class Game {
   private async retrieveHighscore() {
     return new Promise<number>((resolve, reject) => {
       Telegram.WebApp.CloudStorage.getItem('highscore', (error, highscore) => {
-        if (error) return reject(error);
-        resolve(highscore && !Number.isNaN(parseInt(highscore)) ? parseInt(highscore) : 0);
-      });
-    });
+        if (error) return reject(error)
+        resolve(
+          highscore && !Number.isNaN(parseInt(highscore))
+            ? parseInt(highscore)
+            : 0
+        )
+      })
+    })
   }
 
   protected async initStorage(initData: TelegramWebApps.WebAppInitData) {
@@ -186,10 +204,12 @@ export default class Game {
       console.table(userData)
       console.log('Transactions: ', transactions)
 
-      Telegram.WebApp.requestWriteAccess(accessGranted => console.log('Is write access granted: ', accessGranted))
+      Telegram.WebApp.requestWriteAccess(accessGranted =>
+        console.log('Is write access granted: ', accessGranted)
+      )
 
-      this._highscore = await this.retrieveHighscore();
-      highscoreCounter.innerHTML = `Highscore: ${this.highscore}`;
+      this._highscore = await this.retrieveHighscore()
+      highscoreCounter.innerHTML = `Highscore: ${this.highscore}`
 
       Telegram.WebApp.ready()
     } catch (error) {
@@ -205,16 +225,17 @@ export default class Game {
 
     allyTower.levelUp()
 
-    if (!(allyTower instanceof Tower)) this.tower.updateAlliesPriceMap(this.score, this.totalUpgrades)
+    if (!(allyTower instanceof Tower))
+      this.tower.updateAlliesPriceMap(this.score, this.totalUpgrades)
 
     upgradeTowerButton.disabled = this.coins < allyTower.upgradeCost
   }
 
   private hasEnoughCoins(cost: number): boolean {
     if (this.coins < cost) {
-      throw new Error('Not enough coins');
+      throw new Error('Not enough coins')
     }
-    return true;
+    return true
   }
 
   public purchase(allyType: AllyType) {
@@ -246,7 +267,9 @@ export default class Game {
 
       this.spawner.start(this.level)
       this.tower.startShooting(this.spawner.enemies)
-      values(this.tower.allies).forEach(ally => ally?.startCasting(this.spawner.enemies))
+      values(this.tower.allies).forEach(ally =>
+        ally?.startCasting(this.spawner.enemies)
+      )
 
       this.isUpgrading = false
       this.isRunning = true
@@ -299,7 +322,7 @@ export default class Game {
   }
 
   public pause() {
-    if (this.isPaused) return;
+    if (this.isPaused) return
 
     this.spawner.pause()
     this.tower.stopShooting()
@@ -309,11 +332,13 @@ export default class Game {
   }
 
   public resume() {
-    if (!this.isPaused) return;
+    if (!this.isPaused) return
 
     this.spawner.resume()
     this.tower.startShooting(this.spawner.enemies)
-    values(this.tower.allies).forEach(ally => ally?.startCasting(this.spawner.enemies))
+    values(this.tower.allies).forEach(ally =>
+      ally?.startCasting(this.spawner.enemies)
+    )
 
     this.isPaused = false
   }
@@ -326,11 +351,11 @@ export default class Game {
     this.isUpgrading = false
     this.isOver = true
 
-    Telegram.WebApp.showAlert('GAME OVER!', () => this.handleGameOver());
+    Telegram.WebApp.showAlert('GAME OVER!', () => this.handleGameOver())
   }
 
   private handleGameOver() {
-    this.reset();
+    this.reset()
   }
 
   reset() {

@@ -28,10 +28,13 @@ body {
   height: 100%;
   max-width: 100vw;
   max-height: 100vh;
-  
-  margin: var(--tg-safe-area-inset-top) var(--tg-safe-area-inset-right) var(--tg-safe-area-inset-bottom)
-  var(--tg-safe-area-inset-left);
-  padding: var(--tg-content-safe-area-inset-top) var(--tg-content-safe-area-inset-right) var(--tg-content-safe-area-inset-bottom) var(--tg-content-safe-area-inset-left);
+
+  margin: var(--tg-safe-area-inset-top) var(--tg-safe-area-inset-right)
+    var(--tg-safe-area-inset-bottom) var(--tg-safe-area-inset-left);
+  padding: var(--tg-content-safe-area-inset-top)
+    var(--tg-content-safe-area-inset-right)
+    var(--tg-content-safe-area-inset-bottom)
+    var(--tg-content-safe-area-inset-left);
 
   pointer-events: none; /* Щоб UI не блокував мишу для сцени */
   -webkit-user-select: none; /* Safari and Chrome (Mobile and Desktop) */
@@ -84,7 +87,6 @@ body {
   position: relative;
   bottom: 0;
 }
-
 
 .ui-button {
   padding: 10px;

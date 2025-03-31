@@ -1,5 +1,5 @@
-import * as THREE from 'three';
-import { scene } from './scene';
+import * as THREE from 'three'
+import { scene } from './scene'
 
 export const createAmbientLight = () => {
   const ambientLight = new THREE.AmbientLight(0xffffff, 1) // Soft white light
@@ -36,7 +36,14 @@ export const createDirectionalLight = () => {
 }
 
 export const createSpotLight = (target: THREE.Mesh) => {
-  const spotLight = new THREE.SpotLight(0xffffff, 2.5, 15, Math.PI / 16, 0.25, 0.5) // Довжина, кут, розсіювання
+  const spotLight = new THREE.SpotLight(
+    0xffffff,
+    2.5,
+    15,
+    Math.PI / 16,
+    0.25,
+    0.5
+  ) // Довжина, кут, розсіювання
 
   spotLight.position.copy(target.position)
   spotLight.position.y = 10
@@ -72,7 +79,11 @@ export const createPointLight = () => {
   // Додаємо невеликий шар як джерело світла для візуалізації
   const lightSphere = new THREE.Mesh(
     new THREE.SphereGeometry(0.75, 16, 16),
-    new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0 })
+    new THREE.MeshBasicMaterial({
+      color: 0xff0000,
+      transparent: true,
+      opacity: 0,
+    })
   )
 
   lightSphere.position.copy(pointLight.position.clone())

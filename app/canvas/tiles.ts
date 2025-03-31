@@ -30,7 +30,8 @@ const createTiles = (size: number = 2) => {
 export function hoverTile(intersects: THREE.Intersection[]) {
   tiles.forEach(tile => {
     const hoveredTile = intersects[0]?.object as THREE.Mesh
-    const isHovered = hoveredTile === tile && hoveredTile.userData.isOccupied === false
+    const isHovered =
+      hoveredTile === tile && hoveredTile.userData.isOccupied === false
 
     ;(tile.material as THREE.MeshStandardMaterial).opacity = isHovered
       ? Colors.HOVERED_TILE.opacity
