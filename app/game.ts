@@ -3,8 +3,8 @@ import { keys, values } from 'lodash'
 import { TelegramWebApps } from 'telegram-webapps'
 import api from './api'
 import { scene } from './canvas'
-import { Ally, AllyType } from './canvas/allies'
-import EnemySpawner from './canvas/enemies'
+import { Ally, AllyType } from './canvas/ally'
+import EnemySpawner from './canvas/enemy-spawner'
 import Tower from './canvas/tower'
 import { coinCounter, highscoreCounter, scoreCounter } from './ui'
 import {
@@ -258,9 +258,9 @@ export default class Game {
   public start() {
     try {
       this.level += 1
-      let levelDuration = 30
+      let waveDuration = 30
       levelDisplay.innerHTML = `LEVEL ${this.level}`
-      timer.innerHTML = `${levelDuration}`
+      timer.innerHTML = `${waveDuration}`
 
       bottomButtons.classList.remove('active')
       bottomInfo.classList.add('active')
@@ -276,12 +276,21 @@ export default class Game {
       this.onLevelStart()
 
       let level = setInterval(() => {
-        if (levelDuration) {
-          levelDuration--
-          timer.innerHTML = `${levelDuration}`
+        if (waveDuration) {
+          waveDuration--
+          timer.innerHTML = `${waveDuration}`
         } else {
           this.stop()
           clearInterval(level)
+
+          // Start checking for remaining enemies
+          const cleanup = setInterval(() => {
+            this.spawner.purgeDestroyedEnemies()
+            if (this.spawner.enemies.length === 0) {
+              this.stop()
+              clearInterval(cleanup)
+            }
+          }, 1000)
         }
       }, 1000)
     } catch (error) {
@@ -292,30 +301,27 @@ export default class Game {
 
   stop() {
     try {
+      // Stop spawning new enemies but let existing ones continue
       this.spawner.stop()
 
-      let finish = setInterval(() => {
-        this.spawner.purgeDestroyedEnemies()
+      // Only clean up if all enemies are gone
+      if (this.spawner.enemies.length === 0) {
+        bottomButtons.classList.add('active')
+        bottomInfo.classList.remove('active')
 
-        if (this.spawner.intervals.length === 0) {
-          bottomButtons.classList.add('active')
-          bottomInfo.classList.remove('active')
+        this.tower.stopShooting()
+        values(this.tower.allies).forEach(ally => ally?.stopCasting())
+        this.tower.heal()
 
-          this.tower.stopShooting()
-          values(this.tower.allies).forEach(ally => ally?.stopCasting())
-          this.tower.heal()
+        this.isRunning = false
+        this.isUpgrading = true
 
-          this.isRunning = false
-          this.isUpgrading = true
-
-          if (this.score > this.highscore) {
-            this.highscore = this.score
-          }
-
-          this.onLevelComplete()
-          clearInterval(finish)
+        if (this.score > this.highscore) {
+          this.highscore = this.score
         }
-      }, 1000)
+
+        this.onLevelComplete()
+      }
     } catch (error) {
       console.error(error)
     }

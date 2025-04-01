@@ -8,11 +8,12 @@ import Game from '../game'
 import { toggleTowerInfo } from '../ui/tower-info'
 import { float, showDamageText } from '../utils'
 import { moveAndFlip, moveLinear } from './animations'
-import EnemySpawner, { Enemy } from './enemies'
+import EnemySpawner from './enemy-spawner'
 import loader from './model-loader'
 import { scene } from './scene'
 import { tiles } from './tiles'
 import Tower from './tower'
+import { Enemy } from './enemy'
 
 export const enum AllyType {
   WATER = 'water',

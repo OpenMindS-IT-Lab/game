@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { flickerLight } from './canvas/animations'
-import EnemySpawner from './canvas/enemies'
+import EnemySpawner from './canvas/enemy-spawner'
 import createGround from './canvas/ground'
 import {
   createAmbientLight,

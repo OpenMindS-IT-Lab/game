@@ -63,7 +63,6 @@ body {
   width: 100%;
   box-sizing: border-box;
   flex-grow: 1;
-  border: 1px solid red;
   overflow-y: auto;
 
   display: flex;

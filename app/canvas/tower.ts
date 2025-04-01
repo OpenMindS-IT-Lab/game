@@ -4,11 +4,12 @@ import mainTowerImg from '../assets/main-tower.png'
 import Game from '../game'
 import { toggleTowerInfo } from '../ui/tower-info'
 import { showDamageText } from '../utils'
-import { Ally, AllyType } from './allies'
+import { Ally, AllyType } from './ally'
 import { Colors } from './constants'
-import EnemySpawner, { Enemy } from './enemies'
+import EnemySpawner from './enemy-spawner'
 import loader from './model-loader'
 import { scene } from './scene'
+import { Enemy } from './enemy'
 
 class Tower extends THREE.Mesh {
   title?: string
