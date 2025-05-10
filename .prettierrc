@@ -1,0 +1,13 @@
+{
+  "endOfLine": "crlf",
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": false,
+  "arrowParens": "avoid",
+  "objectWrap": "collapse",
+  "printWidth": 80,
+  "proseWrap": "never",
+  "singleAttributePerLine": true,
+  "singleQuote": true,
+  "trailingComma": "es5"
+}

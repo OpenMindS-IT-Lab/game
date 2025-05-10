@@ -1,5 +1,5 @@
-import { Context, Markup } from 'telegraf'
-import { Update } from 'telegraf/types'
+import { Context, Markup } from 'telegraf';
+import { Update } from 'telegraf/types';
 
 export async function startHandler(ctx: Context) {
   const botName = ctx.botInfo.username

@@ -8,7 +8,7 @@ port = 8877
 command = 'vite build'
 
 [functions]
-directory = 'server'
+directory = '/server'
 node_bundler = "esbuild"
 external_node_modules = ["express", "telegraf"]
 

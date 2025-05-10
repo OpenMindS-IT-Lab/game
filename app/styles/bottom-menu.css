@@ -1,13 +1,13 @@
 /* Нижні кнопки */
 #bottom-buttons {
-  position: absolute;
-  bottom: 20px;
+  position: relative;
+  bottom: 0;
   width: 100%;
   display: none;
   justify-content: center;
   gap: 10px;
   pointer-events: auto;
-  padding: 0 0 20px 0;
+  padding: 20px 0;
 }
 
 #bottom-buttons.active {
@@ -29,17 +29,15 @@
 }
 
 #bottom-info {
-  position: absolute;
-  bottom: 20px;
+  position: relative;
+  bottom: 0;
   width: 100%;
   display: none;
   justify-content: center;
-  /* justify-items: center; */
-  /* align-items: center; */
-  /* align-content: center; */
   gap: 0;
   pointer-events: auto;
   flex-wrap: wrap;
+  padding: 10px 0;
 }
 
 #bottom-info.active {

@@ -6,5 +6,6 @@
   "deno.unstable": true,
   "deno.importMap": ".netlify/edge-functions-import-map.json",
   "deno.path": "C:\\Users\\joncolab\\AppData\\Roaming\\netlify\\Config\\deno-cli\\deno.exe",
-  "typescript.tsserver.experimental.enableProjectDiagnostics": false
+  "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+  "prettier.configPath": ".prettierrc"
 }

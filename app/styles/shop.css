@@ -2,17 +2,15 @@
 
 #shop {
   --width: 480px;
-  --padding: 20px;
-  position: absolute;
-  top: 0;
-  left: 0;
+  --padding: 10px;
   width: 100%;
-  height: 100%;
+  max-height: min-content;
   display: flex;
   visibility: visible;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   z-index: 100;
+  box-sizing: border-box;
 }
 
 #shop.hidden {
@@ -27,19 +25,19 @@
 }
 
 #shop .content {
+  width: calc(var(--width) - var(--padding) * 4);
+  max-width: var(--width);
   position: relative;
-  margin: 0 auto;
-  width: var(--width);
-  max-width: calc(100% - var(--padding) * 2);
+  margin: auto;
   background-color: rgba(0, 0, 0, 0.85);
-  padding: 20px 10px 20px;
+  padding: var(--padding);
   border-radius: 10px;
   color: white;
   pointer-events: auto; /* Ensures the UI is interactive */
 
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-start;
+  justify-content: space-evenly;
 }
 
 #shop .content h1 {
@@ -47,21 +45,18 @@
   font-size: 24px;
   text-shadow: 0 0 5px #007bff;
   color: #007bff;
-  margin: 0 0 20px;
+  margin: 0 0 var(--padding);
   flex-basis: 100%;
 }
 
 #shop .content figure {
-  flex-basis: calc(50% - var(--padding));
-  width: 50%;
-  max-width: 50%;
-  overflow: hidden;
   display: flex;
   flex-direction: column-reverse;
   transition: box-shadow 0.25s linear;
-  border-radius: 20px;
+  border-radius: 10px;
   padding: 0;
-  margin: 0 10px 20px;
+  margin: var(--padding) 0 auto;
+  flex-basis: 50%;
 }
 
 #shop .content figure:hover {
@@ -72,22 +67,24 @@
   font-weight: bold;
   text-align: center;
   text-shadow: 0 0 5px #fff;
-  margin-bottom: 10px;
+  margin-bottom: calc(var(--padding) / 2);
 }
 
 #shop .content figure img {
-  width: 100%;
+  display: block;
   align-self: center;
   margin-top: -20%;
-  margin-bottom: -15%;
+  margin-bottom: -17.5%;
+  flex-basis: 175px;
+  max-width: 175px;
 }
 
 #shop .content figure button {
-  width: auto;
-  align-self: center;
-  margin-bottom: 10px;
+  width: calc(100% - var(--padding) * 2);
+  align-self: stretch;
+  margin: 0 auto var(--padding);
   display: block;
-  padding: 10px;
+  padding: var(--padding);
   background-color: #007bff;
   color: white;
   border: none;
@@ -107,8 +104,8 @@
 
 #shop #close-shop-button {
   position: absolute;
-  top: 25px;
-  right: 20px;
+  top: calc(var(--padding) + 0.25em);
+  right: var(--padding);
   color: #f00;
   background-color: transparent;
   border: none;
@@ -124,6 +121,6 @@
 #shop #close-shop-button span {
   font-size: 14px;
   font-weight: 400;
-  margin: 0 10px 3px 0;
+  margin: 0 var(--padding) 3px 0;
   display: inline-block;
 }

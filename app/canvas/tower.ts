@@ -1,144 +1,97 @@
-import { compact, entries, values } from 'lodash'
+import { compact, values } from 'lodash'
 import * as THREE from 'three'
-import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils'
 import mainTowerImg from '../assets/main-tower.png'
 import Game from '../game'
 import { toggleTowerInfo } from '../ui/tower-info'
-import { float, showDamageText } from '../utils'
-import { Ally, AllyType } from './allies'
+import { showDamageText } from '../utils'
+import { Ally, AllyType } from './ally'
 import { Colors } from './constants'
-import EnemySpawner, { Enemy } from './enemies'
+import EnemySpawner from './enemy-spawner'
+import loader from './model-loader'
 import { scene } from './scene'
+import { Enemy } from './enemy'
 
 class Tower extends THREE.Mesh {
-  // __game?: Game
-
-  title: string
-  description: string
-  image: string
-
+  title?: string
+  description?: string
+  image?: string
+  initialMaterial?: THREE.Material
   isSelected: boolean = false
   health: number = 0
   maxHealth: number = 0
-  level: number
+  level: number = 0
   speed: number = 0
   damage: number = 0
   cooldown: number = 0
   upgradeCost: number = 0
-  shooting: Timeout
-  allies: Record<AllyType, Ally | undefined>
+  shooting: Timeout = 0
+  allies: Record<AllyType, Ally | undefined> = {
+    [AllyType.EARTH]: undefined,
+    [AllyType.AIR]: undefined,
+    [AllyType.FIRE]: undefined,
+    [AllyType.WATER]: undefined,
+  }
 
   private priceMap: number[] = [
-    5, 10, 20, 50, 100, 200, 500, 1000, 2000, 4000, 8000, 12000, 16000, 40000, 80000, 120000, 160000, 400000, 800000,
-    1200000, 1600000,
+    5, 10, 20, 50, 100, 200, 500, 1000, 2000, 4000, 8000, 12000, 16000, 40000,
+    80000, 120000, 160000, 400000, 800000, 1200000, 1600000,
   ]
 
   constructor(size: number = 1) {
-    // // Base of the tower
-    // const baseGeometry = new THREE.BoxGeometry(size, size / 2, size)
-    // baseGeometry.translate(0, size / 4, 0) // Піднімаємо базу
+    super()
+    this.initializeProperties()
+    this.loadModel(size)
+  }
 
-    // // Middle section of the tower
-    // const middleGeometry = new THREE.CylinderGeometry(size / 2, size / 2, size, 32)
-    // middleGeometry.translate(0, size, 0) // Піднімаємо середню секцію
-
-    // // Top of the tower
-    // const topGeometry = new THREE.ConeGeometry(size / 2, size, 32)
-    // topGeometry.translate(0, size * 1.75, 0) // Піднімаємо верхівку
-
-    // // Об'єднуємо всі геометрії в одну
-    // const combinedGeometry = BufferGeometryUtils.mergeGeometries([baseGeometry, middleGeometry, topGeometry])
-
-    // Octagonal Prism with Tapering
-    const shape = new THREE.Shape()
-    const radius = size / 2
-    for (let i = 0; i < 8; i++) {
-      const theta = (i / 8) * Math.PI * 2
-      const x = Math.cos(theta) * radius
-      const y = Math.sin(theta) * radius
-      if (i === 0) {
-        shape.moveTo(x, y)
-      } else {
-        shape.lineTo(x, y)
-      }
-    }
-    shape.closePath()
-
-    const extrudeSettings = {
-      steps: 1,
-      depth: 12,
-      bevelEnabled: false,
-      extrudePath: new THREE.CatmullRomCurve3([
-        new THREE.Vector3(0, 0, 0),
-        new THREE.Vector3(0, 0, size / 2),
-        new THREE.Vector3(0, 0, size),
-      ]),
-    }
-
-    const baseGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings)
-    baseGeometry.translate(0, 0, -size)
-    baseGeometry.rotateX(Math.PI / 2)
-    baseGeometry.rotateY(0)
-    baseGeometry.rotateZ(0)
-
-    // Tapering effect
-    const taperAmount = 0.9 // Adjust for more/less tapering
-    const position = baseGeometry.attributes.position
-    for (let i = 0; i < position.count; i++) {
-      const z = position.getZ(i)
-      const scale = 1 - (1 - taperAmount) * (z / 12)
-      position.setXY(i, position.getX(i) * scale, position.getY(i) * scale)
-    }
-
-    // Circular Ledge
-    const ledgeGeometry = new THREE.TorusGeometry(size / 2, 0.1, 16, 100)
-    ledgeGeometry.translate(0, 0, -size)
-    ledgeGeometry.rotateX(Math.PI / 2)
-
-    // Turret with Conical Barrel
-    const turretGeometry = new THREE.CylinderGeometry(size / 4, size / 4, size, 32)
-    turretGeometry.translate(0, size, 0)
-
-    const barrelGeometry = new THREE.ConeGeometry(size / 6, size, 32)
-    barrelGeometry.translate(0, -size / 6 + 0.75, -size * 2 + size / 2 + 0.25)
-    barrelGeometry.rotateX(Math.PI / 2)
-
-    // Assemble Main Tower
-    const combinedGeometry = BufferGeometryUtils.mergeGeometries([
-      baseGeometry.toNonIndexed(),
-      ledgeGeometry.toNonIndexed(),
-      turretGeometry.toNonIndexed(),
-      barrelGeometry.toNonIndexed(),
-    ])
-    combinedGeometry.rotateY(Math.PI)
-
-    // Створюємо матеріал
-    const material = new THREE.MeshStandardMaterial({
-      ...Colors.TOWER,
-      emissive: Colors.TOWER.color,
-      emissiveIntensity: 0.25,
-      metalness: 0,
-      roughness: 1,
-    })
-
-    // Створюємо Mesh із комбінованою геометрією
-    super(combinedGeometry, material)
-
+  private initializeProperties() {
     this.title = 'Main Tower'
     this.description =
       'Unleash the precision of the Main Tower as it methodically targets the nearest enemy, firing with deadly accuracy and inflicting massive damage. This reliable sentinel stands as the cornerstone of your defenses.'
     this.image = mainTowerImg
-
+    this.isSelected = false
+    this.health = 0
+    this.maxHealth = 0
     this.level = 0
-
-    this.levelUp()
+    this.speed = 0
+    this.damage = 0
+    this.cooldown = 0
+    this.upgradeCost = 0
     this.shooting = 0
+    this.allies = {
+      [AllyType.EARTH]: undefined,
+      [AllyType.AIR]: undefined,
+      [AllyType.FIRE]: undefined,
+      [AllyType.WATER]: undefined,
+    }
+  }
 
+  private loadModel(size: number) {
+    loader.load(
+      '/app/models/main-tower.glb',
+      gltf => {
+        this.setupModel(gltf.scene, size)
+      },
+      progress => console.log('Loading glTF model: ', progress),
+      err => console.error(err)
+    )
+  }
+
+  private setupModel(gltf: THREE.Group, size: number) {
+    console.log('Object loaded: ', gltf)
+    this.copy(gltf.children[0])
+
+    const material = this.material as THREE.MeshStandardMaterial
+    material.setValues({ wireframe: true })
+
+    this.initialMaterial = material.clone()
+    this.name = 'Tower'
     this.receiveShadow = true
     this.castShadow = true
 
-    // Встановлюємо позицію та userData
     this.position.set(0, 0, 14)
+    this.rotateY(Math.PI)
+    this.scale.setY(size)
+
     this.userData = {
       isSelected: false,
       isPersistant: true,
@@ -146,29 +99,24 @@ class Tower extends THREE.Mesh {
       initialColor: Colors.TOWER,
       health: this.health,
     }
-    this.name = 'Tower'
 
-    this.allies = {
-      [AllyType.EARTH]: undefined,
-      [AllyType.AIR]: undefined,
-      [AllyType.FIRE]: undefined,
-      [AllyType.WATER]: undefined,
-    }
-
-    // Додаємо tower у сцену
+    this.levelUp()
     scene.add(this)
   }
 
   select() {
     this.unselectAllies()
-    ;(this.material as THREE.MeshStandardMaterial).color.set(Colors.SELECTED_TOWER.color)
+    ;(this.material as THREE.MeshStandardMaterial).color.set(
+      Colors.SELECTED_TOWER.color
+    )
     ;(this.material as THREE.MeshStandardMaterial).emissiveIntensity = 0
     this.isSelected = true
     toggleTowerInfo(this)
   }
 
   unselect() {
-    ;(this.material as THREE.MeshStandardMaterial).color.set(Colors.TOWER.color)
+    this.initialMaterial &&
+      (this.material as THREE.MeshStandardMaterial).copy(this.initialMaterial)
     ;(this.material as THREE.MeshStandardMaterial).emissiveIntensity = 0.25
     this.isSelected = false
     toggleTowerInfo()
@@ -187,26 +135,25 @@ class Tower extends THREE.Mesh {
     const speed = this.calcSpeed(this.level + 1)
     const cooldown = this.calcCooldown(this.level + 1)
 
-    return {
-      level,
-      health,
-      damage,
-      speed,
-      cooldown,
-    }
+    return { level, health, damage, speed, cooldown }
   }
 
   private calcHealth(level: number) {
-    return this.health + (level || level + 1) * 10
+    return this.maxHealth + level * 10
   }
+
   private calcSpeed(level: number) {
-    return float((level - 3 > 0 ? level - 3 : 1) / (level > 6 ? 10 : 6))
+    return parseFloat(
+      Math.max((level - 3) / (level > 6 ? 10 : 6), 0.1).toFixed(2)
+    )
   }
+
   private calcDamage(level: number) {
-    return float(level / 2 + 0.5 * level)
+    return parseFloat((level * 0.75 + 0.5 * level).toFixed(2))
   }
+
   private calcCooldown(level: number) {
-    return float(4000 / (level * 2))
+    return parseFloat((4000 / Math.max(level * 2, 1)).toFixed(2))
   }
 
   levelUp() {
@@ -220,17 +167,16 @@ class Tower extends THREE.Mesh {
   }
 
   updateAlliesPriceMap(score: number, totalUpgrades: number) {
-    const newPriceMap = Ally.priceMap
+    const updatedPrices: Record<AllyType, number[]> = Object.fromEntries(
+      Object.entries(Ally.priceMap).map(([type, prices]) => [
+        type as AllyType,
+        prices.map(price => Math.round(price + score / totalUpgrades)),
+      ])
+    ) as Record<AllyType, number[]>
 
-    for (let [type, prices] of entries(newPriceMap)) {
-      newPriceMap[type as AllyType] = prices.map(price => Math.round(price + score / totalUpgrades))
-    }
-
-    for (let [, ally] of entries(this.allies)) {
-      if (ally) {
-        ally.updatePrice(newPriceMap)
-      }
-    }
+    Object.values(this.allies).forEach(ally => {
+      if (ally) ally.updatePrice(updatedPrices)
+    })
   }
 
   heal() {
@@ -240,37 +186,41 @@ class Tower extends THREE.Mesh {
     })
   }
 
+  private attack(enemy: Enemy): void {
+    const projectile = new Projectile(
+      this.position.clone(),
+      this.damage,
+      0.5,
+      enemy.position.clone().sub(this.position).normalize()
+    )
+    projectile.shoot()
+  }
+
   private shootAtNearestEnemy(enemies: Enemy[]): void {
     if (enemies.length === 0) return
 
-    const towerPosition = this.position.clone()
-
-    const nearestEnemy =
-      enemies
-        .filter(enemy => !enemy.userData.isDestroyed)
-        .sort(({ position: a }, { position: b }) => a.distanceTo(towerPosition) - b.distanceTo(towerPosition))[0] ??
-      null
+    const nearestEnemy = enemies.reduce((closest: Enemy | null, enemy) => {
+      if (enemy.userData.isDestroyed) return closest
+      if (
+        !closest ||
+        enemy.position.distanceTo(this.position) <
+          closest.position.distanceTo(this.position)
+      ) {
+        return enemy
+      }
+      return closest
+    }, null)
 
     if (!nearestEnemy) return
 
-    // Обчислюємо напрямок руху
-    const speed = this.speed // Швидкість руху снаряда
-    const enemyInitialPosition = nearestEnemy.position.clone()
-    const direction = new THREE.Vector3()
-      .subVectors(enemyInitialPosition, towerPosition)
-      .multiplyScalar(2)
-      .setY(0.5)
-      .normalize()
-
-    const rotation = this.rotation.clone()
-    this.lookAt(enemyInitialPosition.clone())
-    this.rotation.set(rotation.x, -this.rotation.y, rotation.z)
-
-    new Projectile(towerPosition, this.damage, speed, direction).shoot()
+    this.attack(nearestEnemy)
   }
 
   public startShooting(enemies: Enemy[]): void {
-    this.shooting = setInterval(() => this.shootAtNearestEnemy(enemies), this.cooldown)
+    this.shooting = setInterval(
+      () => this.shootAtNearestEnemy(enemies),
+      this.cooldown
+    )
   }
 
   public stopShooting() {
@@ -289,19 +239,16 @@ class Tower extends THREE.Mesh {
       this.stopShooting()
       spawner.stop()
       Game.__inst.end()
-      // console.log(spawner.enemies)
       scene.remove(this)
     }
   }
 
   public spawnAlly(type: AllyType) {
     const newAlly = new Ally(type)
-    // newAlly.__game = this.__game
     this.allies[type] = newAlly
     return newAlly
   }
 
-  // Індивідуальні функції для кожного типу геометрії
   public spawnEarthTower() {
     return this.spawnAlly(AllyType.EARTH)
   }
@@ -326,8 +273,12 @@ export class Projectile extends THREE.Mesh {
   speed: number
   direction: THREE.Vector3
   initialPosition: THREE.Vector3
-  constructor(position: THREE.Vector3, damage: number, speed: number, direction: THREE.Vector3) {
-    // Створюємо снаряд
+  constructor(
+    position: THREE.Vector3,
+    damage: number,
+    speed: number,
+    direction: THREE.Vector3
+  ) {
     const geometry = new THREE.SphereGeometry(0.1, 16, 16)
     const material = new THREE.MeshStandardMaterial({
       color: Colors.TOWER.color,
@@ -336,15 +287,12 @@ export class Projectile extends THREE.Mesh {
     })
     super(geometry, material)
 
-    this.position.copy(position).setY(0.5) // Початкова позиція — позиція башти
+    this.position.copy(position).setY(0.5)
     this.initialPosition = position
     this.damage = damage
     this.speed = speed
     this.direction = direction
-    this.userData = {
-      isPersistant: false,
-      boundingBox: new THREE.Box3(),
-    }
+    this.userData = { isPersistant: false, boundingBox: new THREE.Box3() }
 
     const shockwaveGeometry = new THREE.RingGeometry(0.15, 0.25, 32)
     const shockwaveMaterial = new THREE.MeshBasicMaterial({
@@ -359,7 +307,6 @@ export class Projectile extends THREE.Mesh {
     shockwave.position.copy(this.position).setY(0.1)
     scene.add(shockwave)
 
-    // Shockwave Animation
     function animateShockwave() {
       shockwave.scale.x += 0.1
       shockwave.scale.y += 0.1
@@ -377,12 +324,10 @@ export class Projectile extends THREE.Mesh {
     scene.add(this)
   }
 
-  // Анімація руху снаряда
   shoot() {
     const animateBullet = () => {
       this.position.addScaledVector(this.direction, this.speed)
 
-      // Якщо снаряд виходить за межі сцени (додатковий захист від "завислих" снарядів)
       if (this.position.distanceTo(this.initialPosition) > 50) {
         scene.remove(this)
         return
